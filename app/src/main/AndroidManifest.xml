@@ -26,17 +26,17 @@
             android:screenOrientation="portrait" />
 
         <activity
+            android:name=".NoteActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
             android:name=".LibraryActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
         <activity
             android:name=".TrashActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
-        
-        <activity
-            android:name=".NoteActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
