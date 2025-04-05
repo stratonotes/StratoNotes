@@ -1,7 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:orientation="vertical"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#222222"
+    android:padding="16dp">
 
-</LinearLayout>
+    <ImageView
+        android:id="@+id/starIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_alignParentEnd="true"
+        android:src="@drawable/ic_star_outline"
+        android:contentDescription="Favorite Icon" />
+
+    <ScrollView
+        android:id="@+id/noteScroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/plusButton"
+        android:layout_below="@id/starIcon">
+
+        <TextView
+            android:id="@+id/noteText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:lineSpacingExtra="6dp"
+            android:padding="8dp" />
+    </ScrollView>
+
+    <ImageButton
+        android:id="@+id/plusButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_plus"
+        android:contentDescription="Plus Button" />
+
+    <LinearLayout
+        android:id="@+id/mediaOverlay"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/plusButton"
+        android:layout_alignParentEnd="true"
+        android:visibility="gone">
+
+        <ImageButton
+            android:id="@+id/insertImage"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_image"
+            android:contentDescription="Insert Image" />
+
+        <ImageButton
+            android:id="@+id/recordAudio"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_mic"
+            android:contentDescription="Record Audio" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/voiceOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/plusButton"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        android:padding="8dp"
+        android:gravity="center_vertical"
+        android:background="#88000000">
+
+        <ImageView
+            android:id="@+id/recordingIndicator"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_mic"
+            android:alpha="0.3" />
+
+        <TextView
+            android:id="@+id/recordingTimer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp" />
+
+        <ImageButton
+            android:id="@+id/startStopRecording"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_record"
+            android:background="@android:color/transparent"
+            android:contentDescription="Start/Stop Recording" />
+
+        <ImageButton
+            android:id="@+id/saveRecording"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_save"
+            android:background="@android:color/transparent"
+            android:enabled="false"
+            android:contentDescription="Save Recording" />
+    </LinearLayout>
+
+</RelativeLayout>
