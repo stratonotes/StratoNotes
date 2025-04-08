@@ -1,6 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#222222"
+    android:padding="12dp">
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/folderRecycler"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/deleteButton" />
+
+    <ImageButton
+        android:id="@+id/deleteButton"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="12dp"
+        android:src="@drawable/ic_delete"
+        android:background="@android:color/transparent"
+        android:contentDescription="Delete Mode" />
+
+    <ImageButton
+        android:id="@+id/toggleFavorites"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_margin="12dp"
+        android:src="@drawable/ic_star_outline"
+        android:background="@android:color/transparent"
+        android:contentDescription="Favorites Toggle" />
+
+    <ImageButton
+        android:id="@+id/sortToggle"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentBottom="true"
+        android:layout_toEndOf="@id/toggleFavorites"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="12dp"
+        android:src="@drawable/ic_sort"
+        android:background="@android:color/transparent"
+        android:contentDescription="Sort Order Toggle" />
 </RelativeLayout>

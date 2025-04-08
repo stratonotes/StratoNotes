@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<vector xmlns:android="http://schemas.android.com/apk/res/android">
-  
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Outer square body -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M4,2h16a2,2 0 0,1 2,2v16a2,2 0 0,1 -2,2H4a2,2 0 0,1 -2,-2V4a2,2 0 0,1 2,-2z" />
+
+    <!-- Metal shutter (top rectangle) -->
+    <path
+        android:fillColor="#222222"
+        android:pathData="M6,2h12v4H6z" />
+
+    <!-- Label area (small square) -->
+    <path
+        android:fillColor="#222222"
+        android:pathData="M7,14h10v5H7z" />
 </vector>

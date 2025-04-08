@@ -1,6 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="12dp"
+    android:background="@android:color/transparent">
 
+    <ImageView
+        android:id="@+id/starIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="4dp"
+        android:src="@drawable/ic_star_outline"
+        android:contentDescription="Favorite Star" />
+
+    <EditText
+        android:id="@+id/noteText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@id/starIcon"
+        android:layout_marginEnd="8dp"
+        android:textColor="#FFFFFF"
+        android:background="@android:color/transparent"
+        android:cursorVisible="false"
+        android:focusable="false"
+        android:focusableInTouchMode="true"
+        android:textSize="16sp"
+        android:lineSpacingExtra="6dp"
+        android:inputType="textMultiLine"
+        android:minLines="1"
+        android:maxLines="6"
+        android:padding="4dp" />
 </RelativeLayout>

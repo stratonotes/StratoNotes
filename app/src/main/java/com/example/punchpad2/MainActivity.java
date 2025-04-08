@@ -2,20 +2,25 @@ package com.example.punchpad2;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.AsyncTask;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-
-import com.example.punchpad2.data.NoteDatabase;
-import com.example.punchpad2.data.NoteEntity;
-
+import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.*;
+import com.example.punchpad2.NoteDatabase;
+import com.example.punchpad2.NoteEntity;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends Activity {
 
     private LinearLayout previewContainer;
+    private EditText searchInput;
+    private ListView liveSearchResults;
+    private ImageButton filterButton;
+
+    private List<NoteEntity> allNotes = new ArrayList<>();
+    private ArrayAdapter<String> liveSearchAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,8 +31,42 @@ public class MainActivity extends Activity {
         Button goToLibrary = findViewById(R.id.goToLibrary);
         Button createNote = findViewById(R.id.generateTestNote);
 
+        searchInput = findViewById(R.id.searchInput);
+        liveSearchResults = findViewById(R.id.liveSearchResults);
+        filterButton = findViewById(R.id.filterButton);
+
+        liveSearchAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<>());
+        liveSearchResults.setAdapter(liveSearchAdapter);
+
+        searchInput.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(Editable s) {
+                filterLiveResults(s.toString());
+            }
+        });
+
+        liveSearchResults.setOnItemClickListener((parent, view, position, id) -> {
+            String selected = liveSearchAdapter.getItem(position);
+            for (NoteEntity note : allNotes) {
+                if (note.content.startsWith(selected)) {
+                    Intent intent = new Intent(MainActivity.this, NoteActivity.class);
+                    intent.putExtra("content", note.content);
+                    startActivity(intent);
+                    break;
+                }
+            }
+        });
+
+        filterButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, LibraryActivity.class);
+            intent.putExtra("query", searchInput.getText().toString());
+            startActivity(intent);
+        });
+
         goToLibrary.setOnClickListener(v -> {
-            // Library screen not implemented yet
+            Intent intent = new Intent(MainActivity.this, LibraryActivity.class);
+            startActivity(intent);
         });
 
         createNote.setOnClickListener(v -> insertTestNote());
@@ -37,6 +76,8 @@ public class MainActivity extends Activity {
 
     private void loadPreviews() {
         AsyncTask.execute(() -> {
+            allNotes = NoteDatabase.getInstance(this).noteDao().getAllNotesNow();
+
             List<NoteEntity> notes = NoteDatabase.getInstance(this)
                     .noteDao()
                     .get3MostRecentVisibleNotes();
@@ -70,5 +111,28 @@ public class MainActivity extends Activity {
             NoteDatabase.getInstance(this).noteDao().insert(note);
             runOnUiThread(this::loadPreviews);
         });
+    }
+
+    private void filterLiveResults(String query) {
+        if (query.isEmpty()) {
+            liveSearchResults.setVisibility(ListView.GONE);
+            return;
+        }
+
+        List<String> matches = new ArrayList<>();
+        for (NoteEntity note : allNotes) {
+            if (note.content.toLowerCase().contains(query.toLowerCase())) {
+                matches.add(note.content.length() > 50 ? note.content.substring(0, 50) + "..." : note.content);
+            }
+        }
+
+        if (matches.isEmpty()) {
+            liveSearchResults.setVisibility(ListView.GONE);
+        } else {
+            liveSearchAdapter.clear();
+            liveSearchAdapter.addAll(matches);
+            liveSearchAdapter.notifyDataSetChanged();
+            liveSearchResults.setVisibility(ListView.VISIBLE);
+        }
     }
 }

@@ -5,34 +5,26 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
-import android.view.animation.TranslateAnimation;
 
 public class SplashActivity extends Activity {
-
-    private View loadingBar;
-    private View splashRoot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        loadingBar = findViewById(R.id.loadingBar);
-        splashRoot = findViewById(R.id.splashRoot);
+        View splashIcon = findViewById(R.id.splashIcon);
 
-        loadingBar.post(() -> loadingBar.animate().scaleX(1f).setDuration(1000).start());
-
-        new Handler().postDelayed(() -> {
-            TranslateAnimation slideDown = new TranslateAnimation(0, 0, 0, splashRoot.getHeight());
-            slideDown.setDuration(600);
-            slideDown.setFillAfter(true);
-            splashRoot.startAnimation(slideDown);
-
-            new Handler().postDelayed(() -> {
-                startActivity(new Intent(SplashActivity.this, MainActivity.class));
-                finish();
-            }, 600);
-
-        }, 800); // hold splash minimum 0.5s, starts drain after ~0.8s
+        splashIcon.animate()
+                .scaleX(0f)
+                .scaleY(0f)
+                .setDuration(400)
+                .withEndAction(() -> {
+                    Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                    finish();
+                })
+                .start();
     }
 }

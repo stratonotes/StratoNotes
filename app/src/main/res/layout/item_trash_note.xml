@@ -1,6 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#333333"
+    android:padding="12dp"
+    android:layout_marginBottom="8dp">
 
+    <TextView
+        android:id="@+id/trashContent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:maxLines="5"
+        android:ellipsize="end" />
+
+    <ImageButton
+        android:id="@+id/restoreButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="8dp"
+        android:layout_alignTop="@id/trashContent"
+        android:src="@drawable/ic_restore"
+        android:background="@android:color/transparent"
+        android:contentDescription="Restore" />
+
+    <ImageButton
+        android:id="@+id/deleteButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_toStartOf="@id/restoreButton"
+        android:layout_alignTop="@id/trashContent"
+        android:src="@drawable/ic_delete"
+        android:background="@android:color/transparent"
+        android:contentDescription="Delete" />
 </RelativeLayout>

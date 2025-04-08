@@ -6,6 +6,44 @@
     android:background="#222222"
     android:padding="16dp">
 
+    <RelativeLayout
+        android:id="@+id/searchBarContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp">
+
+        <EditText
+            android:id="@+id/searchInput"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@+id/filterButton"
+            android:background="#444444"
+            android:hint="Search notes..."
+            android:textColor="#FFFFFF"
+            android:textColorHint="#AAAAAA"
+            android:padding="12dp" />
+
+        <ImageButton
+            android:id="@+id/filterButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/ic_filter"
+            android:background="@android:color/transparent"
+            android:contentDescription="Filter Options" />
+    </RelativeLayout>
+
+    <ListView
+        android:id="@+id/liveSearchResults"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0"
+        android:visibility="gone"
+        android:background="#111111"
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="1dp" />
+
     <ScrollView
         android:id="@+id/previewScroll"
         android:layout_width="match_parent"

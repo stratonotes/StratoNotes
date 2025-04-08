@@ -20,14 +20,21 @@
         android:layout_above="@+id/plusButton"
         android:layout_below="@id/starIcon">
 
-        <TextView
+        <EditText
             android:id="@+id/noteText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="#FFFFFF"
             android:textSize="16sp"
             android:lineSpacingExtra="6dp"
-            android:padding="8dp" />
+            android:padding="8dp"
+            android:background="@android:color/transparent"
+            android:cursorVisible="false"
+            android:focusable="false"
+            android:focusableInTouchMode="true"
+            android:inputType="textMultiLine"
+            android:minLines="1"
+            android:maxLines="20" />
     </ScrollView>
 
     <ImageButton
@@ -65,6 +72,7 @@
             android:src="@drawable/ic_mic"
             android:contentDescription="Record Audio" />
     </LinearLayout>
+
     <LinearLayout
         android:id="@+id/voiceOverlay"
         android:layout_width="match_parent"
@@ -111,4 +119,24 @@
             android:contentDescription="Save Recording" />
     </LinearLayout>
 
+    <ImageButton
+        android:id="@+id/undoButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="64dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_undo"
+        android:contentDescription="Undo" />
+
+    <ImageButton
+        android:id="@+id/redoButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_above="@id/undoButton"
+        android:layout_alignParentStart="true"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_redo"
+        android:contentDescription="Redo" />
 </RelativeLayout>
