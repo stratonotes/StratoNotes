@@ -2,6 +2,7 @@ package com.example.punchpad2;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
@@ -34,6 +35,12 @@ public class MainActivity extends Activity {
         searchInput = findViewById(R.id.searchInput);
         liveSearchResults = findViewById(R.id.liveSearchResults);
         filterButton = findViewById(R.id.filterButton);
+
+        SharedPreferences prefs = getSharedPreferences("DraftPrefs", MODE_PRIVATE);
+        String draft = prefs.getString("draft_note", null);
+        if (draft != null && !draft.isEmpty()) {
+            Toast.makeText(this, "Unsaved note restored", Toast.LENGTH_SHORT).show();
+        }
 
         liveSearchAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<>());
         liveSearchResults.setAdapter(liveSearchAdapter);
