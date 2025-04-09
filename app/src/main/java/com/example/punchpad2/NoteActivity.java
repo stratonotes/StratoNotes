@@ -1,9 +1,14 @@
 package com.example.punchpad2;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.provider.MediaStore;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -14,12 +19,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.EditText;
 
+import java.io.InputStream;
+
 public class NoteActivity extends Activity {
+
+    private static final int PICK_IMAGE_REQUEST = 101;
 
     private EditText noteText;
     private ImageView starIcon;
     private boolean isEditing = false;
     private boolean isFavorited = false;
+    private LinearLayout noteContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +41,8 @@ public class NoteActivity extends Activity {
         ImageButton plusButton = findViewById(R.id.plusButton);
         LinearLayout mediaOverlay = findViewById(R.id.mediaOverlay);
         ImageButton recordAudio = findViewById(R.id.recordAudio);
+        ImageButton addImage = findViewById(R.id.addImage);
+        noteContainer = findViewById(R.id.noteContainer); // ✅ FIXED
 
         View voiceOverlay = findViewById(R.id.voiceOverlay);
         ImageButton startStopRecording = findViewById(R.id.startStopRecording);
@@ -100,7 +112,6 @@ public class NoteActivity extends Activity {
             }
         });
 
-
         GestureDetector gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onDoubleTap(MotionEvent e) {
@@ -117,6 +128,12 @@ public class NoteActivity extends Activity {
         recordAudio.setOnClickListener(v -> {
             mediaOverlay.setVisibility(View.GONE);
             voiceOverlay.setVisibility(View.VISIBLE);
+        });
+
+        addImage.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            intent.setType("image/*");
+            startActivityForResult(intent, PICK_IMAGE_REQUEST);
         });
 
         startStopRecording.setOnClickListener(v -> {
@@ -239,5 +256,32 @@ public class NoteActivity extends Activity {
                 voiceOverlay.setVisibility(View.GONE);
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            try {
+                Uri imageUri = data.getData();
+                InputStream inputStream = getContentResolver().openInputStream(imageUri);
+                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+
+                ImageView imageView = new ImageView(this);
+                imageView.setImageBitmap(bitmap);
+                imageView.setAdjustViewBounds(true);
+                imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+                params.setMargins(0, 16, 0, 16);
+                imageView.setLayoutParams(params);
+
+                noteContainer.addView(imageView, noteContainer.indexOfChild(noteText));
+            } catch (Exception e) {
+                Toast.makeText(this, "Unsupported image format. Could not import.", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }

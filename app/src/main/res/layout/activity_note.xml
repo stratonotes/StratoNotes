@@ -13,29 +13,36 @@
         android:src="@drawable/ic_star_outline"
         android:contentDescription="Favorite Icon" />
 
-    <ScrollView
-        android:id="@+id/noteScroll"
+    <LinearLayout
+        android:id="@+id/noteContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/plusButton"
-        android:layout_below="@id/starIcon">
+        android:layout_below="@id/starIcon"
+        android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/noteText"
+        <ScrollView
+            android:id="@+id/noteScroll"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:lineSpacingExtra="6dp"
-            android:padding="8dp"
-            android:background="@android:color/transparent"
-            android:cursorVisible="false"
-            android:focusable="false"
-            android:focusableInTouchMode="true"
-            android:inputType="textMultiLine"
-            android:minLines="1"
-            android:maxLines="20" />
-    </ScrollView>
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/noteText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:lineSpacingExtra="6dp"
+                android:padding="8dp"
+                android:background="@android:color/transparent"
+                android:cursorVisible="false"
+                android:focusable="false"
+                android:focusableInTouchMode="true"
+                android:inputType="textMultiLine"
+                android:minLines="1"
+                android:maxLines="20" />
+        </ScrollView>
+    </LinearLayout>
 
     <ImageButton
         android:id="@+id/plusButton"
@@ -57,7 +64,7 @@
         android:visibility="gone">
 
         <ImageButton
-            android:id="@+id/insertImage"
+            android:id="@+id/addImage"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="@android:color/transparent"
