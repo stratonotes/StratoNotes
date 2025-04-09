@@ -100,10 +100,6 @@ public class NoteActivity extends Activity {
             }
         });
 
-        noteText.setOnLongClickListener(v -> {
-            Toast.makeText(this, "Deletion mode not implemented yet.", Toast.LENGTH_SHORT).show();
-            return true;
-        });
 
         GestureDetector gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             @Override
