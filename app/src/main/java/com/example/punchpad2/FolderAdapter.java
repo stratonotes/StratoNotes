@@ -18,12 +18,19 @@ public class FolderAdapter extends RecyclerView.Adapter<FolderAdapter.FolderView
     private final List<FolderWithNotes> folders;
     private final Context context;
     private final NoteAdapter.OnNoteChangedListener listener;
+
     private int expandedFolderIndex = -1;
+    private boolean deleteMode = false;
 
     public FolderAdapter(Context context, List<FolderWithNotes> folders, NoteAdapter.OnNoteChangedListener listener) {
         this.context = context;
         this.folders = folders;
         this.listener = listener;
+    }
+
+    public void setDeleteMode(boolean deleteMode) {
+        this.deleteMode = deleteMode;
+        notifyDataSetChanged();
     }
 
     public void updateFilteredList(List<FolderWithNotes> filteredFolders) {
@@ -65,30 +72,27 @@ public class FolderAdapter extends RecyclerView.Adapter<FolderAdapter.FolderView
             folderName.setText(folderWithNotes.folder.name);
             notesContainer.removeAllViews();
 
-            if (position == expandedFolderIndex) {
-                expandButton.setRotation(180);
-                List<NoteEntity> notes = folderWithNotes.notes;
-                for (int i = 0; i < Math.min(notes.size(), 3); i++) {
-                    View noteView = LayoutInflater.from(context).inflate(R.layout.item_note, notesContainer, false);
-                    NoteAdapter noteAdapter = new NoteAdapter(context, notes, false, listener);
-                    NoteAdapter.NoteViewHolder holder = noteAdapter.new NoteViewHolder(noteView);
-                    holder.bind(notes.get(i));
-                    notesContainer.addView(noteView);
-                }
-                notesContainer.setVisibility(View.VISIBLE);
-            } else {
-                expandButton.setRotation(0);
-                notesContainer.setVisibility(View.GONE);
-            }
+            boolean isExpanded = (position == expandedFolderIndex);
+
+            expandButton.setRotation(isExpanded ? 180 : 0);
+            notesContainer.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
 
             expandButton.setOnClickListener(v -> {
-                if (expandedFolderIndex == position) {
-                    expandedFolderIndex = -1;
-                } else {
-                    expandedFolderIndex = position;
-                }
+                expandedFolderIndex = (expandedFolderIndex == position) ? -1 : position;
                 notifyDataSetChanged();
             });
+
+            if (isExpanded) {
+                List<NoteEntity> notes = folderWithNotes.notes;
+                NoteAdapter tempAdapter = new NoteAdapter(context, notes, deleteMode, listener);
+
+                for (int i = 0; i < Math.min(3, notes.size()); i++) {
+                    View noteView = LayoutInflater.from(context).inflate(R.layout.item_note, notesContainer, false);
+                    NoteAdapter.NoteViewHolder noteHolder = tempAdapter.new NoteViewHolder(noteView);
+                    noteHolder.bind(notes.get(i));
+                    notesContainer.addView(noteView);
+                }
+            }
         }
     }
 }

@@ -8,16 +8,14 @@ import java.util.List;
 public class NoteViewModel extends AndroidViewModel {
 
     private final NoteRepository repository;
-    private final LiveData<List<FolderWithNotes>> allFolders;
 
     public NoteViewModel(Application application) {
         super(application);
         repository = new NoteRepository(application);
-        allFolders = repository.getAllFoldersWithNotes();
     }
 
     public LiveData<List<FolderWithNotes>> getFoldersWithPreviews() {
-        return allFolders;
+        return repository.getAllFoldersWithNotes(); // ⬅ always fetch fresh
     }
 
     public void insert(NoteEntity note) {

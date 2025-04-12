@@ -66,7 +66,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
 
         void bind(NoteEntity note) {
             noteText.setText(note.content);
-            starIcon.setImageResource(note.isHidden ? R.drawable.ic_star_filled : R.drawable.ic_star_outline);
+            starIcon.setImageResource(note.favorited ? R.drawable.ic_star_filled : R.drawable.ic_star_outline);
 
             noteText.setFocusable(false);
             noteText.setCursorVisible(false);

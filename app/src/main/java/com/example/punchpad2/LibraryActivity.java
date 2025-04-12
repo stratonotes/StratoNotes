@@ -1,18 +1,19 @@
 package com.example.punchpad2;
 
-import java.util.ArrayList;
 import android.os.Bundle;
 import android.widget.ImageButton;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LibraryActivity extends AppCompatActivity {
 
     private NoteViewModel noteViewModel;
     private FolderAdapter folderAdapter;
+
     private boolean deleteMode = false;
     private boolean favoritesOnly = false;
     private boolean sortNewest = true;
@@ -36,13 +37,14 @@ public class LibraryActivity extends AppCompatActivity {
         folderRecycler.setAdapter(folderAdapter);
 
         noteViewModel.getFoldersWithPreviews().observe(this, folders -> {
-            folderAdapter.updateFilteredList(folders);
+            folderAdapter.updateFilteredList(filterFolders(folders, query));
         });
 
         ImageButton deleteButton = findViewById(R.id.deleteButton);
         deleteButton.setOnClickListener(v -> {
             deleteMode = !deleteMode;
-            // TODO: toggle delete mode visuals
+            folderAdapter.setDeleteMode(deleteMode);
+            folderAdapter.notifyDataSetChanged();
         });
 
         ImageButton toggleFavorites = findViewById(R.id.toggleFavorites);
@@ -56,13 +58,50 @@ public class LibraryActivity extends AppCompatActivity {
             sortNewest = !sortNewest;
             reloadFiltered(query);
         });
-
-        reloadFiltered(query);
     }
 
     private void reloadFiltered(String query) {
         noteViewModel.getFoldersWithPreviews().observe(this, folders -> {
-            folderAdapter.updateFilteredList(folders);
+            folderAdapter.updateFilteredList(filterFolders(folders, query));
         });
+    }
+
+    private List<FolderWithNotes> filterFolders(List<FolderWithNotes> original, String query) {
+        List<FolderWithNotes> result = new ArrayList<>();
+
+        for (FolderWithNotes folder : original) {
+            List<NoteEntity> filteredNotes = new ArrayList<>();
+
+            for (NoteEntity note : folder.notes) {
+                boolean match = true;
+
+                if (query != null && !query.trim().isEmpty() && !note.content.toLowerCase().contains(query.toLowerCase())) {
+                    match = false;
+                }
+
+                if (favoritesOnly && !note.favorited) {
+                    match = false;
+                }
+
+                if (match) {
+                    filteredNotes.add(note);
+                }
+            }
+
+            if (!filteredNotes.isEmpty()) {
+                if (!sortNewest) {
+                    filteredNotes.sort((a, b) -> Long.compare(a.createdAt, b.createdAt));
+                } else {
+                    filteredNotes.sort((a, b) -> Long.compare(b.createdAt, a.createdAt));
+                }
+
+                FolderWithNotes copy = new FolderWithNotes();
+                copy.folder = folder.folder;
+                copy.notes = filteredNotes;
+                result.add(copy);
+            }
+        }
+
+        return result;
     }
 }

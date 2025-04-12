@@ -15,15 +15,21 @@ public class SplashActivity extends Activity {
 
         View splashIcon = findViewById(R.id.splashIcon);
 
+        // Initial scale from 0.8 to 1.0 to create a slight zoom-in effect
+        splashIcon.setScaleX(0.8f);
+        splashIcon.setScaleY(0.8f);
+
         splashIcon.animate()
-                .scaleX(0f)
-                .scaleY(0f)
-                .setDuration(400)
+                .scaleX(1f)
+                .scaleY(1f)
+                .setDuration(300)
                 .withEndAction(() -> {
-                    Intent intent = new Intent(SplashActivity.this, MainActivity.class);
-                    startActivity(intent);
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                    finish();
+                    new Handler().postDelayed(() -> {
+                        Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+                        startActivity(intent);
+                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                        finish();
+                    }, 300); // Stay visible for 300ms after animation
                 })
                 .start();
     }

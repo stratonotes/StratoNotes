@@ -8,16 +8,14 @@ import java.util.List;
 public class NoteRepository {
 
     private final NoteDao noteDao;
-    private final LiveData<List<FolderWithNotes>> allFolders;
 
     public NoteRepository(Application application) {
         NoteDatabase db = NoteDatabase.getInstance(application);
         noteDao = db.noteDao();
-        allFolders = noteDao.getFoldersWithNotes();
     }
 
     public LiveData<List<FolderWithNotes>> getAllFoldersWithNotes() {
-        return allFolders;
+        return noteDao.getFoldersWithNotes(); // ⬅ always fresh
     }
 
     public void insert(NoteEntity note) {

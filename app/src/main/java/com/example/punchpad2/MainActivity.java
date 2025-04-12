@@ -28,6 +28,9 @@ public class MainActivity extends Activity {
     private Button submitButton;
     private ImageButton plusButton;
     private LinearLayout mediaMenu;
+    private ImageButton undoButton, redoButton;
+
+    private UndoManager undoManager = new UndoManager();
 
     private List<NoteEntity> allNotes = new ArrayList<>();
     private ArrayAdapter<String> liveSearchAdapter;
@@ -53,6 +56,12 @@ public class MainActivity extends Activity {
         filterButton = findViewById(R.id.filterButton);
         plusButton = findViewById(R.id.plus_button);
         mediaMenu = findViewById(R.id.media_menu);
+        undoButton = findViewById(R.id.undo_button);
+        redoButton = findViewById(R.id.redo_button);
+
+        undoManager.attach(noteInput);
+        undoButton.setOnClickListener(v -> undoManager.undo());
+        redoButton.setOnClickListener(v -> undoManager.redo());
 
         updateSubmitLabel();
 
