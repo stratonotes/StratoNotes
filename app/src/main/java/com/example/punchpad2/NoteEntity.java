@@ -19,7 +19,7 @@ public class NoteEntity {
     public boolean isLarge;
 
     @ColumnInfo(name = "folder_id")
-    public int folderId;
+    public long folderId;
 
     public boolean isTrashed;
     public boolean favorited;

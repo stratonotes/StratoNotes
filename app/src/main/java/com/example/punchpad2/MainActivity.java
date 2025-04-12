@@ -10,9 +10,11 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.inputmethod.EditorInfo;
 import android.widget.*;
+
 import com.example.punchpad2.NoteDatabase;
 import com.example.punchpad2.NoteEntity;
 import com.example.punchpad2.FolderEntity;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +26,8 @@ public class MainActivity extends Activity {
     private ListView liveSearchResults;
     private ImageButton filterButton;
     private Button submitButton;
+    private ImageButton plusButton;
+    private LinearLayout mediaMenu;
 
     private List<NoteEntity> allNotes = new ArrayList<>();
     private ArrayAdapter<String> liveSearchAdapter;
@@ -47,6 +51,8 @@ public class MainActivity extends Activity {
         noteInput = findViewById(R.id.note_input);
         liveSearchResults = findViewById(R.id.liveSearchResults);
         filterButton = findViewById(R.id.filterButton);
+        plusButton = findViewById(R.id.plus_button);
+        mediaMenu = findViewById(R.id.media_menu);
 
         updateSubmitLabel();
 
@@ -130,6 +136,19 @@ public class MainActivity extends Activity {
             startActivity(intent);
         });
 
+        plusButton.setOnClickListener(v -> {
+            if (mediaMenu.getVisibility() == LinearLayout.VISIBLE) {
+                mediaMenu.animate().translationX(mediaMenu.getWidth()).alpha(0f).setDuration(200).withEndAction(() -> {
+                    mediaMenu.setVisibility(LinearLayout.GONE);
+                });
+            } else {
+                mediaMenu.setTranslationX(mediaMenu.getWidth());
+                mediaMenu.setAlpha(0f);
+                mediaMenu.setVisibility(LinearLayout.VISIBLE);
+                mediaMenu.animate().translationX(0f).alpha(1f).setDuration(200).start();
+            }
+        });
+
         loadPreviews();
     }
 
@@ -195,7 +214,7 @@ public class MainActivity extends Activity {
             note.lastEdited = note.createdAt;
             note.isHidden = false;
             note.isLarge = false;
-            note.folder_id = folder.id;
+            note.folderId = folder.id;
 
             NoteDatabase.getInstance(this).noteDao().insert(note);
 

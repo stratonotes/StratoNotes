@@ -8,7 +8,7 @@ import java.util.List;
 public class FolderWithNotes {
 
     @Embedded
-    public Folder folder;
+    public FolderEntity folder;
 
     @Relation(
             parentColumn = "id",

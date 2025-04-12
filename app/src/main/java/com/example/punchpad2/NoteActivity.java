@@ -1,3 +1,4 @@
+// ✅ Same imports as before
 package com.example.punchpad2;
 
 import android.app.Activity;
@@ -12,12 +13,7 @@ import android.provider.MediaStore;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.EditText;
+import android.widget.*;
 
 import java.io.InputStream;
 
@@ -42,8 +38,7 @@ public class NoteActivity extends Activity {
         LinearLayout mediaOverlay = findViewById(R.id.mediaOverlay);
         ImageButton recordAudio = findViewById(R.id.recordAudio);
         ImageButton addImage = findViewById(R.id.addImage);
-        noteContainer = findViewById(R.id.noteContainer); // ✅ FIXED
-
+        noteContainer = findViewById(R.id.noteContainer);
         View voiceOverlay = findViewById(R.id.voiceOverlay);
         ImageButton startStopRecording = findViewById(R.id.startStopRecording);
         TextView recordingTimer = findViewById(R.id.recordingTimer);
@@ -206,7 +201,6 @@ public class NoteActivity extends Activity {
                         Toast.makeText(NoteActivity.this, "Trim mode (stub)", Toast.LENGTH_SHORT).show();
                         return true;
                     }
-
                 });
 
                 widget.setOnTouchListener(new View.OnTouchListener() {
@@ -242,18 +236,31 @@ public class NoteActivity extends Activity {
 
                 ((LinearLayout) noteText.getParent()).addView(widget);
                 noteText.append("\n");
-
             } else {
                 Toast.makeText(this, "Stop recording before saving.", Toast.LENGTH_SHORT).show();
             }
         });
 
+        // ✅ Sliding plus menu behavior
         plusButton.setOnClickListener(v -> {
-            if (mediaOverlay.getVisibility() == View.GONE) {
-                mediaOverlay.setVisibility(View.VISIBLE);
-                voiceOverlay.setVisibility(View.GONE);
+            if (mediaOverlay.getVisibility() == View.VISIBLE) {
+                mediaOverlay.animate()
+                        .translationX(mediaOverlay.getWidth())
+                        .alpha(0f)
+                        .setDuration(200)
+                        .withEndAction(() -> {
+                            mediaOverlay.setVisibility(View.GONE);
+                            voiceOverlay.setVisibility(View.GONE);
+                        });
             } else {
-                mediaOverlay.setVisibility(View.GONE);
+                mediaOverlay.setTranslationX(mediaOverlay.getWidth());
+                mediaOverlay.setAlpha(0f);
+                mediaOverlay.setVisibility(View.VISIBLE);
+                mediaOverlay.animate()
+                        .translationX(0f)
+                        .alpha(1f)
+                        .setDuration(200)
+                        .start();
                 voiceOverlay.setVisibility(View.GONE);
             }
         });

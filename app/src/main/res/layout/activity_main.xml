@@ -78,7 +78,38 @@
             android:maxLines="10"
             android:scrollbars="vertical" />
 
-        <!-- Floating + Button (Media Menu) -->
+        <!-- Sliding Media Menu -->
+        <LinearLayout
+            android:id="@+id/media_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_alignParentBottom="true"
+            android:layout_toStartOf="@id/plus_button"
+            android:layout_marginEnd="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            android:background="#333333"
+            android:padding="8dp">
+
+            <ImageButton
+                android:id="@+id/menu_image"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_image"
+                android:background="@android:color/transparent"
+                android:contentDescription="Insert Image" />
+
+            <ImageButton
+                android:id="@+id/menu_mic"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_mic"
+                android:background="@android:color/transparent"
+                android:contentDescription="Record Audio" />
+        </LinearLayout>
+
+        <!-- Floating + Button (Media Menu Trigger) -->
         <ImageButton
             android:id="@+id/plus_button"
             android:layout_width="48dp"

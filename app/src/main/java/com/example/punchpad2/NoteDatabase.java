@@ -6,9 +6,7 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-@Database(entities = {NoteEntity.class, Folder.class, Note.class}, version = 1)
-
-
+@Database(entities = {NoteEntity.class, FolderEntity.class}, version = 2)
 public abstract class NoteDatabase extends RoomDatabase {
 
     private static volatile NoteDatabase instance;

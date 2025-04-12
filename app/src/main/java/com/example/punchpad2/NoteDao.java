@@ -11,33 +11,70 @@ import androidx.room.Update;
 import java.util.List;
 
 @Dao
-public interface NoteDao {
+public abstract class NoteDao {
+
+    // --- Note CRUD ---
 
     @Insert
-    void insert(NoteEntity note);
+    public abstract void insert(NoteEntity note);
 
     @Update
-    void update(NoteEntity note);
+    public abstract void update(NoteEntity note);
 
     @Delete
-    void delete(NoteEntity note);
+    public abstract void delete(NoteEntity note);
+
+    // --- Note Queries ---
 
     @Query("SELECT * FROM notes WHERE isTrashed = 0 AND isHidden = 0 ORDER BY createdAt DESC LIMIT 3")
-    List<NoteEntity> get3MostRecentVisibleNotes();
+    public abstract List<NoteEntity> get3MostRecentVisibleNotes();
 
     @Query("SELECT * FROM notes WHERE isTrashed = 0")
-    LiveData<List<NoteEntity>> getAllActiveNotes();
+    public abstract LiveData<List<NoteEntity>> getAllActiveNotes();
 
     @Query("SELECT * FROM notes WHERE isTrashed = 1")
-    LiveData<List<NoteEntity>> getTrashedNotes();
+    public abstract LiveData<List<NoteEntity>> getTrashedNotes();
+
+    @Query("SELECT * FROM notes")
+    public abstract LiveData<List<NoteEntity>> getAllNotes();
+
+    @Query("SELECT * FROM notes")
+    public abstract List<NoteEntity> getAllNotesNow();
+
+    // --- Folder Queries and Relationship ---
+
+    @Insert
+    public abstract long insertFolder(FolderEntity folder);
+
+    @Update
+    public abstract void updateFolder(FolderEntity folder);
+
+    @Delete
+    public abstract void deleteFolder(FolderEntity folder);
+
+    @Query("SELECT * FROM folders WHERE name = :name LIMIT 1")
+    public abstract FolderEntity getFolderByName(String name);
+
+    @Query("SELECT * FROM folders WHERE id = :folderId")
+    public abstract FolderEntity getFolderById(long folderId);
+
+    @Query("SELECT * FROM folders ORDER BY name ASC")
+    public abstract List<FolderEntity> getAllFolders();
 
     @Transaction
-    @Query("SELECT * FROM Folder")
-    LiveData<List<FolderWithNotes>> getFoldersWithNotes();
+    @Query("SELECT * FROM folders")
+    public abstract LiveData<List<FolderWithNotes>> getFoldersWithNotes();
 
-    @Query("SELECT * FROM notes")
-    LiveData<List<NoteEntity>> getAllNotes(); // keep for observers
+    // --- Smart insert-or-get logic ---
 
-    @Query("SELECT * FROM notes")
-    List<NoteEntity> getAllNotesNow(); // added for background tasks
+    @Transaction
+    public FolderEntity getOrCreateFolderByName(String name) {
+        FolderEntity existing = getFolderByName(name);
+        if (existing != null) return existing;
+
+        FolderEntity folder = new FolderEntity(name);
+        long id = insertFolder(folder);
+        folder.id = id;
+        return folder;
+    }
 }
