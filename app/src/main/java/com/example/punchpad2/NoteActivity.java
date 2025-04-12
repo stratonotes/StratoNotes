@@ -206,6 +206,7 @@ public class NoteActivity extends Activity {
                         Toast.makeText(NoteActivity.this, "Trim mode (stub)", Toast.LENGTH_SHORT).show();
                         return true;
                     }
+
                 });
 
                 widget.setOnTouchListener(new View.OnTouchListener() {
@@ -277,6 +278,12 @@ public class NoteActivity extends Activity {
                 );
                 params.setMargins(0, 16, 0, 16);
                 imageView.setLayoutParams(params);
+
+                imageView.setOnClickListener(v -> {
+                    Intent intent = new Intent(NoteActivity.this, FullscreenImageActivity.class);
+                    intent.putExtra("image_uri", imageUri.toString());
+                    startActivity(intent);
+                });
 
                 noteContainer.addView(imageView, noteContainer.indexOfChild(noteText));
             } catch (Exception e) {

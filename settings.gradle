@@ -9,13 +9,18 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
+        // ✅ Needed for PhotoView via JitPack
+        maven { url "https://jitpack.io" }
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
+        // ✅ App-level dependency resolution for PhotoView
+        maven { url "https://jitpack.io" }
     }
 }
 

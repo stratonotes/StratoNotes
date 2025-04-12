@@ -1,15 +1,18 @@
 package com.example.punchpad2;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.inputmethod.EditorInfo;
 import android.widget.*;
 import com.example.punchpad2.NoteDatabase;
 import com.example.punchpad2.NoteEntity;
+import com.example.punchpad2.FolderEntity;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,11 +20,20 @@ public class MainActivity extends Activity {
 
     private LinearLayout previewContainer;
     private EditText searchInput;
+    private EditText noteInput;
     private ListView liveSearchResults;
     private ImageButton filterButton;
+    private Button submitButton;
 
     private List<NoteEntity> allNotes = new ArrayList<>();
     private ArrayAdapter<String> liveSearchAdapter;
+
+    private enum SaveMode { NEW, RECENT, PRESET }
+    private SaveMode currentMode = SaveMode.NEW;
+    private boolean isTyping = false;
+
+    private String lastUsedFolder = "Default";
+    private String presetFolder = "QuickNotes";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,15 +42,57 @@ public class MainActivity extends Activity {
 
         previewContainer = findViewById(R.id.previewContainer);
         Button goToLibrary = findViewById(R.id.goToLibrary);
-        Button createNote = findViewById(R.id.generateTestNote);
-
+        submitButton = findViewById(R.id.submit_button);
         searchInput = findViewById(R.id.searchInput);
+        noteInput = findViewById(R.id.note_input);
         liveSearchResults = findViewById(R.id.liveSearchResults);
         filterButton = findViewById(R.id.filterButton);
+
+        updateSubmitLabel();
+
+        submitButton.setOnClickListener(v -> {
+            if (!isTyping) {
+                cycleMode();
+                updateSubmitLabel();
+                return;
+            }
+
+            String content = noteInput.getText().toString().trim();
+            if (content.isEmpty()) {
+                Toast.makeText(this, "Can't save empty note", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            switch (currentMode) {
+                case NEW:
+                    showNewFolderDialog(content);
+                    break;
+                case RECENT:
+                    showConfirmDialog(content, lastUsedFolder);
+                    break;
+                case PRESET:
+                    saveNote(content, presetFolder);
+                    break;
+            }
+        });
+
+        noteInput.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) isTyping = true;
+            return false;
+        });
+
+        noteInput.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                isTyping = true;
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
 
         SharedPreferences prefs = getSharedPreferences("DraftPrefs", MODE_PRIVATE);
         String draft = prefs.getString("draft_note", null);
         if (draft != null && !draft.isEmpty()) {
+            noteInput.setText(draft);
             Toast.makeText(this, "Unsaved note restored", Toast.LENGTH_SHORT).show();
         }
 
@@ -76,9 +130,83 @@ public class MainActivity extends Activity {
             startActivity(intent);
         });
 
-        createNote.setOnClickListener(v -> insertTestNote());
-
         loadPreviews();
+    }
+
+    private void cycleMode() {
+        switch (currentMode) {
+            case NEW: currentMode = SaveMode.RECENT; break;
+            case RECENT: currentMode = SaveMode.PRESET; break;
+            case PRESET: currentMode = SaveMode.NEW; break;
+        }
+    }
+
+    private void updateSubmitLabel() {
+        switch (currentMode) {
+            case NEW:
+                submitButton.setText("Enter text → Add to New Folder");
+                break;
+            case RECENT:
+                submitButton.setText("Add note to " + lastUsedFolder);
+                break;
+            case PRESET:
+                submitButton.setText("Enter text → Add to " + presetFolder);
+                break;
+        }
+    }
+
+    private void showNewFolderDialog(String content) {
+        EditText input = new EditText(this);
+        input.setHint("Folder name");
+
+        new AlertDialog.Builder(this)
+                .setTitle("Create Folder")
+                .setView(input)
+                .setPositiveButton("Save", (dialog, which) -> {
+                    String folderName = input.getText().toString().trim();
+                    if (!folderName.isEmpty()) {
+                        saveNote(content, folderName);
+                        lastUsedFolder = folderName;
+                    } else {
+                        Toast.makeText(this, "Folder name can't be empty", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void showConfirmDialog(String content, String folderName) {
+        new AlertDialog.Builder(this)
+                .setTitle("Save to " + folderName + "?")
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    saveNote(content, folderName);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void saveNote(String content, String folderName) {
+        AsyncTask.execute(() -> {
+            FolderEntity folder = NoteDatabase.getInstance(this).noteDao().getOrCreateFolderByName(folderName);
+
+            NoteEntity note = new NoteEntity();
+            note.content = content;
+            note.createdAt = System.currentTimeMillis();
+            note.lastEdited = note.createdAt;
+            note.isHidden = false;
+            note.isLarge = false;
+            note.folder_id = folder.id;
+
+            NoteDatabase.getInstance(this).noteDao().insert(note);
+
+            runOnUiThread(() -> {
+                noteInput.setText("");
+                isTyping = false;
+                updateSubmitLabel();
+                loadPreviews();
+                Toast.makeText(this, "Saved to " + folderName, Toast.LENGTH_SHORT).show();
+            });
+        });
     }
 
     private void loadPreviews() {
@@ -104,19 +232,6 @@ public class MainActivity extends Activity {
                     previewContainer.addView(preview);
                 }
             });
-        });
-    }
-
-    private void insertTestNote() {
-        AsyncTask.execute(() -> {
-            NoteEntity note = new NoteEntity();
-            note.content = "This is a test note generated at " + System.currentTimeMillis();
-            note.createdAt = System.currentTimeMillis();
-            note.lastEdited = note.createdAt;
-            note.isHidden = false;
-            note.isLarge = false;
-            NoteDatabase.getInstance(this).noteDao().insert(note);
-            runOnUiThread(this::loadPreviews);
         });
     }
 

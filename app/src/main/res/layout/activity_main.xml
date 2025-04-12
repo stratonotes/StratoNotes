@@ -6,6 +6,7 @@
     android:background="#222222"
     android:padding="16dp">
 
+    <!-- Search Bar + Filter -->
     <RelativeLayout
         android:id="@+id/searchBarContainer"
         android:layout_width="match_parent"
@@ -34,21 +35,95 @@
             android:contentDescription="Filter Options" />
     </RelativeLayout>
 
+    <!-- 🔍 Live Search Dropdown -->
     <ListView
         android:id="@+id/liveSearchResults"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="0"
-        android:visibility="gone"
+        android:layout_height="wrap_content"
         android:background="#111111"
         android:divider="@android:color/darker_gray"
-        android:dividerHeight="1dp" />
+        android:dividerHeight="1dp"
+        android:visibility="gone" />
 
+    <!-- Submit Button (Top-level control) -->
+    <Button
+        android:id="@+id/submit_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enter text → Add to Recent"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/submit_button_background"
+        android:layout_gravity="center_horizontal"
+        android:padding="12dp"
+        android:layout_marginBottom="12dp"/>
+
+    <!-- Textbox + Media Buttons Layer -->
+    <RelativeLayout
+        android:id="@+id/textboxWrapper"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="12dp">
+
+        <EditText
+            android:id="@+id/note_input"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:inputType="textMultiLine"
+            android:gravity="top"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:background="@drawable/textbox_background"
+            android:padding="12dp"
+            android:maxLines="10"
+            android:scrollbars="vertical" />
+
+        <!-- Floating + Button (Media Menu) -->
+        <ImageButton
+            android:id="@+id/plus_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="8dp"
+            android:src="@drawable/ic_plus"
+            android:background="@android:color/transparent"
+            android:contentDescription="Media Options" />
+
+        <!-- Undo Button -->
+        <ImageButton
+            android:id="@+id/undo_button"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="8dp"
+            android:alpha="0.4"
+            android:src="@drawable/ic_undo"
+            android:background="@android:color/transparent"
+            android:contentDescription="Undo" />
+
+        <!-- Redo Button -->
+        <ImageButton
+            android:id="@+id/redo_button"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_toEndOf="@id/undo_button"
+            android:layout_alignBottom="@id/undo_button"
+            android:layout_marginStart="8dp"
+            android:alpha="0.4"
+            android:src="@drawable/ic_redo"
+            android:background="@android:color/transparent"
+            android:contentDescription="Redo" />
+    </RelativeLayout>
+
+    <!-- Scrollable Preview Notes -->
     <ScrollView
         android:id="@+id/previewScroll"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_height="150dp"
+        android:layout_marginBottom="8dp">
 
         <LinearLayout
             android:id="@+id/previewContainer"
@@ -60,7 +135,7 @@
                 android:id="@+id/emptyPlaceholder"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="No recent notes yet"
+                android:text="This panel displays three of the most recent entries."
                 android:textColor="#FFFFFF"
                 android:textAlignment="center"
                 android:padding="32dp"
@@ -68,15 +143,32 @@
         </LinearLayout>
     </ScrollView>
 
-    <Button
-        android:id="@+id/generateTestNote"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Generate Test Note" />
-
+    <!-- Go to Library Button (only visible when all previews are hidden) -->
     <Button
         android:id="@+id/goToLibrary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Go to Library" />
+        android:text="Go to Library"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/go_to_library_background"
+        android:visibility="gone"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Dev Ad Space -->
+    <LinearLayout
+        android:id="@+id/dev_ad_banner"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="#111111"
+        android:padding="8dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🛍️ 50% OFF! Shop the latest gear at ShopzyMart.com"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp" />
+    </LinearLayout>
 </LinearLayout>
