@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+import android.view.animation.AccelerateInterpolator;
 
 public class SplashActivity extends Activity {
 
@@ -15,22 +16,26 @@ public class SplashActivity extends Activity {
 
         View splashIcon = findViewById(R.id.splashIcon);
 
-        // Initial scale from 0.8 to 1.0 to create a slight zoom-in effect
-        splashIcon.setScaleX(0.8f);
-        splashIcon.setScaleY(0.8f);
+        // Optional: small zoom-in effect to start
+        //splashIcon.setScaleX(100f);
+        //splashIcon.setScaleY(100f);
+        //splashIcon.animate()
+        //        .scaleX(100f)
+        //        .scaleY(100f)
+        //        .setDuration(300)
+        //        .start();
 
-        splashIcon.animate()
-                .scaleX(1f)
-                .scaleY(1f)
-                .setDuration(300)
-                .withEndAction(() -> {
-                    new Handler().postDelayed(() -> {
-                        Intent intent = new Intent(SplashActivity.this, MainActivity.class);
-                        startActivity(intent);
+        new Handler().postDelayed(() -> {
+            splashIcon.animate()
+                    .translationY(splashIcon.getHeight() * 2f)
+                    .setDuration(400)
+                    .setInterpolator(new AccelerateInterpolator())
+                    .withEndAction(() -> {
+                        startActivity(new Intent(SplashActivity.this, MainActivity.class));
                         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                         finish();
-                    }, 300); // Stay visible for 300ms after animation
-                })
-                .start();
+                    })
+                    .start();
+        }, 1100); // 300ms animation + 1200ms pause = ~1.5s total
     }
 }

@@ -42,6 +42,21 @@ public class MainActivity extends Activity {
     private String lastUsedFolder = "Default";
     private String presetFolder = "QuickNotes";
 
+
+
+    //relates to saving last selected save type.
+
+    private static final String PREFS_NAME = "SubmitPrefs";
+    private static final String KEY_MODE = "lastMode";
+    private static final String KEY_FOLDER = "lastFolderName";
+
+    private static final String MODE_NEW = "NEW";
+    private static final String MODE_RECENT = "RECENT";
+    private static final String MODE_PRESET = "PRESET";
+
+    private String currentSaveMode = MODE_RECENT; // default fallback
+    private String targetFolderName = "";         // last used folder name
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
