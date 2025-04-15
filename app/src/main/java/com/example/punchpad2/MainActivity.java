@@ -8,7 +8,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.graphics.Rect;
 import android.widget.*;
 
 import com.example.punchpad2.NoteDatabase;
@@ -169,6 +171,22 @@ public class MainActivity extends Activity {
         });
 
         loadPreviews();
+
+        View rootView = findViewById(android.R.id.content);
+        View floatingControls = findViewById(R.id.floatingControls);
+
+        rootView.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            Rect r = new Rect();
+            rootView.getWindowVisibleDisplayFrame(r);
+            int screenHeight = rootView.getRootView().getHeight();
+            int keypadHeight = screenHeight - r.bottom;
+
+            if (keypadHeight > screenHeight * 0.15) {
+                floatingControls.setTranslationY(-keypadHeight);
+            } else {
+                floatingControls.setTranslationY(0);
+            }
+        });
     }
 
     private void saveSubmitModeToPrefs(String mode, String folderName) {
@@ -238,9 +256,7 @@ public class MainActivity extends Activity {
     private void showConfirmDialog(String content, String folderName) {
         new AlertDialog.Builder(this)
                 .setTitle("Save to " + folderName + "?")
-                .setPositiveButton("Yes", (dialog, which) -> {
-                    saveNote(content, folderName);
-                })
+                .setPositiveButton("Yes", (dialog, which) -> saveNote(content, folderName))
                 .setNegativeButton("Cancel", null)
                 .show();
     }

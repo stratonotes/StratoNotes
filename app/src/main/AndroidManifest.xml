@@ -32,9 +32,9 @@
         <!-- Main Entry -->
         <activity
             android:name=".MainActivity"
-            android:exported="false"
+            android:exported="true"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustPan" />
+            android:windowSoftInputMode="adjustNothing" />
 
         <!-- Editor / Library / Trash -->
         <activity android:name=".NoteActivity"
