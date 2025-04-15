@@ -42,10 +42,6 @@ public class MainActivity extends Activity {
     private String lastUsedFolder = "Default";
     private String presetFolder = "QuickNotes";
 
-
-
-    //relates to saving last selected save type.
-
     private static final String PREFS_NAME = "SubmitPrefs";
     private static final String KEY_MODE = "lastMode";
     private static final String KEY_FOLDER = "lastFolderName";
@@ -53,9 +49,6 @@ public class MainActivity extends Activity {
     private static final String MODE_NEW = "NEW";
     private static final String MODE_RECENT = "RECENT";
     private static final String MODE_PRESET = "PRESET";
-
-    private String currentSaveMode = MODE_RECENT; // default fallback
-    private String targetFolderName = "";         // last used folder name
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,11 +71,13 @@ public class MainActivity extends Activity {
         undoButton.setOnClickListener(v -> undoManager.undo());
         redoButton.setOnClickListener(v -> undoManager.redo());
 
+        loadSubmitModeFromPrefs();
         updateSubmitLabel();
 
         submitButton.setOnClickListener(v -> {
             if (!isTyping) {
                 cycleMode();
+                saveSubmitModeToPrefs(currentMode.name(), currentMode == SaveMode.PRESET ? presetFolder : lastUsedFolder);
                 updateSubmitLabel();
                 return;
             }
@@ -174,6 +169,28 @@ public class MainActivity extends Activity {
         });
 
         loadPreviews();
+    }
+
+    private void saveSubmitModeToPrefs(String mode, String folderName) {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(KEY_MODE, mode);
+        editor.putString(KEY_FOLDER, folderName);
+        editor.apply();
+    }
+
+    private void loadSubmitModeFromPrefs() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String savedMode = prefs.getString(KEY_MODE, MODE_RECENT);
+        String savedFolder = prefs.getString(KEY_FOLDER, "");
+
+        switch (savedMode) {
+            case MODE_NEW: currentMode = SaveMode.NEW; break;
+            case MODE_PRESET: currentMode = SaveMode.PRESET; break;
+            default: currentMode = SaveMode.RECENT; break;
+        }
+
+        if (!savedFolder.isEmpty()) lastUsedFolder = savedFolder;
     }
 
     private void cycleMode() {

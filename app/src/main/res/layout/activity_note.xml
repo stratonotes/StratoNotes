@@ -24,9 +24,12 @@
         <ScrollView
             android:id="@+id/noteScroll"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:overScrollMode="always"
+            android:scrollbars="vertical">
 
-            <EditText
+            <com.example.punchpad2.StaticScrollEditText
                 android:id="@+id/noteText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -39,8 +42,9 @@
                 android:focusable="false"
                 android:focusableInTouchMode="true"
                 android:inputType="textMultiLine"
-                android:minLines="1"
-                android:maxLines="20" />
+                android:gravity="top"
+                android:overScrollMode="ifContentScrolls"
+                android:minLines="10" />
         </ScrollView>
     </LinearLayout>
 

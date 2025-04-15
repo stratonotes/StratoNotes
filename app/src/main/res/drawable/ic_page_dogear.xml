@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+
+    <!-- Page background -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,8h56l16,16v64H12z" />
+
+    <!-- Dog-ear triangle (white cover-up) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M68,8v16h16z" />
+
+    <!-- Page border -->
+    <path
+        android:fillColor="#000000"
+        android:strokeWidth="2"
+        android:strokeColor="#000000"
+        android:fillAlpha="0"
+        android:pathData="M12,8h56l16,16v64H12z M68,8v16h16" />
+
+    <!-- Three text lines -->
+    <path
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:fillColor="#000000"
+        android:pathData="M24,36h48" />
+    <path
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:fillColor="#000000"
+        android:pathData="M24,48h48" />
+    <path
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:fillColor="#000000"
+        android:pathData="M24,60h36" />
+</vector>
