@@ -1,6 +1,6 @@
-# PunchPad2 🍷
+# StratoNotes 🍷
 
-**PunchPad2** is a note-taking Android application built with Java and Android Jetpack components. It allows users to create, organize, and manage notes in a simple, folder-based interface.
+**StratoNotes** is a note-taking Android application built with Java and Android Jetpack components. It allows users to create, organize, and manage notes in a simple, folder-based interface.
 
 ---
 
@@ -28,7 +28,7 @@
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/BadSkyFate/PunchPad2.git
+   git clone https://github.com/BadSkyFate/StratoNotes.git
 Open in Android Studio
 
 Let Gradle sync and build the project
@@ -49,7 +49,7 @@ Improve folder management UI
 
 ## 💬 License
 This project is licensed for **personal and non-commercial use only**.  
-View full terms here: [LICENSE](https://github.com/BadSkyFate/PunchPad2/blob/main/LICENSE)
+View full terms here: [LICENSE](https://github.com/BadSkyFate/StratoNotes/blob/main/LICENSE)
 
 
 🤝 Contributing
