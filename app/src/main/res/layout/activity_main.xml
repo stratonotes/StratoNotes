@@ -62,7 +62,8 @@
         android:padding="12dp"
         android:layout_marginBottom="12dp" />
 
-    <RelativeLayout
+    <!-- Fixed FrameLayout with pinned button and sliding media -->
+    <FrameLayout
         android:id="@+id/textboxWrapper"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -82,18 +83,19 @@
             android:maxLines="10"
             android:scrollbars="vertical" />
 
+        <!-- Media menu to the left of the plus button -->
         <LinearLayout
             android:id="@+id/media_menu"
             android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_alignParentBottom="true"
-            android:layout_toStartOf="@id/plus_button"
-            android:layout_marginEnd="8dp"
-            android:gravity="center_vertical"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginBottom="12dp"
+            android:layout_marginEnd="72dp"
             android:orientation="horizontal"
-            android:visibility="gone"
+            android:gravity="center_vertical"
             android:background="#333333"
-            android:padding="8dp">
+            android:padding="8dp"
+            android:visibility="gone">
 
             <ImageButton
                 android:id="@+id/menu_image"
@@ -112,14 +114,25 @@
                 android:contentDescription="Record Audio" />
         </LinearLayout>
 
+        <!-- Plus button pinned to bottom-right -->
+        <ImageButton
+            android:id="@+id/plus_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="8dp"
+            android:src="@drawable/ic_plus"
+            android:background="@android:color/transparent"
+            android:contentDescription="Media Options" />
+
+        <!-- Undo + Redo pinned bottom-left -->
         <LinearLayout
-            android:id="@+id/floatingControls"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:orientation="horizontal"
-            android:padding="8dp">
+            android:layout_gravity="bottom|start"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal">
 
             <ImageButton
                 android:id="@+id/undo_button"
@@ -139,17 +152,8 @@
                 android:src="@drawable/ic_redo"
                 android:background="@android:color/transparent"
                 android:contentDescription="Redo" />
-
-            <ImageButton
-                android:id="@+id/plus_button"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginStart="8dp"
-                android:src="@drawable/ic_plus"
-                android:background="@android:color/transparent"
-                android:contentDescription="Media Options" />
         </LinearLayout>
-    </RelativeLayout>
+    </FrameLayout>
 
     <ScrollView
         android:id="@+id/previewScroll"

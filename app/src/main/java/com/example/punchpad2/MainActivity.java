@@ -51,6 +51,7 @@ public class MainActivity extends Activity {
     private static final String MODE_NEW = "NEW";
     private static final String MODE_RECENT = "RECENT";
     private static final String MODE_PRESET = "PRESET";
+    private boolean triedToSubmitEmptyNote = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,12 +63,27 @@ public class MainActivity extends Activity {
         submitButton = findViewById(R.id.submit_button);
         searchInput = findViewById(R.id.searchInput);
         noteInput = findViewById(R.id.note_input);
+        noteInput.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus && liveSearchResults.getVisibility() == View.VISIBLE) {
+                liveSearchResults.setVisibility(View.GONE);
+            }
+        });
         liveSearchResults = findViewById(R.id.liveSearchResults);
         filterButton = findViewById(R.id.filterButton);
         plusButton = findViewById(R.id.plus_button);
         mediaMenu = findViewById(R.id.media_menu);
         undoButton = findViewById(R.id.undo_button);
         redoButton = findViewById(R.id.redo_button);
+
+        // Ensure mediaMenu is pre-measured so animation works first time
+        mediaMenu.setVisibility(View.INVISIBLE);
+        mediaMenu.post(() -> {
+            mediaMenu.measure(
+                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            );
+            mediaMenu.setVisibility(View.GONE);
+        });
 
         undoManager.attach(noteInput);
         undoButton.setOnClickListener(v -> undoManager.undo());
@@ -86,8 +102,17 @@ public class MainActivity extends Activity {
 
             String content = noteInput.getText().toString().trim();
             if (content.isEmpty()) {
-                Toast.makeText(this, "Can't save empty note", Toast.LENGTH_SHORT).show();
-                return;
+                if (!triedToSubmitEmptyNote) {
+                    triedToSubmitEmptyNote = true;
+                    Toast.makeText(this, "Can't save empty note", Toast.LENGTH_SHORT).show();
+                    return;
+                } else {
+                    triedToSubmitEmptyNote = false;
+                    cycleMode();
+                    saveSubmitModeToPrefs(currentMode.name(), currentMode == SaveMode.PRESET ? presetFolder : lastUsedFolder);
+                    updateSubmitLabel();
+                    return;
+                }
             }
 
             switch (currentMode) {
@@ -111,6 +136,7 @@ public class MainActivity extends Activity {
         noteInput.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                triedToSubmitEmptyNote = false;
                 isTyping = true;
             }
             @Override public void afterTextChanged(Editable s) {}
@@ -173,7 +199,7 @@ public class MainActivity extends Activity {
         loadPreviews();
 
         View rootView = findViewById(android.R.id.content);
-        View floatingControls = findViewById(R.id.floatingControls);
+        View floatingControls = findViewById(R.id.plus_button);
 
         rootView.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
             Rect r = new Rect();
