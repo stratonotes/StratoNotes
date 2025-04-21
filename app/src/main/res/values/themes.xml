@@ -12,10 +12,12 @@
         <item name="android:textColor">#FFFFFF</item>
     </style>
 
-    <!-- Splash Theme -->
-    <style name="Theme.PunchPad2.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenAnimatedIcon">@drawable/punchpad2_splash</item>
-        <item name="windowSplashScreenBackground">#222222</item>
+    <!-- Splash Theme (Now fully controlled by activity_splash.xml) -->
+    <style name="Theme.PunchPad2.Splash" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
         <item name="postSplashScreenTheme">@style/Theme.PunchPad2</item>
     </style>
 

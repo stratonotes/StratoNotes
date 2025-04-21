@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- top left elbow -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+        M9.5,4.5
+        A4,4 0 0 0 5.5,8.5
+        L7,8.5
+        A2.5,2.5 0 0 1 10,6
+        Z" />
+
+    <!-- top line -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M9,4.5
+            h4.5
+            v1.5
+            h-4.5
+            Z" />
+    <!-- bottom line -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+        M9,18
+        h5.5
+        v1.5
+        h-5.5
+        Z" />
+
+
+
+    <!-- bottom line -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+        M9,12
+        h5.5
+        v1.5
+        h-5.5
+        Z" />
+
+    <!-- bottom left elbow -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+        M9.5,19.5
+        A4,4 0 0 1 5.5,15.5
+        L7,15.5
+        A2.5,2.5 0 0 0 10,18
+        Z" />
+
+    <!-- bottom right elbow -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+        M14,19.5
+        A4,4 0 0 0 18,15.5
+        L16.5,15.5
+        A2.5,2.5 0 0 1 13.5,18
+        Z" />
+
+
+
+
+
+
+    <!-- Circle now centered at (9.0, 12.75) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M9,12
+        A0.75,0.75 0 1,0 9,13.5
+        A0.75,0.75 0 1,0 9,12
+        Z" />
+
+
+
+    <!-- Circle now centered at (14.45, 12.75) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M14.45,12
+        A0.75,0.75 0 1,0 14.45,13.5
+        A0.75,0.75 0 1,0 14.45,12
+        Z" />
+
+
+
+
+
+    <!-- Circle now centered at (9.0, 15.75) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M9,15
+        A0.75,0.75 0 1,0 9,16.5
+        A0.75,0.75 0 1,0 9,15
+        Z" />
+
+    <!-- bottom line -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+        M9,15
+        h5.5
+        v1.5
+        h-5.5
+        Z" />
+
+    <!-- Circle now centered at (14.45, 15.75) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M14.45,15
+        A0.75,0.75 0 1,0 14.45,16.5
+        A0.75,0.75 0 1,0 14.45,15
+        Z" />
+
+
+
+
+
+    <!-- Circle now centered at (9.0, 9.75) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M9,9
+    A0.75,0.75 0 1,0 9,10.5
+    A0.75,0.75 0 1,0 9,9
+    Z" />
+
+    <!-- horizontal line (shortened from h5.5 to h4.5) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+    M9,9
+    h4.5
+    v1.5
+    h-4.5
+    Z" />
+
+    <!-- Circle now centered at (13.45, 9.75) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M13.45,9
+    A0.75,0.75 0 1,0 13.45,10.5
+    A0.75,0.75 0 1,0 13.45,9
+    Z" />
+
+
+
+
+
+
+
+
+
+    <!-- Left line -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M5.5,8
+            h1.5
+            v8
+            h-1.5
+            Z" />
+
+    <!-- Right line (moved up by 1.5, length stays 9) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+        M16.5,8.9
+        h1.5
+        v6.9
+        h-1.5
+        Z" />
+
+
+
+
+
+    <!-- doggy-ear -->
+
+
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M8.8,4.51
+            h5
+            v1.5
+            h-5
+            Z" />
+
+    <!-- 45° diagonal line -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M13.8,4.51
+            l4.24,4.24
+            l-1.06,1.06
+            l-4.24,-4.24
+            Z" />
+
+    <!-- Vertical line -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+        M16.54,8.75
+        L16.54,8.75
+        H18.04
+        L18.04,8.75
+        Z" />
+
+</vector>
+
+
+    

@@ -6,12 +6,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.graphics.Rect;
 import android.widget.*;
+import android.animation.ObjectAnimator;
 
 import com.example.punchpad2.NoteDatabase;
 import com.example.punchpad2.NoteEntity;
@@ -28,6 +29,7 @@ public class MainActivity extends Activity {
     private ListView liveSearchResults;
     private ImageButton filterButton;
     private Button submitButton;
+    private Button clearDraftButton;
     private ImageButton plusButton;
     private LinearLayout mediaMenu;
     private ImageButton undoButton, redoButton;
@@ -51,7 +53,14 @@ public class MainActivity extends Activity {
     private static final String MODE_NEW = "NEW";
     private static final String MODE_RECENT = "RECENT";
     private static final String MODE_PRESET = "PRESET";
-    private boolean triedToSubmitEmptyNote = false;
+
+    private static final String DRAFT_PREFS = "DraftPrefs";
+    private static final String KEY_DRAFT_NOTE = "draft_note";
+
+    private final Handler draftHandler = new Handler();
+    private Runnable draftRunnable;
+    private Runnable clearFadeRunnable;
+    private boolean isClearFading = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,13 +70,9 @@ public class MainActivity extends Activity {
         previewContainer = findViewById(R.id.previewContainer);
         Button goToLibrary = findViewById(R.id.goToLibrary);
         submitButton = findViewById(R.id.submit_button);
+        clearDraftButton = findViewById(R.id.clear_draft_button);
         searchInput = findViewById(R.id.searchInput);
         noteInput = findViewById(R.id.note_input);
-        noteInput.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus && liveSearchResults.getVisibility() == View.VISIBLE) {
-                liveSearchResults.setVisibility(View.GONE);
-            }
-        });
         liveSearchResults = findViewById(R.id.liveSearchResults);
         filterButton = findViewById(R.id.filterButton);
         plusButton = findViewById(R.id.plus_button);
@@ -75,56 +80,51 @@ public class MainActivity extends Activity {
         undoButton = findViewById(R.id.undo_button);
         redoButton = findViewById(R.id.redo_button);
 
-        // Ensure mediaMenu is pre-measured so animation works first time
-        mediaMenu.setVisibility(View.INVISIBLE);
-        mediaMenu.post(() -> {
-            mediaMenu.measure(
-                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-            );
-            mediaMenu.setVisibility(View.GONE);
+        SharedPreferences prefs = getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE);
+        String draft = prefs.getString(KEY_DRAFT_NOTE, null);
+        if (draft != null && !draft.isEmpty()) {
+            noteInput.setText(draft);
+            clearDraftButton.setVisibility(View.VISIBLE);
+            Toast.makeText(this, "Unsaved note restored", Toast.LENGTH_SHORT).show();
+        }
+
+        clearDraftButton.setOnClickListener(v -> {
+            noteInput.setText("");
+            SharedPreferences.Editor editor = getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE).edit();
+            editor.remove(KEY_DRAFT_NOTE);
+            editor.apply();
+            clearDraftButton.setVisibility(View.GONE);
         });
 
         undoManager.attach(noteInput);
-        undoButton.setOnClickListener(v -> undoManager.undo());
+        undoButton.setOnClickListener(v -> {
+            undoManager.undo();
+            if (isClearFading) {
+                draftHandler.removeCallbacks(clearFadeRunnable);
+                clearDraftButton.setAlpha(1f);
+                clearDraftButton.setVisibility(View.VISIBLE);
+                isClearFading = false;
+            }
+        });
         redoButton.setOnClickListener(v -> undoManager.redo());
 
         loadSubmitModeFromPrefs();
         updateSubmitLabel();
 
         submitButton.setOnClickListener(v -> {
-            if (!isTyping) {
+            String content = noteInput.getText().toString().trim();
+
+            if (content.isEmpty()) {
                 cycleMode();
                 saveSubmitModeToPrefs(currentMode.name(), currentMode == SaveMode.PRESET ? presetFolder : lastUsedFolder);
                 updateSubmitLabel();
                 return;
             }
 
-            String content = noteInput.getText().toString().trim();
-            if (content.isEmpty()) {
-                if (!triedToSubmitEmptyNote) {
-                    triedToSubmitEmptyNote = true;
-                    Toast.makeText(this, "Can't save empty note", Toast.LENGTH_SHORT).show();
-                    return;
-                } else {
-                    triedToSubmitEmptyNote = false;
-                    cycleMode();
-                    saveSubmitModeToPrefs(currentMode.name(), currentMode == SaveMode.PRESET ? presetFolder : lastUsedFolder);
-                    updateSubmitLabel();
-                    return;
-                }
-            }
-
             switch (currentMode) {
-                case NEW:
-                    showNewFolderDialog(content);
-                    break;
-                case RECENT:
-                    showConfirmDialog(content, lastUsedFolder);
-                    break;
-                case PRESET:
-                    saveNote(content, presetFolder);
-                    break;
+                case NEW: showNewFolderDialog(content); break;
+                case RECENT: showConfirmDialog(content, lastUsedFolder); break;
+                case PRESET: saveNote(content, presetFolder); break;
             }
         });
 
@@ -136,18 +136,38 @@ public class MainActivity extends Activity {
         noteInput.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                triedToSubmitEmptyNote = false;
                 isTyping = true;
+
+                if (draftRunnable != null) draftHandler.removeCallbacks(draftRunnable);
+                draftRunnable = () -> {
+                    SharedPreferences.Editor editor = getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE).edit();
+                    editor.putString(KEY_DRAFT_NOTE, noteInput.getText().toString());
+                    editor.apply();
+                };
+                draftHandler.postDelayed(draftRunnable, 500);
+
+                if (s.length() == 0 && clearDraftButton.getVisibility() == View.VISIBLE && !isClearFading) {
+                    isClearFading = true;
+                    ObjectAnimator fadeOut = ObjectAnimator.ofFloat(clearDraftButton, "alpha", 1f, 0f);
+                    fadeOut.setDuration(3000);
+                    fadeOut.start();
+
+                    clearFadeRunnable = () -> {
+                        clearDraftButton.setVisibility(View.GONE);
+                        clearDraftButton.setAlpha(1f);
+                        isClearFading = false;
+                    };
+                    draftHandler.postDelayed(clearFadeRunnable, 3000);
+                }
+
+                if (s.length() > 0 && isClearFading) {
+                    draftHandler.removeCallbacks(clearFadeRunnable);
+                    clearDraftButton.setAlpha(1f);
+                    isClearFading = false;
+                }
             }
             @Override public void afterTextChanged(Editable s) {}
         });
-
-        SharedPreferences prefs = getSharedPreferences("DraftPrefs", MODE_PRIVATE);
-        String draft = prefs.getString("draft_note", null);
-        if (draft != null && !draft.isEmpty()) {
-            noteInput.setText(draft);
-            Toast.makeText(this, "Unsaved note restored", Toast.LENGTH_SHORT).show();
-        }
 
         liveSearchAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<>());
         liveSearchResults.setAdapter(liveSearchAdapter);
@@ -186,33 +206,17 @@ public class MainActivity extends Activity {
         plusButton.setOnClickListener(v -> {
             if (mediaMenu.getVisibility() == LinearLayout.VISIBLE) {
                 mediaMenu.animate().translationX(mediaMenu.getWidth()).alpha(0f).setDuration(200).withEndAction(() -> {
-                    mediaMenu.setVisibility(LinearLayout.GONE);
+                    mediaMenu.setVisibility(View.GONE);
                 });
             } else {
                 mediaMenu.setTranslationX(mediaMenu.getWidth());
                 mediaMenu.setAlpha(0f);
-                mediaMenu.setVisibility(LinearLayout.VISIBLE);
+                mediaMenu.setVisibility(View.VISIBLE);
                 mediaMenu.animate().translationX(0f).alpha(1f).setDuration(200).start();
             }
         });
 
         loadPreviews();
-
-        View rootView = findViewById(android.R.id.content);
-        View floatingControls = findViewById(R.id.plus_button);
-
-        rootView.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
-            Rect r = new Rect();
-            rootView.getWindowVisibleDisplayFrame(r);
-            int screenHeight = rootView.getRootView().getHeight();
-            int keypadHeight = screenHeight - r.bottom;
-
-            if (keypadHeight > screenHeight * 0.15) {
-                floatingControls.setTranslationY(-keypadHeight);
-            } else {
-                floatingControls.setTranslationY(0);
-            }
-        });
     }
 
     private void saveSubmitModeToPrefs(String mode, String folderName) {
@@ -227,13 +231,11 @@ public class MainActivity extends Activity {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String savedMode = prefs.getString(KEY_MODE, MODE_RECENT);
         String savedFolder = prefs.getString(KEY_FOLDER, "");
-
         switch (savedMode) {
             case MODE_NEW: currentMode = SaveMode.NEW; break;
             case MODE_PRESET: currentMode = SaveMode.PRESET; break;
             default: currentMode = SaveMode.RECENT; break;
         }
-
         if (!savedFolder.isEmpty()) lastUsedFolder = savedFolder;
     }
 
@@ -248,21 +250,17 @@ public class MainActivity extends Activity {
     private void updateSubmitLabel() {
         switch (currentMode) {
             case NEW:
-                submitButton.setText("Enter text → Add to New Folder");
-                break;
+                submitButton.setText("Enter text → Add to New Folder"); break;
             case RECENT:
-                submitButton.setText("Add note to " + lastUsedFolder);
-                break;
+                submitButton.setText("Add note to " + lastUsedFolder); break;
             case PRESET:
-                submitButton.setText("Enter text → Add to " + presetFolder);
-                break;
+                submitButton.setText("Enter text → Add to " + presetFolder); break;
         }
     }
 
     private void showNewFolderDialog(String content) {
         EditText input = new EditText(this);
         input.setHint("Folder name");
-
         new AlertDialog.Builder(this)
                 .setTitle("Create Folder")
                 .setView(input)
@@ -290,7 +288,6 @@ public class MainActivity extends Activity {
     private void saveNote(String content, String folderName) {
         AsyncTask.execute(() -> {
             FolderEntity folder = NoteDatabase.getInstance(this).noteDao().getOrCreateFolderByName(folderName);
-
             NoteEntity note = new NoteEntity();
             note.content = content;
             note.createdAt = System.currentTimeMillis();
@@ -298,7 +295,6 @@ public class MainActivity extends Activity {
             note.isHidden = false;
             note.isLarge = false;
             note.folderId = folder.id;
-
             NoteDatabase.getInstance(this).noteDao().insert(note);
 
             runOnUiThread(() -> {
@@ -306,6 +302,10 @@ public class MainActivity extends Activity {
                 isTyping = false;
                 updateSubmitLabel();
                 loadPreviews();
+                SharedPreferences.Editor editor = getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE).edit();
+                editor.remove(KEY_DRAFT_NOTE);
+                editor.apply();
+                clearDraftButton.setVisibility(View.GONE);
                 Toast.makeText(this, "Saved to " + folderName, Toast.LENGTH_SHORT).show();
             });
         });
@@ -314,11 +314,7 @@ public class MainActivity extends Activity {
     private void loadPreviews() {
         AsyncTask.execute(() -> {
             allNotes = NoteDatabase.getInstance(this).noteDao().getAllNotesNow();
-
-            List<NoteEntity> notes = NoteDatabase.getInstance(this)
-                    .noteDao()
-                    .get3MostRecentVisibleNotes();
-
+            List<NoteEntity> notes = NoteDatabase.getInstance(this).noteDao().get3MostRecentVisibleNotes();
             runOnUiThread(() -> {
                 previewContainer.removeAllViews();
                 for (NoteEntity note : notes) {

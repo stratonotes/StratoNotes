@@ -43,7 +43,8 @@
 
         <activity android:name=".LibraryActivity"
             android:exported="false"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.PunchPad2" />
 
         <activity android:name=".TrashActivity"
             android:exported="false"

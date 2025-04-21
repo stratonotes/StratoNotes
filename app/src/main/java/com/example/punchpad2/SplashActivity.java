@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
 
 public class SplashActivity extends Activity {
 
@@ -16,26 +17,27 @@ public class SplashActivity extends Activity {
 
         View splashIcon = findViewById(R.id.splashIcon);
 
-        // Optional: small zoom-in effect to start
-        //splashIcon.setScaleX(100f);
-        //splashIcon.setScaleY(100f);
-        //splashIcon.animate()
-        //        .scaleX(100f)
-        //        .scaleY(100f)
-        //        .setDuration(300)
-        //        .start();
+        // Initial position: icon is offscreen below
+        splashIcon.setTranslationY(500f);
 
-        new Handler().postDelayed(() -> {
-            splashIcon.animate()
-                    .translationY(splashIcon.getHeight() * 2f)
-                    .setDuration(400)
-                    .setInterpolator(new AccelerateInterpolator())
-                    .withEndAction(() -> {
-                        startActivity(new Intent(SplashActivity.this, MainActivity.class));
-                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                        finish();
-                    })
-                    .start();
-        }, 1100); // 300ms animation + 1200ms pause = ~1.5s total
+        // Slide up into circle (0.3s)
+        splashIcon.animate()
+                .translationY(0f)
+                .setDuration(300)
+                .setInterpolator(new DecelerateInterpolator())
+                .withEndAction(() -> new Handler().postDelayed(() -> {
+                    // Slide up and out (0.3s after pause)
+                    splashIcon.animate()
+                            .translationY(-500f)
+                            .setDuration(300)
+                            .setInterpolator(new AccelerateInterpolator())
+                            .withEndAction(() -> {
+                                startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                                finish();
+                            })
+                            .start();
+                }, 400)) // 400ms pause
+                .start();
     }
 }

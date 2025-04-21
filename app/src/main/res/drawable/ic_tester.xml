@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- doggy-ear -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M9,5
+            h6
+            v1.5
+            h-6
+            Z" />
+
+    <!-- 45° diagonal line -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M15,5
+            l4.24,4.24
+            l-1.06,1.06
+            l-4.24,-4.24
+            Z" />
+
+    <!-- Doggy Vertical line -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M17.74,9.24
+            v6
+            h1.5
+            v-6
+            Z" />
+
+</vector>
