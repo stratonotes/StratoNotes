@@ -27,12 +27,13 @@ public class MainActivity extends Activity {
     private EditText searchInput;
     private EditText noteInput;
     private ListView liveSearchResults;
-    private ImageButton filterButton;
+    private ImageButton filterButton; // Ensured that filterButton is an ImageButton in line with the XML
     private Button submitButton;
     private Button clearDraftButton;
     private ImageButton plusButton;
     private LinearLayout mediaMenu;
     private ImageButton undoButton, redoButton;
+    private ImageButton folderSettingsButton; // Corrected to ImageButton as in the XML
 
     private UndoManager undoManager = new UndoManager();
 
@@ -44,7 +45,7 @@ public class MainActivity extends Activity {
     private boolean isTyping = false;
 
     private String lastUsedFolder = "Default";
-    private String presetFolder = "QuickNotes";
+    private String presetFolder = "StratoNote";
 
     private static final String PREFS_NAME = "SubmitPrefs";
     private static final String KEY_MODE = "lastMode";
@@ -70,15 +71,40 @@ public class MainActivity extends Activity {
         previewContainer = findViewById(R.id.previewContainer);
         Button goToLibrary = findViewById(R.id.goToLibrary);
         submitButton = findViewById(R.id.submit_button);
+        folderSettingsButton = findViewById(R.id.folder_settings_button_1);
         clearDraftButton = findViewById(R.id.clear_draft_button);
         searchInput = findViewById(R.id.searchInput);
         noteInput = findViewById(R.id.note_input);
         liveSearchResults = findViewById(R.id.liveSearchResults);
-        filterButton = findViewById(R.id.filterButton);
+        filterButton = findViewById(R.id.filter_button); // Ensured the ID matches XML
         plusButton = findViewById(R.id.plus_button);
         mediaMenu = findViewById(R.id.media_menu);
         undoButton = findViewById(R.id.undo_button);
         redoButton = findViewById(R.id.redo_button);
+
+        folderSettingsButton.setVisibility(View.GONE);
+        folderSettingsButton.setOnClickListener(v -> {
+            EditText input = new EditText(this);
+            input.setHint("New folder name");
+            input.setText(lastUsedFolder);
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Rename Folder")
+                    .setView(input)
+                    .setPositiveButton("Confirm", (dialog, which) -> {
+                        String name = input.getText().toString().trim();
+                        if (!name.isEmpty()) {
+                            lastUsedFolder = name;
+                            saveSubmitModeToPrefs(currentMode.name(), lastUsedFolder);
+                            updateSubmitLabel();
+                            Toast.makeText(this, "Folder renamed to " + name, Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(this, "Folder name can't be empty", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        });
 
         SharedPreferences prefs = getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE);
         String draft = prefs.getString(KEY_DRAFT_NOTE, null);
@@ -126,6 +152,14 @@ public class MainActivity extends Activity {
                 case RECENT: showConfirmDialog(content, lastUsedFolder); break;
                 case PRESET: saveNote(content, presetFolder); break;
             }
+        });
+
+        submitButton.setOnLongClickListener(v -> {
+            if (!noteInput.getText().toString().trim().isEmpty()) {
+                showModeSwitchDialog();
+                return true;
+            }
+            return false;
         });
 
         noteInput.setOnEditorActionListener((v, actionId, event) -> {
@@ -250,11 +284,17 @@ public class MainActivity extends Activity {
     private void updateSubmitLabel() {
         switch (currentMode) {
             case NEW:
-                submitButton.setText("Enter text → Add to New Folder"); break;
+                submitButton.setText("Enter text → Add to New Folder");
+                folderSettingsButton.setVisibility(View.GONE);
+                break;
             case RECENT:
-                submitButton.setText("Add note to " + lastUsedFolder); break;
+                submitButton.setText("Add note to " + lastUsedFolder);
+                folderSettingsButton.setVisibility(View.VISIBLE);
+                break;
             case PRESET:
-                submitButton.setText("Enter text → Add to " + presetFolder); break;
+                submitButton.setText("Enter text → Add to " + presetFolder);
+                folderSettingsButton.setVisibility(View.GONE);
+                break;
         }
     }
 
@@ -352,7 +392,33 @@ public class MainActivity extends Activity {
             liveSearchAdapter.clear();
             liveSearchAdapter.addAll(matches);
             liveSearchAdapter.notifyDataSetChanged();
-            liveSearchResults.setVisibility(ListView.VISIBLE);
+            liveSearchResults.setVisibility(View.VISIBLE);
         }
+    }
+
+    private void showModeSwitchDialog() {
+        String[] modes = {"New Folder", "StratoNote", "Preset Folder"};
+        int checkedItem = 0;
+        switch (currentMode) {
+            case NEW: checkedItem = 0; break;
+            case RECENT: checkedItem = 1; break;
+            case PRESET: checkedItem = 2; break;
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Switch Save Mode")
+                .setSingleChoiceItems(modes, checkedItem, null)
+                .setPositiveButton("Select", (dialog, which) -> {
+                    int selectedPosition = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
+                    switch (selectedPosition) {
+                        case 0: currentMode = SaveMode.NEW; break;
+                        case 1: currentMode = SaveMode.RECENT; break;
+                        case 2: currentMode = SaveMode.PRESET; break;
+                    }
+                    updateSubmitLabel();
+                    Toast.makeText(this, "Save mode switched to " + modes[selectedPosition], Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 }

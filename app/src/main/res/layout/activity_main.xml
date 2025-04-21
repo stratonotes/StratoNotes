@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -24,21 +25,37 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_alignParentStart="true"
-                android:layout_toStartOf="@+id/filterButton"
+                android:layout_toStartOf="@+id/filter_button"
                 android:background="#444444"
                 android:hint="Search notes..."
                 android:textColor="#FFFFFF"
                 android:textColorHint="#AAAAAA"
                 android:padding="12dp" />
 
+            <!-- Folder Settings Button (Corrected ID and Adjusted Placement) -->
             <ImageButton
-                android:id="@+id/filterButton"
+                android:id="@+id/folder_settings_button_1"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_alignParentEnd="true"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_toEndOf="@id/searchInput"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_settings"
+                app:tint="#FFFFFF"
+                android:contentDescription="Folder Settings" />
+
+            <!-- Filter Button -->
+            <ImageButton
+                android:id="@+id/filter_button"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:src="@drawable/ic_filter"
                 android:background="@android:color/transparent"
-                android:contentDescription="Filter Options" />
+                android:contentDescription="Filter"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="8dp"/>
         </RelativeLayout>
 
         <!-- 🔍 Live Search Dropdown (Overlay) -->
@@ -54,13 +71,28 @@
             android:elevation="8dp" />
     </FrameLayout>
 
-    <!-- Submit + Clear Draft Buttons -->
+    <!-- Submit + Clear Draft Buttons + Settings -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:orientation="horizontal"
-        android:layout_marginBottom="12dp">
+        android:layout_marginBottom="12dp"
+        android:gravity="center_vertical">
+
+        <!-- Fixed, centered icon-only settings button -->
+        <ImageButton
+            android:id="@+id/folder_settings_button_2"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/submit_button_background"
+            android:backgroundTint="#444444"
+            android:padding="10dp"
+            android:src="@drawable/ic_settings"
+            android:visibility="gone"
+            android:layout_marginEnd="8dp"
+            android:contentDescription="Rename Folder"
+            app:tint="#FFFFFF"/> <!-- Lighter Gear Icon -->
 
         <Button
             android:id="@+id/submit_button"
