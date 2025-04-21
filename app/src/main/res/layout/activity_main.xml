@@ -4,8 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#222222"
-    android:padding="16dp"
-    android:fitsSystemWindows="true">
+    android:padding="16dp">
 
     <!-- Top Frame for Search and Dropdown Overlay -->
     <FrameLayout
@@ -13,6 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp">
 
+        <!-- Search Bar + Filter -->
         <RelativeLayout
             android:id="@+id/searchBarContainer"
             android:layout_width="match_parent"
@@ -23,6 +23,8 @@
                 android:id="@+id/searchInput"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@+id/filterButton"
                 android:background="#444444"
                 android:hint="Search notes..."
                 android:textColor="#FFFFFF"
@@ -39,6 +41,7 @@
                 android:contentDescription="Filter Options" />
         </RelativeLayout>
 
+        <!-- 🔍 Live Search Dropdown (Overlay) -->
         <ListView
             android:id="@+id/liveSearchResults"
             android:layout_width="match_parent"
@@ -51,19 +54,37 @@
             android:elevation="8dp" />
     </FrameLayout>
 
-    <Button
-        android:id="@+id/submit_button"
+    <!-- Submit + Clear Draft Buttons -->
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Enter text → Add to Recent"
-        android:textColor="#FFFFFF"
-        android:background="@drawable/submit_button_background"
         android:layout_gravity="center_horizontal"
-        android:padding="12dp"
-        android:layout_marginBottom="12dp" />
+        android:orientation="horizontal"
+        android:layout_marginBottom="12dp">
 
-    <!-- Fixed FrameLayout with pinned button and sliding media -->
-    <FrameLayout
+        <Button
+            android:id="@+id/submit_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Enter text → Add to Recent"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/submit_button_background"
+            android:padding="12dp" />
+
+        <Button
+            android:id="@+id/clear_draft_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Clear"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#D45C18"
+            android:padding="12dp"
+            android:visibility="gone"
+            android:layout_marginStart="12dp" />
+    </LinearLayout>
+
+    <!-- Textbox + Media Buttons Layer -->
+    <RelativeLayout
         android:id="@+id/textboxWrapper"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -83,19 +104,19 @@
             android:maxLines="10"
             android:scrollbars="vertical" />
 
-        <!-- Media menu to the left of the plus button -->
+        <!-- Sliding Media Menu -->
         <LinearLayout
             android:id="@+id/media_menu"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_marginBottom="12dp"
-            android:layout_marginEnd="72dp"
-            android:orientation="horizontal"
+            android:layout_height="48dp"
+            android:layout_alignParentBottom="true"
+            android:layout_toStartOf="@id/plus_button"
+            android:layout_marginEnd="8dp"
             android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone"
             android:background="#333333"
-            android:padding="8dp"
-            android:visibility="gone">
+            android:padding="8dp">
 
             <ImageButton
                 android:id="@+id/menu_image"
@@ -114,47 +135,47 @@
                 android:contentDescription="Record Audio" />
         </LinearLayout>
 
-        <!-- Plus button pinned to bottom-right -->
+        <!-- Floating + Button (Media Menu Trigger) -->
         <ImageButton
             android:id="@+id/plus_button"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_gravity="bottom|end"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
             android:layout_margin="8dp"
             android:src="@drawable/ic_plus"
             android:background="@android:color/transparent"
             android:contentDescription="Media Options" />
 
-        <!-- Undo + Redo pinned bottom-left -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|start"
+        <!-- Undo Button -->
+        <ImageButton
+            android:id="@+id/undo_button"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
             android:layout_marginStart="8dp"
             android:layout_marginBottom="8dp"
-            android:orientation="horizontal">
+            android:alpha="0.4"
+            android:src="@drawable/ic_undo"
+            android:background="@android:color/transparent"
+            android:contentDescription="Undo" />
 
-            <ImageButton
-                android:id="@+id/undo_button"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:alpha="0.4"
-                android:src="@drawable/ic_undo"
-                android:background="@android:color/transparent"
-                android:contentDescription="Undo" />
+        <!-- Redo Button -->
+        <ImageButton
+            android:id="@+id/redo_button"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_toEndOf="@id/undo_button"
+            android:layout_alignBottom="@id/undo_button"
+            android:layout_marginStart="8dp"
+            android:alpha="0.4"
+            android:src="@drawable/ic_redo"
+            android:background="@android:color/transparent"
+            android:contentDescription="Redo" />
+    </RelativeLayout>
 
-            <ImageButton
-                android:id="@+id/redo_button"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_marginStart="8dp"
-                android:alpha="0.4"
-                android:src="@drawable/ic_redo"
-                android:background="@android:color/transparent"
-                android:contentDescription="Redo" />
-        </LinearLayout>
-    </FrameLayout>
-
+    <!-- Scrollable Preview Notes -->
     <ScrollView
         android:id="@+id/previewScroll"
         android:layout_width="match_parent"
@@ -165,9 +186,21 @@
             android:id="@+id/previewContainer"
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/emptyPlaceholder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="This panel displays three of the most recent entries."
+                android:textColor="#FFFFFF"
+                android:textAlignment="center"
+                android:padding="32dp"
+                android:visibility="gone" />
+        </LinearLayout>
     </ScrollView>
 
+    <!-- Go to Library Button (only visible when all previews are hidden) -->
     <Button
         android:id="@+id/goToLibrary"
         android:layout_width="match_parent"
@@ -178,6 +211,7 @@
         android:visibility="gone"
         android:layout_marginBottom="8dp" />
 
+    <!-- Dev Ad Space -->
     <LinearLayout
         android:id="@+id/dev_ad_banner"
         android:layout_width="match_parent"
