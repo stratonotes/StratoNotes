@@ -9,6 +9,7 @@ public class UndoManager {
     private final UndoStack undoStack = new UndoStack();
     private boolean isUserChange = true;
     private EditText editText;
+
     private final TextWatcher watcher = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -26,6 +27,7 @@ public class UndoManager {
 
     public void attach(EditText editText) {
         this.editText = editText;
+        undoStack.setInitialState(editText.getText().toString().trim());
         editText.addTextChangedListener(watcher);
     }
 
@@ -34,22 +36,41 @@ public class UndoManager {
     }
 
     public void undo() {
-        if (editText == null) return;
+        if (editText == null || !canUndo()) return;
+
         isUserChange = false;
         String current = editText.getText().toString();
         String previous = undoStack.undo(current);
-        editText.setText(previous);
-        editText.setSelection(previous.length());
+
+        // Strict check prevents clearing to empty by accident
+        if (previous != null && !previous.equals(current) && !previous.isEmpty()) {
+            editText.setText(previous);
+            editText.setSelection(previous.length());
+        }
+
         isUserChange = true;
     }
 
     public void redo() {
-        if (editText == null) return;
+        if (editText == null || !canRedo()) return;
+
         isUserChange = false;
         String current = editText.getText().toString();
         String next = undoStack.redo(current);
-        editText.setText(next);
-        editText.setSelection(next.length());
+
+        if (next != null && !next.equals(current)) {
+            editText.setText(next);
+            editText.setSelection(next.length());
+        }
+
         isUserChange = true;
+    }
+
+    public boolean canUndo() {
+        return undoStack != null && !undoStack.isEmptyUndo();
+    }
+
+    public boolean canRedo() {
+        return undoStack != null && !undoStack.isEmptyRedo();
     }
 }

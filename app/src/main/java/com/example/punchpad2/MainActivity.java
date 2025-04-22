@@ -27,13 +27,13 @@ public class MainActivity extends Activity {
     private EditText searchInput;
     private EditText noteInput;
     private ListView liveSearchResults;
-    private ImageButton filterButton; // Ensured that filterButton is an ImageButton in line with the XML
+    private ImageButton filterButton;
     private Button submitButton;
     private Button clearDraftButton;
     private ImageButton plusButton;
     private LinearLayout mediaMenu;
     private ImageButton undoButton, redoButton;
-    private ImageButton folderSettingsButton; // Corrected to ImageButton as in the XML
+    private ImageButton folderSettingsButton;
 
     private UndoManager undoManager = new UndoManager();
 
@@ -76,7 +76,7 @@ public class MainActivity extends Activity {
         searchInput = findViewById(R.id.searchInput);
         noteInput = findViewById(R.id.note_input);
         liveSearchResults = findViewById(R.id.liveSearchResults);
-        filterButton = findViewById(R.id.filter_button); // Ensured the ID matches XML
+        filterButton = findViewById(R.id.filter_button);
         plusButton = findViewById(R.id.plus_button);
         mediaMenu = findViewById(R.id.media_menu);
         undoButton = findViewById(R.id.undo_button);
@@ -124,12 +124,14 @@ public class MainActivity extends Activity {
 
         undoManager.attach(noteInput);
         undoButton.setOnClickListener(v -> {
-            undoManager.undo();
-            if (isClearFading) {
-                draftHandler.removeCallbacks(clearFadeRunnable);
-                clearDraftButton.setAlpha(1f);
-                clearDraftButton.setVisibility(View.VISIBLE);
-                isClearFading = false;
+            if (undoManager.canUndo()) {
+                undoManager.undo();
+                if (isClearFading) {
+                    draftHandler.removeCallbacks(clearFadeRunnable);
+                    clearDraftButton.setAlpha(1f);
+                    clearDraftButton.setVisibility(View.VISIBLE);
+                    isClearFading = false;
+                }
             }
         });
         redoButton.setOnClickListener(v -> undoManager.redo());
