@@ -118,8 +118,12 @@
             android:textSize="16sp"
             android:background="@drawable/textbox_background"
             android:padding="12dp"
-            android:maxLines="10"
-            android:scrollbars="vertical" />
+            android:maxLines="2000"
+            android:scrollbars="vertical"
+            android:overScrollMode="always"
+
+            android:nestedScrollingEnabled="true"
+            android:focusableInTouchMode="true" />
 
         <!-- Sliding Media Menu -->
         <LinearLayout

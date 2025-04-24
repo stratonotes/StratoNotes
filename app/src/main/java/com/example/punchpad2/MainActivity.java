@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.method.ScrollingMovementMethod;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.*;
@@ -81,6 +83,17 @@ public class MainActivity extends Activity {
         mediaMenu = findViewById(R.id.media_menu);
         undoButton = findViewById(R.id.undo_button);
         redoButton = findViewById(R.id.redo_button);
+
+        // enable touch-scrolling inside the EditText when keyboard is up
+        noteInput.setMovementMethod(new ScrollingMovementMethod());
+        noteInput.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                v.getParent().requestDisallowInterceptTouchEvent(true);
+            } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                v.getParent().requestDisallowInterceptTouchEvent(false);
+            }
+            return false;
+        });
 
         folderSettingsButton.setVisibility(View.GONE);
         folderSettingsButton.setOnClickListener(v -> {
