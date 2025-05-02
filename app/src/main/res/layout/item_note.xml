@@ -5,20 +5,13 @@
     android:padding="12dp"
     android:background="@android:color/transparent">
 
-    <ImageView
-        android:id="@+id/starIcon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_alignParentEnd="true"
-        android:layout_marginBottom="4dp"
-        android:src="@drawable/ic_star_outline"
-        android:contentDescription="Favorite Star" />
-
     <EditText
         android:id="@+id/noteText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_toStartOf="@id/starIcon"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
         android:layout_marginEnd="8dp"
         android:textColor="#FFFFFF"
         android:background="@android:color/transparent"
@@ -31,4 +24,15 @@
         android:minLines="1"
         android:maxLines="6"
         android:padding="4dp" />
+
+    <ImageView
+        android:id="@+id/starIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_star_outline"
+        android:contentDescription="Favorite Star" />
+
 </RelativeLayout>

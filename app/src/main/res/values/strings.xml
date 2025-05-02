@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">PunchPad2</string>
+    <string name="desc_filter">Filter</string>
+    <string name="desc_undo">Undo</string>
+    <string name="desc_redo">Redo</string>
+    <string name="desc_plus">Add media</string>
+    <string name="desc_pin">Pin</string>
+    <string name="desc_move_up">Move up</string>
+    <string name="desc_move_down">Move down</string>
+    <string name="desc_delete">Delete</string>
+
 </resources>
