@@ -18,4 +18,8 @@ public class FolderEntity {
     public FolderEntity(@NonNull String name) {
         this.name = name;
     }
+
+    public int getName() {
+        return 0;
+    }
 }

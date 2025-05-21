@@ -5,7 +5,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
 import com.stratonotes.NoteEntity;
-import com.stratonotes.FolderWithNotes;
+import com.example.punchpad2.FolderWithNotes;
 
 import java.util.List;
 

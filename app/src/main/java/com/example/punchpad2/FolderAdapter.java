@@ -11,6 +11,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.punchpad2.FolderWithNotes;
+import com.stratonotes.NoteEntity;
+
 import java.util.List;
 
 public class FolderAdapter extends RecyclerView.Adapter<FolderAdapter.FolderViewHolder> {
@@ -69,7 +72,7 @@ public class FolderAdapter extends RecyclerView.Adapter<FolderAdapter.FolderView
         }
 
         void bind(FolderWithNotes folderWithNotes, int position) {
-            folderName.setText(folderWithNotes.folder.name);
+            folderName.setText(folderWithNotes.folder.getName());
             notesContainer.removeAllViews();
 
             boolean isExpanded = (position == expandedFolderIndex);

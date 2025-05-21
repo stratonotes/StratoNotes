@@ -3,6 +3,7 @@ package com.stratonotes
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 import androidx.lifecycle.LiveData
+import com.example.punchpad2.FolderWithNotes
 
 @Dao
 interface NoteDao {

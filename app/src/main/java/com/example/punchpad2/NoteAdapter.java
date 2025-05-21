@@ -28,6 +28,9 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
     private final boolean deleteMode;
     private final OnNoteChangedListener listener;
 
+    //public NoteAdapter(Context context, List<com.stratonotes.NoteEntity> notes, boolean deleteMode, OnNoteChangedListener listener) {
+    //}
+
     public interface OnNoteChangedListener {
         void onNoteUpdated(NoteEntity note);
     }

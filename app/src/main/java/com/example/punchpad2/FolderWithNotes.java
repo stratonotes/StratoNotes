@@ -1,8 +1,8 @@
-package com.stratonotes;
+package com.example.punchpad2;
 
 import androidx.room.Embedded;
 import androidx.room.Relation;
-
+import com.stratonotes.NoteEntity;
 import java.util.List;
 
 public class FolderWithNotes {

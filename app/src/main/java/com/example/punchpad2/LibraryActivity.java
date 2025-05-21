@@ -8,6 +8,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
+import com.stratonotes.NoteEntity;
+import com.example.punchpad2.FolderWithNotes;
+
 
 public class LibraryActivity extends AppCompatActivity {
 
@@ -75,11 +78,11 @@ public class LibraryActivity extends AppCompatActivity {
             for (NoteEntity note : folder.notes) {
                 boolean match = true;
 
-                if (query != null && !query.trim().isEmpty() && !note.content.toLowerCase().contains(query.toLowerCase())) {
+                if (query != null && !query.trim().isEmpty() && !note.getContent().toLowerCase().contains(query.toLowerCase())) {
                     match = false;
                 }
 
-                if (favoritesOnly && !note.favorited) {
+                if (favoritesOnly && !note.isFavorite()) {
                     match = false;
                 }
 
@@ -90,9 +93,9 @@ public class LibraryActivity extends AppCompatActivity {
 
             if (!filteredNotes.isEmpty()) {
                 if (!sortNewest) {
-                    filteredNotes.sort((a, b) -> Long.compare(a.createdAt, b.createdAt));
+                    filteredNotes.sort((a, b) -> Long.compare(a.getCreatedAt(), b.getCreatedAt()));
                 } else {
-                    filteredNotes.sort((a, b) -> Long.compare(b.createdAt, a.createdAt));
+                    filteredNotes.sort((a, b) -> Long.compare(b.getCreatedAt(), a.getCreatedAt()));
                 }
 
                 FolderWithNotes copy = new FolderWithNotes();
