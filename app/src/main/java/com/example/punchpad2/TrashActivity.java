@@ -8,6 +8,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.punchpad2.R;
+import com.stratonotes.NoteEntity;
 public class TrashActivity extends AppCompatActivity {
 
     private NoteViewModel noteViewModel;

@@ -2,9 +2,9 @@ package com.example.punchpad2;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.widget.EditText;
+import androidx.appcompat.widget.AppCompatEditText;
 
-public class StaticScrollEditText extends EditText {
+public class StaticScrollEditText extends AppCompatEditText {
 
     public StaticScrollEditText(Context context) {
         super(context);

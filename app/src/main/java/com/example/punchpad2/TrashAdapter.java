@@ -6,6 +6,9 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.stratonotes.NoteEntity;
+import com.example.punchpad2.R;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -56,7 +59,7 @@ public class TrashAdapter extends RecyclerView.Adapter<TrashAdapter.TrashViewHol
         }
 
         void bind(NoteEntity note) {
-            trashContent.setText(note.content);
+            trashContent.setText(note.getContent());
             restoreButton.setOnClickListener(v -> listener.onRestore(note));
             deleteButton.setOnClickListener(v -> listener.onDelete(note));
         }

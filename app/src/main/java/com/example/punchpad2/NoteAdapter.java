@@ -1,5 +1,7 @@
 package com.example.punchpad2;
 
+import com.stratonotes.NoteEntity;
+
 import android.content.Context;
 import android.graphics.Color;
 import android.text.Editable;
@@ -15,6 +17,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.punchpad2.R;
 
 import java.util.List;
 
@@ -65,8 +68,8 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
         }
 
         void bind(NoteEntity note) {
-            noteText.setText(note.content);
-            starIcon.setImageResource(note.favorited ? R.drawable.ic_star_filled : R.drawable.ic_star_outline);
+            noteText.setText(note.getContent());
+            starIcon.setImageResource(note.isFavorite() ? R.drawable.ic_star_filled : R.drawable.ic_star_outline);
 
             noteText.setFocusable(false);
             noteText.setCursorVisible(false);
@@ -75,10 +78,8 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
             GestureDetector gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
                 @Override
                 public boolean onDoubleTap(MotionEvent e) {
-                    note.isHidden = !note.isHidden;
-                    starIcon.setImageResource(note.isHidden ? R.drawable.ic_star_filled : R.drawable.ic_star_outline);
                     Toast.makeText(context,
-                            note.isHidden ? "Note hidden from preview." : "Note visible in preview.",
+                            note.isHiddenFromMain() ? "Note hidden from preview." : "Note visible in preview.",
                             Toast.LENGTH_SHORT).show();
                     listener.onNoteUpdated(note);
                     return true;
@@ -110,14 +111,24 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
             noteText.addTextChangedListener(new TextWatcher() {
                 @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
                 @Override public void afterTextChanged(Editable s) {}
+
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    note.content = s.toString();
-                    listener.onNoteUpdated(note);
+                    listener.onNoteUpdated(new NoteEntity(
+                            note.getId(),
+                            note.getFolderId(),
+                            s.toString(),
+                            note.getCreatedAt(),
+                            System.currentTimeMillis(),
+                            note.isFavorite(),
+                            note.isHiddenFromMain(),
+                            note.isLarge(),
+                            note.isTrashed() // ✅ Added 9th argument
+                    ));
                 }
             });
 
-            if (deleteMode && note.isHidden) {
+            if (deleteMode && note.isHiddenFromMain()) {
                 starIcon.setOnClickListener(v ->
                         Toast.makeText(context, "Can't delete hidden notes.", Toast.LENGTH_SHORT).show());
             }

@@ -1,0 +1,13 @@
+[33me1ec529[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{0}: reset: moving to HEAD~2
+[33m2c2c04b[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{1}: reset: moving to HEAD
+[33m2c2c04b[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{2}: commit: app does not run in this version - working on fixes for library
+[33mad38504[m HEAD@{3}: reset: moving to HEAD
+[33mad38504[m HEAD@{4}: commit: Revert color wheel and fixed scrollable text on main screen
+[33me1ec529[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{5}: reset: moving to HEAD~1
+[33m489c423[m HEAD@{6}: reset: moving to HEAD
+[33m489c423[m HEAD@{7}: commit: Add custom color picker UI with theme prefs; apply app color to icons; groundwork laid for full theme preview
+[33me1ec529[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{8}: commit: Fixed bug: undo function now doesn't backspace the whole thing for no reason
+[33mee3f528[m HEAD@{9}: commit: Fixed bug: quicknote file rename settings button
+[33m7a125cf[m HEAD@{10}: commit: Fix Folder Settings button positioning, adjust gear icon contrast, and move button down to sit next to the main button.
+[33maecc8f4[m HEAD@{11}: commit: Fix: Restore clear draft button to layout; sync with MainActivity logic
+[33m6e5a540[m HEAD@{12}: clone: from https://github.com/stratonotes/StratoNotes

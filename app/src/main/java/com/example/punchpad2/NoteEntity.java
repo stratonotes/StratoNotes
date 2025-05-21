@@ -3,17 +3,12 @@ package com.example.punchpad2;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import androidx.room.ColumnInfo;
-import androidx.room.Ignore;
-
 
 @Entity(tableName = "notes")
 public class NoteEntity {
 
     @PrimaryKey(autoGenerate = true)
     public int id;
-
-    @Ignore
-    public boolean expanded = false;
 
     public String content; // full text content, image/audio tags inline
 

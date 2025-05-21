@@ -8,6 +8,8 @@ import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 
+import com.example.punchpad2.R;
+
 public class SplashActivity extends Activity {
 
     @Override

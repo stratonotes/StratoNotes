@@ -3,6 +3,10 @@ package com.example.punchpad2;
 import android.app.Application;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+
+import com.stratonotes.NoteEntity;
+import com.stratonotes.FolderWithNotes;
+
 import java.util.List;
 
 public class NoteViewModel extends AndroidViewModel {
@@ -31,8 +35,18 @@ public class NoteViewModel extends AndroidViewModel {
     }
 
     public void toggleFavorite(NoteEntity note, boolean favorite) {
-        note.favorited = favorite;
-        repository.update(note);
+        NoteEntity updated = new NoteEntity(
+                note.getId(),
+                note.getFolderId(),
+                note.getContent(),
+                note.getCreatedAt(),
+                System.currentTimeMillis(),
+                favorite,
+                note.isHiddenFromMain(),
+                note.isLarge(),
+                note.isTrashed()
+        );
+        repository.update(updated);
     }
 
     public LiveData<List<NoteEntity>> getTrashedNotes() {
@@ -40,8 +54,18 @@ public class NoteViewModel extends AndroidViewModel {
     }
 
     public void restore(NoteEntity note) {
-        note.isTrashed = false;
-        repository.update(note);
+        NoteEntity updated = new NoteEntity(
+                note.getId(),
+                note.getFolderId(),
+                note.getContent(),
+                note.getCreatedAt(),
+                System.currentTimeMillis(),
+                note.isFavorite(),
+                false,
+                note.isLarge(),
+                note.isTrashed()
+        );
+        repository.update(updated);
     }
 
     public void permanentlyDelete(NoteEntity note) {

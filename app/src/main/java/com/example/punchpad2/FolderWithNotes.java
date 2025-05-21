@@ -1,4 +1,4 @@
-package com.example.punchpad2;
+package com.stratonotes;
 
 import androidx.room.Embedded;
 import androidx.room.Relation;
@@ -12,7 +12,7 @@ public class FolderWithNotes {
 
     @Relation(
             parentColumn = "id",
-            entityColumn = "folder_id"
+            entityColumn = "folderId"  // <-- must match @ColumnInfo in NoteEntity
     )
     public List<NoteEntity> notes;
 }

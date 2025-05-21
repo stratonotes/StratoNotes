@@ -1,29 +1,18 @@
 package com.example.punchpad2;
 
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
-import androidx.room.ColumnInfo;
-
-@Entity
 public class Note {
 
-    @PrimaryKey(autoGenerate = true)
-    public int id;
+    public long id;
+    public long folderId;
 
-    @ColumnInfo(name = "folder_id")
-    public int folderId;
-
-    @ColumnInfo(name = "content")
     public String content;
 
-    @ColumnInfo(name = "timestamp")
-    public long timestamp;
+    public long timestamp; // maps to both createdAt and lastEdited in conversion
 
-    @ColumnInfo(name = "favorited")
     public boolean favorited;
-
-    @ColumnInfo(name = "hidden_from_preview")
-    public boolean hidden;
+    public boolean hidden;    // maps to isHiddenFromMain
+    public boolean large;     // maps to isLarge
+    public boolean trashed;   // maps to isTrashed
 
     public void setFavorited(boolean favorited) {
         this.favorited = favorited;
@@ -32,15 +21,28 @@ public class Note {
     public boolean isFavorited() {
         return favorited;
     }
-    @ColumnInfo(name = "isTrashed")
-    public boolean isTrashed;
 
     public void setTrashed(boolean trashed) {
-        this.isTrashed = trashed;
+        this.trashed = trashed;
     }
 
     public boolean isTrashed() {
-        return isTrashed;
+        return trashed;
     }
 
+    public void setHidden(boolean hidden) {
+        this.hidden = hidden;
+    }
+
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    public void setLarge(boolean large) {
+        this.large = large;
+    }
+
+    public boolean isLarge() {
+        return large;
+    }
 }

@@ -16,9 +16,11 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.*;
 import android.animation.ObjectAnimator;
 
-import com.example.punchpad2.NoteDatabase;
-import com.example.punchpad2.NoteEntity;
-import com.example.punchpad2.FolderEntity;
+import com.stratonotes.FolderEntity;
+import com.stratonotes.NoteDaoBridge;
+import com.stratonotes.NoteEntity;
+import com.stratonotes.AppDatabase;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +40,6 @@ public class MainActivity extends Activity {
     private ImageButton folderSettingsButton;
 
     private UndoManager undoManager = new UndoManager();
-
     private List<NoteEntity> allNotes = new ArrayList<>();
     private ArrayAdapter<String> liveSearchAdapter;
 
@@ -52,11 +53,6 @@ public class MainActivity extends Activity {
     private static final String PREFS_NAME = "SubmitPrefs";
     private static final String KEY_MODE = "lastMode";
     private static final String KEY_FOLDER = "lastFolderName";
-
-    private static final String MODE_NEW = "NEW";
-    private static final String MODE_RECENT = "RECENT";
-    private static final String MODE_PRESET = "PRESET";
-
     private static final String DRAFT_PREFS = "DraftPrefs";
     private static final String KEY_DRAFT_NOTE = "draft_note";
 
@@ -64,6 +60,11 @@ public class MainActivity extends Activity {
     private Runnable draftRunnable;
     private Runnable clearFadeRunnable;
     private boolean isClearFading = false;
+
+    private static final String MODE_NEW = "NEW";
+    private static final String MODE_RECENT = "RECENT";
+    private static final String MODE_PRESET = "PRESET";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,7 +85,6 @@ public class MainActivity extends Activity {
         undoButton = findViewById(R.id.undo_button);
         redoButton = findViewById(R.id.redo_button);
 
-        // enable touch-scrolling inside the EditText when keyboard is up
         noteInput.setMovementMethod(new ScrollingMovementMethod());
         noteInput.setOnTouchListener((v, event) -> {
             if (event.getAction() == MotionEvent.ACTION_MOVE) {
@@ -186,7 +186,6 @@ public class MainActivity extends Activity {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
                 isTyping = true;
-
                 if (draftRunnable != null) draftHandler.removeCallbacks(draftRunnable);
                 draftRunnable = () -> {
                     SharedPreferences.Editor editor = getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE).edit();
@@ -200,7 +199,6 @@ public class MainActivity extends Activity {
                     ObjectAnimator fadeOut = ObjectAnimator.ofFloat(clearDraftButton, "alpha", 1f, 0f);
                     fadeOut.setDuration(3000);
                     fadeOut.start();
-
                     clearFadeRunnable = () -> {
                         clearDraftButton.setVisibility(View.GONE);
                         clearDraftButton.setAlpha(1f);
@@ -232,9 +230,9 @@ public class MainActivity extends Activity {
         liveSearchResults.setOnItemClickListener((parent, view, position, id) -> {
             String selected = liveSearchAdapter.getItem(position);
             for (NoteEntity note : allNotes) {
-                if (note.content.startsWith(selected)) {
+                if (note.getContent().startsWith(selected)) {
                     Intent intent = new Intent(MainActivity.this, NoteActivity.class);
-                    intent.putExtra("content", note.content);
+                    intent.putExtra("content", note.getContent());
                     startActivity(intent);
                     break;
                 }
@@ -266,6 +264,87 @@ public class MainActivity extends Activity {
         });
 
         loadPreviews();
+    }
+
+    private void saveNote(String content, String folderName) {
+        AsyncTask.execute(() -> {
+            FolderEntity folder = AppDatabase.getInstance(this).noteDao().getFolderByName(folderName);
+            if (folder == null) {
+                long now = System.currentTimeMillis();
+                folder = new FolderEntity(0L, folderName, now, now);
+                NoteDaoBridge.insertFolderAsync(AppDatabase.getInstance(this).noteDao(), folder);
+
+            }
+
+            long now = System.currentTimeMillis();
+
+            NoteEntity note = new NoteEntity(
+                    0L, folder.getId(), content, now, now,
+                    false, false, false, false
+            );
+
+            NoteDaoBridge.insertNoteAsync(AppDatabase.getInstance(this).noteDao(), note);
+
+
+            runOnUiThread(() -> {
+                noteInput.setText("");
+                isTyping = false;
+                updateSubmitLabel();
+                loadPreviews();
+                SharedPreferences.Editor editor = getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE).edit();
+                editor.remove(KEY_DRAFT_NOTE);
+                editor.apply();
+                clearDraftButton.setVisibility(View.GONE);
+                Toast.makeText(this, "Saved to " + folderName, Toast.LENGTH_SHORT).show();
+            });
+        });
+    }
+
+    private void loadPreviews() {
+        AsyncTask.execute(() -> {
+
+            List<NoteEntity> notes = AppDatabase.getInstance(this).noteDao().get3MostRecentVisibleNotes();
+            runOnUiThread(() -> {
+                previewContainer.removeAllViews();
+                for (NoteEntity note : notes) {
+                    String content = note.getContent();
+                    TextView preview = new TextView(this);
+                    preview.setText(content.length() > 100 ? content.substring(0, 100) + "..." : content);
+                    preview.setPadding(0, 16, 0, 16);
+                    preview.setTextColor(0xFFFFFFFF);
+                    preview.setOnClickListener(v -> {
+                        Intent intent = new Intent(MainActivity.this, NoteActivity.class);
+                        intent.putExtra("content", content);
+                        startActivity(intent);
+                    });
+                    previewContainer.addView(preview);
+                }
+            });
+        });
+    }
+
+    private void filterLiveResults(String query) {
+        if (query.isEmpty()) {
+            liveSearchResults.setVisibility(ListView.GONE);
+            return;
+        }
+
+        List<String> matches = new ArrayList<>();
+        for (NoteEntity note : allNotes) {
+            String content = note.getContent();
+            if (content.toLowerCase().contains(query.toLowerCase())) {
+                matches.add(content.length() > 50 ? content.substring(0, 50) + "..." : content);
+            }
+        }
+
+        if (matches.isEmpty()) {
+            liveSearchResults.setVisibility(ListView.GONE);
+        } else {
+            liveSearchAdapter.clear();
+            liveSearchAdapter.addAll(matches);
+            liveSearchAdapter.notifyDataSetChanged();
+            liveSearchResults.setVisibility(View.VISIBLE);
+        }
     }
 
     private void saveSubmitModeToPrefs(String mode, String folderName) {
@@ -340,85 +419,23 @@ public class MainActivity extends Activity {
                 .show();
     }
 
-    private void saveNote(String content, String folderName) {
-        AsyncTask.execute(() -> {
-            FolderEntity folder = NoteDatabase.getInstance(this).noteDao().getOrCreateFolderByName(folderName);
-            NoteEntity note = new NoteEntity();
-            note.content = content;
-            note.createdAt = System.currentTimeMillis();
-            note.lastEdited = note.createdAt;
-            note.isHidden = false;
-            note.isLarge = false;
-            note.folderId = folder.id;
-            NoteDatabase.getInstance(this).noteDao().insert(note);
-
-            runOnUiThread(() -> {
-                noteInput.setText("");
-                isTyping = false;
-                updateSubmitLabel();
-                loadPreviews();
-                SharedPreferences.Editor editor = getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE).edit();
-                editor.remove(KEY_DRAFT_NOTE);
-                editor.apply();
-                clearDraftButton.setVisibility(View.GONE);
-                Toast.makeText(this, "Saved to " + folderName, Toast.LENGTH_SHORT).show();
-            });
-        });
-    }
-
-    private void loadPreviews() {
-        AsyncTask.execute(() -> {
-            allNotes = NoteDatabase.getInstance(this).noteDao().getAllNotesNow();
-            List<NoteEntity> notes = NoteDatabase.getInstance(this).noteDao().get3MostRecentVisibleNotes();
-            runOnUiThread(() -> {
-                previewContainer.removeAllViews();
-                for (NoteEntity note : notes) {
-                    TextView preview = new TextView(this);
-                    preview.setText(note.content.length() > 100 ? note.content.substring(0, 100) + "..." : note.content);
-                    preview.setPadding(0, 16, 0, 16);
-                    preview.setTextColor(0xFFFFFFFF);
-                    preview.setOnClickListener(v -> {
-                        Intent intent = new Intent(MainActivity.this, NoteActivity.class);
-                        intent.putExtra("content", note.content);
-                        startActivity(intent);
-                    });
-                    previewContainer.addView(preview);
-                }
-            });
-        });
-    }
-
-    private void filterLiveResults(String query) {
-        if (query.isEmpty()) {
-            liveSearchResults.setVisibility(ListView.GONE);
-            return;
-        }
-
-        List<String> matches = new ArrayList<>();
-        for (NoteEntity note : allNotes) {
-            if (note.content.toLowerCase().contains(query.toLowerCase())) {
-                matches.add(note.content.length() > 50 ? note.content.substring(0, 50) + "..." : note.content);
-            }
-        }
-
-        if (matches.isEmpty()) {
-            liveSearchResults.setVisibility(ListView.GONE);
-        } else {
-            liveSearchAdapter.clear();
-            liveSearchAdapter.addAll(matches);
-            liveSearchAdapter.notifyDataSetChanged();
-            liveSearchResults.setVisibility(View.VISIBLE);
-        }
-    }
-
     private void showModeSwitchDialog() {
         String[] modes = {"New Folder", "StratoNote", "Preset Folder"};
-        int checkedItem = 0;
+        int checkedItem;
         switch (currentMode) {
-            case NEW: checkedItem = 0; break;
-            case RECENT: checkedItem = 1; break;
-            case PRESET: checkedItem = 2; break;
+            case NEW:
+                checkedItem = 0;
+                break;
+            case RECENT:
+                checkedItem = 1;
+                break;
+            case PRESET:
+                checkedItem = 2;
+                break;
+            default:
+                checkedItem = 0;
         }
+
 
         new AlertDialog.Builder(this)
                 .setTitle("Switch Save Mode")
@@ -426,10 +443,17 @@ public class MainActivity extends Activity {
                 .setPositiveButton("Select", (dialog, which) -> {
                     int selectedPosition = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
                     switch (selectedPosition) {
-                        case 0: currentMode = SaveMode.NEW; break;
-                        case 1: currentMode = SaveMode.RECENT; break;
-                        case 2: currentMode = SaveMode.PRESET; break;
+                        case 0:
+                            currentMode = SaveMode.NEW;
+                            break;
+                        case 1:
+                            currentMode = SaveMode.RECENT;
+                            break;
+                        case 2:
+                            currentMode = SaveMode.PRESET;
+                            break;
                     }
+
                     updateSubmitLabel();
                     Toast.makeText(this, "Save mode switched to " + modes[selectedPosition], Toast.LENGTH_SHORT).show();
                 })

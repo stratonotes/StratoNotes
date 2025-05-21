@@ -1,8 +1,14 @@
 package com.example.punchpad2;
 
 import android.app.Application;
-import android.os.AsyncTask;
 import androidx.lifecycle.LiveData;
+
+import com.stratonotes.AppDatabase;
+import com.stratonotes.NoteDao;
+import com.stratonotes.NoteEntity;
+import com.stratonotes.FolderWithNotes;
+import com.stratonotes.NoteDaoBridge;
+
 import java.util.List;
 
 public class NoteRepository {
@@ -10,7 +16,7 @@ public class NoteRepository {
     private final NoteDao noteDao;
 
     public NoteRepository(Application application) {
-        NoteDatabase db = NoteDatabase.getInstance(application);
+        AppDatabase db = AppDatabase.getInstance(application);
         noteDao = db.noteDao();
     }
 
@@ -19,15 +25,15 @@ public class NoteRepository {
     }
 
     public void insert(NoteEntity note) {
-        AsyncTask.execute(() -> noteDao.insert(note));
+        NoteDaoBridge.insertNoteAsync(noteDao, note);
     }
 
     public void update(NoteEntity note) {
-        AsyncTask.execute(() -> noteDao.update(note));
+        NoteDaoBridge.updateNoteAsync(noteDao, note);
     }
 
     public void delete(NoteEntity note) {
-        AsyncTask.execute(() -> noteDao.delete(note));
+        NoteDaoBridge.deleteNoteAsync(noteDao, note);
     }
 
     public LiveData<List<NoteEntity>> getTrashedNotes() {

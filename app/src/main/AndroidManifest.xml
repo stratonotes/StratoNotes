@@ -13,7 +13,7 @@
 
         <!-- Splash -->
         <activity
-            android:name=".SplashActivity"
+            android:name="com.example.punchpad2.SplashActivity"
             android:exported="true"
             android:theme="@style/Theme.PunchPad2.Splash"
             android:screenOrientation="portrait">
@@ -25,28 +25,31 @@
 
         <!-- Fullscreen Image -->
         <activity
-            android:name=".FullscreenImageActivity"
+            android:name="com.example.punchpad2.FullscreenImageActivity"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             android:screenOrientation="sensor" />
 
         <!-- Main Entry -->
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.punchpad2.MainActivity"
             android:exported="true"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustNothing" />
 
         <!-- Editor / Library / Trash -->
-        <activity android:name=".NoteActivity"
+        <activity
+            android:name="com.example.punchpad2.NoteActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
-        <activity android:name=".LibraryActivity"
+        <activity
+            android:name="com.example.punchpad2.LibraryActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.PunchPad2" />
 
-        <activity android:name=".TrashActivity"
+        <activity
+            android:name="com.example.punchpad2.TrashActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
@@ -62,5 +65,4 @@
         </provider>
 
     </application>
-
 </manifest>

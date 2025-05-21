@@ -1,9 +1,15 @@
 pluginManagement {
+    plugins {
+        id("com.android.application") version "8.9.3"
+        id("org.jetbrains.kotlin.android") version "2.0.21"
+        id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
+    }
     repositories {
         google {
             content {
                 includeGroupByRegex("com\\.android.*")
                 includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("com\\.google\\.devtools.*") // ✅ Needed for KSP
                 includeGroupByRegex("androidx.*")
             }
         }
@@ -25,4 +31,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "PunchPad2"
-include ':app'
+include(':app')

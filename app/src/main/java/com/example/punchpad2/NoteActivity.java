@@ -15,6 +15,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.*;
 
+import com.example.punchpad2.R;
+
 import java.io.InputStream;
 
 public class NoteActivity extends Activity {
