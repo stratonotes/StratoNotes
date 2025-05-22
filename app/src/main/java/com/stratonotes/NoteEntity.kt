@@ -6,7 +6,9 @@ import androidx.room.ColumnInfo
 
 @Entity(tableName = "notes")
 data class NoteEntity(
+
     @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
     val id: Long = 0L,
 
     @ColumnInfo(name = "folderId")
@@ -32,5 +34,4 @@ data class NoteEntity(
 
     @ColumnInfo(name = "isTrashed")
     val isTrashed: Boolean = false
-
 )

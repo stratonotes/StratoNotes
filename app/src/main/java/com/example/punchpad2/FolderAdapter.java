@@ -1,6 +1,7 @@
 package com.example.punchpad2;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,8 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.punchpad2.FolderWithNotes;
-import com.stratonotes.NoteEntity;
+import com.stratonotes.FolderWithNotes;
 
 import java.util.List;
 
@@ -39,6 +39,8 @@ public class FolderAdapter extends RecyclerView.Adapter<FolderAdapter.FolderView
     public void updateFilteredList(List<FolderWithNotes> filteredFolders) {
         this.folders.clear();
         this.folders.addAll(filteredFolders);
+        expandedFolderIndex = 0; // Auto-expand first folder
+        Log.d("FolderAdapter", "Loaded " + filteredFolders.size() + " folders");
         notifyDataSetChanged();
     }
 
@@ -51,12 +53,17 @@ public class FolderAdapter extends RecyclerView.Adapter<FolderAdapter.FolderView
 
     @Override
     public void onBindViewHolder(@NonNull FolderViewHolder holder, int position) {
-        holder.bind(folders.get(position), position);
+        FolderWithNotes folderWithNotes = folders.get(position);
+        holder.bind(folderWithNotes, position);
     }
 
     @Override
     public int getItemCount() {
         return folders.size();
+    }
+
+    public void submitList(List<FolderWithNotes> notes) {
+        updateFilteredList(notes);
     }
 
     class FolderViewHolder extends RecyclerView.ViewHolder {
@@ -72,7 +79,10 @@ public class FolderAdapter extends RecyclerView.Adapter<FolderAdapter.FolderView
         }
 
         void bind(FolderWithNotes folderWithNotes, int position) {
-            folderName.setText(folderWithNotes.folder.getName());
+            folderName.setText(folderWithNotes.getFolder().getName());
+            Log.d("FolderAdapter", "Folder: " + folderWithNotes.getFolder().getName() +
+                    " has " + (folderWithNotes.getNotes() != null ? folderWithNotes.getNotes().size() : 0) + " notes");
+
             notesContainer.removeAllViews();
 
             boolean isExpanded = (position == expandedFolderIndex);
@@ -85,14 +95,13 @@ public class FolderAdapter extends RecyclerView.Adapter<FolderAdapter.FolderView
                 notifyDataSetChanged();
             });
 
-            if (isExpanded) {
-                List<NoteEntity> notes = folderWithNotes.notes;
-                NoteAdapter tempAdapter = new NoteAdapter(context, notes, deleteMode, listener);
+            if (isExpanded && folderWithNotes.getNotes() != null) {
+                NoteAdapter tempAdapter = new NoteAdapter(context, folderWithNotes.getNotes(), deleteMode, listener);
 
-                for (int i = 0; i < Math.min(3, notes.size()); i++) {
+                for (int i = 0; i < Math.min(3, folderWithNotes.getNotes().size()); i++) {
                     View noteView = LayoutInflater.from(context).inflate(R.layout.item_note, notesContainer, false);
                     NoteAdapter.NoteViewHolder noteHolder = tempAdapter.new NoteViewHolder(noteView);
-                    noteHolder.bind(notes.get(i));
+                    noteHolder.bind(folderWithNotes.getNotes().get(i));
                     notesContainer.addView(noteView);
                 }
             }

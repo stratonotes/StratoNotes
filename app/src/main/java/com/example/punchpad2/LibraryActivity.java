@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 import com.stratonotes.NoteEntity;
-import com.example.punchpad2.FolderWithNotes;
+import com.stratonotes.FolderWithNotes;
 
 
 public class LibraryActivity extends AppCompatActivity {
@@ -40,8 +40,17 @@ public class LibraryActivity extends AppCompatActivity {
         folderRecycler.setAdapter(folderAdapter);
 
         noteViewModel.getFoldersWithPreviews().observe(this, folders -> {
+            android.util.Log.d("LibraryActivity", "Room gave us " + folders.size() + " folders");
+
+            for (FolderWithNotes fw : folders) {
+                String folderName = fw.getFolder() != null ? fw.getFolder().getName() : "(null)";
+                int noteCount = fw.getNotes() != null ? fw.getNotes().size() : -1;
+                android.util.Log.d("LibraryActivity", "Folder: " + folderName + " → " + noteCount + " notes");
+            }
+
             folderAdapter.updateFilteredList(filterFolders(folders, query));
         });
+
 
         ImageButton deleteButton = findViewById(R.id.deleteButton);
         deleteButton.setOnClickListener(v -> {
@@ -50,8 +59,8 @@ public class LibraryActivity extends AppCompatActivity {
             folderAdapter.notifyDataSetChanged();
         });
 
-        ImageButton toggleFavorites = findViewById(R.id.toggleFavorites);
-        toggleFavorites.setOnClickListener(v -> {
+        ImageButton favoritesToggle = findViewById(R.id.favoritesToggle);
+        favoritesToggle.setOnClickListener(v -> {
             favoritesOnly = !favoritesOnly;
             reloadFiltered(query);
         });
@@ -61,6 +70,7 @@ public class LibraryActivity extends AppCompatActivity {
             sortNewest = !sortNewest;
             reloadFiltered(query);
         });
+
     }
 
     private void reloadFiltered(String query) {
@@ -75,7 +85,7 @@ public class LibraryActivity extends AppCompatActivity {
         for (FolderWithNotes folder : original) {
             List<NoteEntity> filteredNotes = new ArrayList<>();
 
-            for (NoteEntity note : folder.notes) {
+            for (NoteEntity note : folder.getNotes()) {
                 boolean match = true;
 
                 if (query != null && !query.trim().isEmpty() && !note.getContent().toLowerCase().contains(query.toLowerCase())) {
@@ -98,9 +108,9 @@ public class LibraryActivity extends AppCompatActivity {
                     filteredNotes.sort((a, b) -> Long.compare(b.getCreatedAt(), a.getCreatedAt()));
                 }
 
-                FolderWithNotes copy = new FolderWithNotes();
-                copy.folder = folder.folder;
-                copy.notes = filteredNotes;
+                FolderWithNotes copy = new FolderWithNotes(folder.getFolder(), filteredNotes);
+                copy = new FolderWithNotes(folder.getFolder(), filteredNotes);
+
                 result.add(copy);
             }
         }

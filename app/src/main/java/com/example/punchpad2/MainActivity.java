@@ -16,9 +16,8 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.*;
 import android.animation.ObjectAnimator;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.stratonotes.FolderEntity;
+import com.stratonotes.NoteDao;
 import com.stratonotes.NoteDaoBridge;
 import com.stratonotes.NoteEntity;
 import com.stratonotes.AppDatabase;
@@ -272,24 +271,37 @@ public class MainActivity extends Activity {
 
     private void saveNote(String content, String folderName) {
         AsyncTask.execute(() -> {
-            FolderEntity folder = AppDatabase.getInstance(this).noteDao().getFolderByName(folderName);
-            if (folder == null) {
-                long now = System.currentTimeMillis();
-                folder = new FolderEntity(0L, folderName, now, now);
-                NoteDaoBridge.insertFolderAsync(AppDatabase.getInstance(this).noteDao(), folder);
+            long now = System.currentTimeMillis();
+            AppDatabase db = AppDatabase.getInstance(this);
+            NoteDao noteDao = db.noteDao();
 
+            // Try to get the folder by name
+            FolderEntity folder = NoteDaoBridge.getFolderByNameBlocking(noteDao, folderName);
+
+            // If folder doesn't exist, insert it and get back the new ID
+            if (folder == null) {
+                folder = new FolderEntity(0L, folderName, now, now);
+                long folderId = NoteDaoBridge.insertFolderBlocking(noteDao, folder);
+                folder = new FolderEntity(folderId, folderName, now, now); // recreate with correct ID
             }
 
-            long now = System.currentTimeMillis();
 
+            // Insert the note into that folder
             NoteEntity note = new NoteEntity(
-                    0L, folder.getId(), content, now, now,
-                    false, false, false, false
+                    0L,
+                    folder.getId(),
+                    content,
+                    now,
+                    now,
+                    false,
+                    false,
+                    false,
+                    false
             );
 
-            NoteDaoBridge.insertNoteAsync(AppDatabase.getInstance(this).noteDao(), note);
+            NoteDaoBridge.insertNoteAsync(noteDao, note);
 
-
+            // UI thread updates
             runOnUiThread(() -> {
                 noteInput.setText("");
                 isTyping = false;
@@ -303,6 +315,7 @@ public class MainActivity extends Activity {
             });
         });
     }
+
 
     private void loadPreviews() {
         AsyncTask.execute(() -> {

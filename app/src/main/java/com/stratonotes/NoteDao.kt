@@ -3,7 +3,6 @@ package com.stratonotes
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 import androidx.lifecycle.LiveData
-import com.example.punchpad2.FolderWithNotes
 
 @Dao
 interface NoteDao {
@@ -13,7 +12,7 @@ interface NoteDao {
     suspend fun insertNote(note: NoteEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertFolder(folder: FolderEntity): Long
+    suspend fun insertFolder(folder: com.stratonotes.FolderEntity): Long
 
     // Update
     @Update
@@ -28,10 +27,6 @@ interface NoteDao {
 
     @Delete
     suspend fun deleteFolder(folder: FolderEntity)
-
-    // Query: All Notes
-    @Query("SELECT * FROM notes ORDER BY lastEdited DESC")
-    fun getAllNotes(): Flow<List<NoteEntity>>
 
     // Query: Notes by Folder
     @Query("SELECT * FROM notes WHERE folderId = :folderId ORDER BY lastEdited DESC")
@@ -49,6 +44,8 @@ interface NoteDao {
     @Query("SELECT * FROM folders ORDER BY createdAt DESC")
     fun getFoldersWithNotes(): LiveData<List<FolderWithNotes>>
 
+
+
     @Query("SELECT * FROM notes WHERE isTrashed = 1 ORDER BY lastEdited DESC")
     fun getTrashedNotes(): LiveData<List<NoteEntity>>
 
@@ -58,6 +55,12 @@ interface NoteDao {
 
     @Query("SELECT * FROM notes WHERE isTrashed = 0 AND isHiddenFromMain = 0 ORDER BY lastEdited DESC LIMIT 3")
     fun get3MostRecentVisibleNotes(): List<NoteEntity>
+
+    @Query("SELECT * FROM notes WHERE isTrashed = 0 ORDER BY lastEdited DESC")
+    fun getAllNotes(): LiveData<List<NoteEntity>>
+
+    @Query("SELECT COUNT(*) FROM folders WHERE name = :name")
+    suspend fun countFoldersByName(name: String): Int
 
 
 }

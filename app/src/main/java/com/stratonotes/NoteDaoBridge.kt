@@ -3,6 +3,8 @@ package com.stratonotes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 object NoteDaoBridge {
 
@@ -32,5 +34,26 @@ object NoteDaoBridge {
             noteDao.insertFolder(folder)
         }
     }
+
+
+    @JvmStatic
+    fun getFolderByNameBlocking(dao: NoteDao, name: String): FolderEntity? {
+        return runBlocking {
+            withContext(Dispatchers.IO) {
+                dao.getFolderByName(name)
+            }
+        }
+    }
+
+
+    @JvmStatic
+    fun insertFolderBlocking(dao: NoteDao, folder: FolderEntity): Long {
+        return runBlocking {
+            dao.insertFolder(folder)
+        }
+    }
+
+
+
 
 }

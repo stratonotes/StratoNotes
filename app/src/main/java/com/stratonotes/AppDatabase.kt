@@ -7,6 +7,8 @@ import androidx.appcompat.widget.AppCompatEditText
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.stratonotes.NoteEntity
+import com.stratonotes.FolderEntity;
 
 class StaticScrollEditText : AppCompatEditText {
     constructor(context: Context) : super(context)

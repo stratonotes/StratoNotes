@@ -3,9 +3,10 @@ package com.example.punchpad2;
 import android.app.Application;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.annotation.NonNull;
 
 import com.stratonotes.NoteEntity;
-import com.example.punchpad2.FolderWithNotes;
+import com.stratonotes.FolderWithNotes;
 
 import java.util.List;
 
@@ -13,13 +14,9 @@ public class NoteViewModel extends AndroidViewModel {
 
     private final NoteRepository repository;
 
-    public NoteViewModel(Application application) {
-        super(application);
-        repository = new NoteRepository(application);
-    }
-
     public LiveData<List<FolderWithNotes>> getFoldersWithPreviews() {
-        return repository.getAllFoldersWithNotes(); // ⬅ always fetch fresh
+        return repository.getFoldersWithNotes();
+
     }
 
     public void insert(NoteEntity note) {
@@ -71,4 +68,20 @@ public class NoteViewModel extends AndroidViewModel {
     public void permanentlyDelete(NoteEntity note) {
         repository.delete(note);
     }
+
+    public LiveData<List<NoteEntity>> getAllNotes() {
+        return allNotes;
+    }
+
+    private final LiveData<List<NoteEntity>> allNotes;
+
+    public NoteViewModel(@NonNull Application application) {
+        super(application);
+        repository = new NoteRepository(application);
+        this.allNotes = repository.getAllNotes(); // Initialize here
+    }
+
+
+
+
 }

@@ -8,8 +8,7 @@
     android:padding="16dp"
     android:fitsSystemWindows="true">
 
-
-    <!-- Top search + filter bar (Example-3 spacing) -->
+    <!-- Top search + filter bar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/libraryToolbar"
         android:layout_width="match_parent"
@@ -56,7 +55,7 @@
         android:layout_below="@id/libraryToolbar"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
-    <!-- Fixed bottom control bar (six existing buttons) -->
+    <!-- Fixed bottom control bar -->
     <LinearLayout
         android:id="@+id/bottomBar"
         android:layout_width="match_parent"
@@ -73,7 +72,7 @@
 
             <!-- Favorites Toggle -->
             <ImageButton
-                android:id="@+id/toggleFavorites"
+                android:id="@+id/favoritesToggle"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:background="@android:color/transparent"
@@ -136,7 +135,7 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Full-screen note-editor overlay (hidden until second tap) -->
+    <!-- Full-screen note-editor overlay -->
     <FrameLayout
         android:id="@+id/editorOverlay"
         android:visibility="gone"

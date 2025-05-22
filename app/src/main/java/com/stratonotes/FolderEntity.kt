@@ -6,7 +6,9 @@ import androidx.room.ColumnInfo
 
 @Entity(tableName = "folders")
 data class FolderEntity(
+
     @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
     val id: Long = 0L,
 
     @ColumnInfo(name = "name")
