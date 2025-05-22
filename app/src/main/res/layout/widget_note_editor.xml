@@ -18,34 +18,42 @@
 
     <!-- undo / redo / plus (floating inside bottom-right corner) -->
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="end"
         android:layout_gravity="bottom|end"
-        android:padding="8dp">
+        android:padding="8dp" />
+
 
         <ImageButton
-            android:id="@+id/fabUndo"
-            style="@style/Widget.MaterialComponents.Button.Icon"
-            android:src="@drawable/ic_undo"
-            android:background="@android:color/transparent"
-            android:contentDescription="@string/desc_undo"/>
+        android:id="@+id/fabUndo"
+        style="@style/Widget.MaterialComponents.Button.Icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/ic_undo"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/desc_undo" />
 
         <ImageButton
-            android:id="@+id/fabRedo"
-            style="@style/Widget.MaterialComponents.Button.Icon"
-            android:src="@drawable/ic_redo"
-            android:background="@android:color/transparent"
-            android:layout_marginStart="4dp"
-            android:contentDescription="@string/desc_redo"/>
+        android:id="@+id/fabRedo"
+        style="@style/Widget.MaterialComponents.Button.Icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="4dp"
+        android:src="@drawable/ic_redo"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/desc_redo" />
 
         <ImageButton
-            android:id="@+id/fabPlus"
-            style="@style/Widget.MaterialComponents.Button.Icon"
-            android:src="@drawable/ic_add"
-            android:background="@android:color/transparent"
-            android:layout_marginStart="4dp"
-            android:contentDescription="@string/desc_plus"/>
-    </LinearLayout>
+        android:id="@+id/fabPlus"
+        style="@style/Widget.MaterialComponents.Button.Icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="4dp"
+        android:src="@drawable/ic_add"
+        android:background="@android:color/transparent"
+        android:contentDescription="Add media" />
+
+
 </FrameLayout>

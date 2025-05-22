@@ -5,7 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#222222"
-    android:padding="12dp">
+    android:padding="16dp"
+    android:fitsSystemWindows="true">
+
 
     <!-- Top search + filter bar (Example-3 spacing) -->
     <com.google.android.material.appbar.MaterialToolbar
@@ -55,7 +57,7 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
     <!-- Fixed bottom control bar (six existing buttons) -->
-    <com.google.android.material.bottomappbar.BottomAppBar
+    <LinearLayout
         android:id="@+id/bottomBar"
         android:layout_width="match_parent"
         android:layout_height="64dp"
@@ -65,8 +67,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal"
             android:gravity="center_vertical"
+            android:orientation="horizontal"
             android:paddingHorizontal="12dp">
 
             <!-- Favorites Toggle -->
@@ -74,9 +76,9 @@
                 android:id="@+id/toggleFavorites"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:src="@drawable/ic_star_outline"
                 android:background="@android:color/transparent"
-                android:contentDescription="Favorites Toggle"/>
+                android:contentDescription="Favorites Toggle"
+                android:src="@drawable/ic_star_outline" />
 
             <!-- Sort Toggle -->
             <ImageButton
@@ -84,9 +86,9 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_marginStart="8dp"
-                android:src="@drawable/ic_sort"
                 android:background="@android:color/transparent"
-                android:contentDescription="Sort Order Toggle"/>
+                android:contentDescription="Sort Order Toggle"
+                android:src="@drawable/ic_sort" />
 
             <!-- View-mode Toggle -->
             <ImageButton
@@ -94,14 +96,14 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_marginStart="8dp"
-                android:src="@drawable/ic_view_toggle"
                 android:background="@android:color/transparent"
-                android:contentDescription="Toggle View"/>
+                android:contentDescription="Toggle View"
+                android:src="@drawable/ic_view_toggle" />
 
             <View
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:layout_weight="1"/>
+                android:layout_weight="1" />
 
             <!-- Back Button -->
             <ImageButton
@@ -109,18 +111,18 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_marginEnd="8dp"
-                android:src="@drawable/ic_back"
                 android:background="@android:color/transparent"
-                android:contentDescription="Back"/>
+                android:contentDescription="Back"
+                android:src="@drawable/ic_back" />
 
             <!-- 3-dot Menu -->
             <ImageButton
                 android:id="@+id/menuButton"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:src="@drawable/ic_more_vert"
                 android:background="@android:color/transparent"
-                android:contentDescription="More Options"/>
+                android:contentDescription="More Options"
+                android:src="@drawable/ic_more_vert" />
 
             <!-- Delete Button -->
             <ImageButton
@@ -128,11 +130,11 @@
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:layout_marginStart="8dp"
-                android:src="@drawable/ic_delete"
                 android:background="@android:color/transparent"
-                android:contentDescription="Delete Mode"/>
+                android:contentDescription="Delete Mode"
+                android:src="@drawable/ic_delete" />
         </LinearLayout>
-    </com.google.android.material.bottomappbar.BottomAppBar>
+    </LinearLayout>
 
     <!-- Full-screen note-editor overlay (hidden until second tap) -->
     <FrameLayout
@@ -144,8 +146,8 @@
 
         <include
             layout="@layout/widget_note_editor"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_width="match_parent"
             android:layout_gravity="center"/>
     </FrameLayout>
 

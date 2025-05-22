@@ -1,103 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#222222"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:fitsSystemWindows="true">
 
-    <!-- Top Frame for Search and Dropdown Overlay -->
-    <FrameLayout
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp">
+        android:layout_height="match_parent"
+        android:background="#222222"
+        android:padding="16dp"
+        android:fitsSystemWindows="true">
+
+        <!-- Top Frame for Search and Dropdown Overlay -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp">
 
         <!-- Search Bar + Filter -->
-        <RelativeLayout
-            android:id="@+id/searchBarContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="8dp">
-
-            <EditText
-                android:id="@+id/searchInput"
+            <RelativeLayout
+                android:id="@+id/searchBarContainer"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_alignParentStart="true"
-                android:layout_toStartOf="@+id/filter_button"
-                android:background="#444444"
-                android:hint="Search notes..."
-                android:textColor="#FFFFFF"
-                android:textColorHint="#AAAAAA"
-                android:padding="12dp" />
+                android:layout_height="wrap_content"
+                android:paddingBottom="8dp">
 
-            <!-- Filter Button -->
-            <ImageButton
-                android:id="@+id/filter_button"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@drawable/ic_filter"
-                android:background="@android:color/transparent"
-                android:contentDescription="Filter"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="8dp"/>
-        </RelativeLayout>
+                <EditText
+                    android:id="@+id/searchInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@+id/filter_button"
+                    android:background="#444444"
+                    android:hint="Search notes..."
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#AAAAAA"
+                    android:padding="12dp" />
 
-        <!-- 🔍 Live Search Dropdown (Overlay) -->
-        <ListView
-            android:id="@+id/liveSearchResults"
-            android:layout_width="match_parent"
+                <!-- Filter Button -->
+                <ImageButton
+                    android:id="@+id/filter_button"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_filter"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="Filter"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="8dp"/>
+            </RelativeLayout>
+
+            <!-- 🔍 Live Search Dropdown (Overlay) -->
+            <ListView
+                android:id="@+id/liveSearchResults"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="56dp"
+                android:background="#111111"
+                android:divider="@android:color/darker_gray"
+                android:dividerHeight="1dp"
+                android:visibility="gone"
+                android:elevation="8dp" />
+        </FrameLayout>
+
+        <!-- Submit + Clear Draft Buttons + Settings -->
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="56dp"
-            android:background="#111111"
-            android:divider="@android:color/darker_gray"
-            android:dividerHeight="1dp"
-            android:visibility="gone"
-            android:elevation="8dp" />
-    </FrameLayout>
-
-    <!-- Submit + Clear Draft Buttons + Settings -->
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:orientation="horizontal"
-        android:layout_marginBottom="12dp"
-        android:gravity="center_vertical">
+            android:layout_gravity="center_horizontal"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp"
+            android:gravity="center_vertical">
 
         <!-- Folder Settings Button (NEW position, left of submit button) -->
-        <ImageButton
-            android:id="@+id/folder_settings_button_1"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="@drawable/submit_button_background"
-            android:backgroundTint="#444444"
-            android:src="@drawable/ic_settings"
-            android:layout_marginEnd="8dp"
-            android:contentDescription="Folder Settings"
-            app:tint="#FFFFFF" />
+            <ImageButton
+                android:id="@+id/folder_settings_button_1"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/submit_button_background"
+                android:backgroundTint="#444444"
+                android:src="@drawable/ic_settings"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="Folder Settings"
+                app:tint="#FFFFFF" />
 
-        <Button
-            android:id="@+id/submit_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Enter text → Add to Recent"
-            android:textColor="#FFFFFF"
-            android:background="@drawable/submit_button_background"
-            android:padding="12dp" />
+            <Button
+                android:id="@+id/submit_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Enter text → Add to Recent"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/submit_button_background"
+                android:padding="12dp" />
 
-        <Button
-            android:id="@+id/clear_draft_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Clear"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="#D45C18"
-            android:padding="12dp"
-            android:visibility="gone"
-            android:layout_marginStart="12dp" />
+            <Button
+                android:id="@+id/clear_draft_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Clear"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#D45C18"
+                android:padding="12dp"
+                android:visibility="gone"
+                android:layout_marginStart="12dp" />
     </LinearLayout>
 
     <!-- Textbox + Media Buttons Layer -->
@@ -233,20 +242,21 @@
         android:layout_marginBottom="8dp" />
 
     <!-- Dev Ad Space -->
-    <LinearLayout
-        android:id="@+id/dev_ad_banner"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:background="#111111"
-        android:padding="8dp">
+        <LinearLayout
+            android:id="@+id/dev_ad_banner"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="#111111"
+            android:padding="8dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="🛍️ 50% OFF! Shop the latest gear at ShopzyMart.com"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🛍️ 50% OFF! Shop the latest gear at ShopzyMart.com"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -16,6 +16,8 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.*;
 import android.animation.ObjectAnimator;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.stratonotes.FolderEntity;
 import com.stratonotes.NoteDaoBridge;
 import com.stratonotes.NoteEntity;
@@ -264,6 +266,8 @@ public class MainActivity extends Activity {
         });
 
         loadPreviews();
+
+
     }
 
     private void saveNote(String content, String folderName) {
