@@ -9,6 +9,34 @@
     android:fitsSystemWindows="true">
 
     <!-- Top search + filter bar -->
+
+    <LinearLayout
+        android:id="@+id/dev_ad_banner"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_gravity="bottom"
+        android:background="#111111"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🛍️ 50% OFF! Shop the latest gear at ShopzyMart.com"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/folderRecycler"
+        android:layout_width="match_parent"
+        android:layout_height="550dp"
+        android:layout_below="@id/libraryToolbar"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="82dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/libraryToolbar"
         android:layout_width="match_parent"
@@ -42,25 +70,20 @@
                 android:src="@drawable/ic_filter"
                 android:background="@android:color/transparent"
                 android:contentDescription="@string/desc_filter"/>
+
         </LinearLayout>
     </com.google.android.material.appbar.MaterialToolbar>
 
     <!-- Folder / note list -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/folderRecycler"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="72dp"
-        android:layout_below="@id/libraryToolbar"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
     <!-- Fixed bottom control bar -->
+
     <LinearLayout
         android:id="@+id/bottomBar"
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:layout_gravity="bottom"
+        android:layout_marginBottom="64dp"
         android:background="#111111">
 
         <LinearLayout
@@ -132,6 +155,7 @@
                 android:background="@android:color/transparent"
                 android:contentDescription="Delete Mode"
                 android:src="@drawable/ic_delete" />
+
         </LinearLayout>
     </LinearLayout>
 
@@ -148,6 +172,7 @@
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:layout_gravity="center"/>
+
     </FrameLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
