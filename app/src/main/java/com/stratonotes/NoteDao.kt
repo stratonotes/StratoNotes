@@ -62,5 +62,7 @@ interface NoteDao {
     @Query("SELECT COUNT(*) FROM folders WHERE name = :name")
     suspend fun countFoldersByName(name: String): Int
 
+    @Query("SELECT * FROM folders WHERE name LIKE :term ORDER BY createdAt DESC")
+    fun searchFolders(term: String): List<FolderEntity>
 
 }

@@ -39,7 +39,7 @@
                 android:overScrollMode="always"
                 android:scrollbars="vertical">
 
-                <com.example.punchpad2.StaticScrollEditText
+                <com.stratonotes.StaticScrollEditText
                     android:id="@+id/noteText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

@@ -13,7 +13,7 @@
 
         <!-- Splash -->
         <activity
-            android:name="com.example.punchpad2.SplashActivity"
+            android:name="com.stratonotes.SplashActivity"
             android:exported="true"
             android:theme="@style/Theme.PunchPad2.Splash"
             android:screenOrientation="portrait">
@@ -25,31 +25,31 @@
 
         <!-- Fullscreen Image -->
         <activity
-            android:name="com.example.punchpad2.FullscreenImageActivity"
+            android:name="com.stratonotes.FullscreenImageActivity"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             android:screenOrientation="sensor" />
 
         <!-- Main Entry -->
         <activity
-            android:name="com.example.punchpad2.MainActivity"
+            android:name="com.stratonotes.MainActivity"
             android:exported="true"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustNothing" />
 
         <!-- Editor / Library / Trash -->
         <activity
-            android:name="com.example.punchpad2.NoteActivity"
+            android:name="com.stratonotes.NoteActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
         <activity
-            android:name="com.example.punchpad2.LibraryActivity"
+            android:name="com.stratonotes.LibraryActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.PunchPad2" />
 
         <activity
-            android:name="com.example.punchpad2.TrashActivity"
+            android:name="com.stratonotes.TrashActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 

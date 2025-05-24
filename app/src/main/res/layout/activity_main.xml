@@ -134,6 +134,16 @@
             android:nestedScrollingEnabled="true"
             android:focusableInTouchMode="true" />
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/searchResultsDropdown"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:overScrollMode="never"
+            android:nestedScrollingEnabled="false"
+            android:layout_marginTop="4dp"
+            android:background="#303030"/>
+
         <!-- Sliding Media Menu -->
         <LinearLayout
             android:id="@+id/media_menu"
