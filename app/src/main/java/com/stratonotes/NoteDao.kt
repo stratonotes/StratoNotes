@@ -65,4 +65,7 @@ interface NoteDao {
     @Query("SELECT * FROM folders WHERE name LIKE :term ORDER BY createdAt DESC")
     fun searchFolders(term: String): List<FolderEntity>
 
+    @Query("DELETE FROM notes WHERE isTrashed = 1")
+    suspend fun permanentlyDeleteAllTrashedNotes()
+
 }

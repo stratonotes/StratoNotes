@@ -1,8 +1,14 @@
 package com.stratonotes
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
+import android.view.LayoutInflater
+import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.PopupWindow
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -27,6 +33,9 @@ class LibraryActivity : ComponentActivity() {
         val folderRecycler = findViewById<RecyclerView>(R.id.folderRecycler)
         folderRecycler.layoutManager = LinearLayoutManager(this)
 
+        val searchInput = findViewById<EditText>(R.id.searchInput)
+        val btnFilter = findViewById<ImageButton>(R.id.btnFilter)
+
         val query = intent.getStringExtra("query") ?: ""
 
         folderAdapter = FolderAdapter(
@@ -34,8 +43,6 @@ class LibraryActivity : ComponentActivity() {
             mutableListOf(),
             { note -> noteViewModel.update(note) }
         )
-
-
 
         folderRecycler.adapter = folderAdapter
 
@@ -51,6 +58,24 @@ class LibraryActivity : ComponentActivity() {
             folderAdapter.updateFilteredList(filterFolders(folders, query))
         }
 
+        searchInput.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                if (s != null && s.length > 100) {
+                    Toast.makeText(this@LibraryActivity, "Search is limited to 100 characters.", Toast.LENGTH_SHORT).show()
+                    searchInput.setText(s.take(100))
+                    searchInput.setSelection(searchInput.text.length)
+                } else {
+                    reloadFiltered(s.toString())
+                }
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+
+        btnFilter.setOnClickListener {
+            showFilterGrid(btnFilter)
+        }
+
         findViewById<ImageButton>(R.id.deleteButton).setOnClickListener {
             deleteMode = !deleteMode
             folderAdapter.setDeleteMode(deleteMode)
@@ -59,13 +84,43 @@ class LibraryActivity : ComponentActivity() {
 
         findViewById<ImageButton>(R.id.favoritesToggle).setOnClickListener {
             favoritesOnly = !favoritesOnly
-            reloadFiltered(query)
+            reloadFiltered(searchInput.text.toString())
         }
 
         findViewById<ImageButton>(R.id.sortToggle).setOnClickListener {
             sortNewest = !sortNewest
-            reloadFiltered(query)
+            reloadFiltered(searchInput.text.toString())
         }
+    }
+
+    private fun showFilterGrid(anchor: ImageButton) {
+        val popupView = LayoutInflater.from(this).inflate(R.layout.popup_filter_grid, null)
+        val popupWindow = PopupWindow(popupView, RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT, true)
+
+        popupView.findViewById<ImageButton>(R.id.filterSearch).setOnClickListener {
+            Toast.makeText(this, "Search triggered", Toast.LENGTH_SHORT).show()
+            popupWindow.dismiss()
+        }
+
+        popupView.findViewById<ImageButton>(R.id.filterFavorites).setOnClickListener {
+            favoritesOnly = !favoritesOnly
+            reloadFiltered(findViewById<EditText>(R.id.searchInput).text.toString())
+            popupWindow.dismiss()
+        }
+
+        popupView.findViewById<ImageButton>(R.id.filterNewest).setOnClickListener {
+            sortNewest = true
+            reloadFiltered(findViewById<EditText>(R.id.searchInput).text.toString())
+            popupWindow.dismiss()
+        }
+
+        popupView.findViewById<ImageButton>(R.id.filterOldest).setOnClickListener {
+            sortNewest = false
+            reloadFiltered(findViewById<EditText>(R.id.searchInput).text.toString())
+            popupWindow.dismiss()
+        }
+
+        popupWindow.showAsDropDown(anchor, 0, 8)
     }
 
     private fun reloadFiltered(query: String) {

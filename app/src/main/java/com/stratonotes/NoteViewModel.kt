@@ -2,38 +2,42 @@ package com.stratonotes
 
 import android.app.Application
 import androidx.lifecycle.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class NoteViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = NoteRepository(application)
-    private val _allNotes: LiveData<List<NoteEntity>> = repository.allNotes
+    private val noteRepository: NoteRepository
+    val allNotes: LiveData<List<NoteEntity>>
+    val trashedNotes: LiveData<List<NoteEntity>>
+    val foldersWithNotes: LiveData<List<FolderWithNotes>>
 
-    val allNotes: LiveData<List<NoteEntity>> get() = _allNotes
+    init {
+        val noteDao = AppDatabase.getDatabase(application).noteDao()
+        noteRepository = NoteRepository(noteDao)
 
-    fun getFoldersWithPreviews(): LiveData<List<FolderWithNotes>> {
-        return repository.foldersWithNotes
-
+        allNotes = noteRepository.allNotes
+        trashedNotes = noteRepository.trashedNotes
+        foldersWithNotes = noteRepository.foldersWithNotes
     }
 
     fun insert(note: NoteEntity) {
         viewModelScope.launch {
-            repository.insert(note)
+            noteRepository.insert(note)
         }
     }
 
     fun delete(note: NoteEntity) {
         viewModelScope.launch {
-            repository.delete(note)
+            noteRepository.delete(note)
         }
     }
 
     fun update(note: NoteEntity) {
         viewModelScope.launch {
-            repository.update(note)
+            noteRepository.update(note)
         }
     }
-
 
     fun toggleFavorite(note: NoteEntity, favorite: Boolean) {
         val updated = note.copy(
@@ -55,13 +59,15 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
         delete(note)
     }
 
-    fun getTrashedNotes(): LiveData<List<NoteEntity>> {
-        return repository.trashedNotes
-    }
-
-
+    fun getFoldersWithPreviews(): LiveData<List<FolderWithNotes>> = foldersWithNotes
 
     fun searchNotes(query: String): LiveData<List<NoteEntity>> {
-        return repository.searchNotes(query).asLiveData()
+        return noteRepository.searchNotes(query).asLiveData()
+    }
+
+    fun emptyTrash() {
+        viewModelScope.launch(Dispatchers.IO) {
+            noteRepository.permanentlyDeleteAllTrashedNotes()
+        }
     }
 }

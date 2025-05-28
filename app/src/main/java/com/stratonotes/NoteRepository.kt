@@ -7,9 +7,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.Flow
 
-class NoteRepository(application: Application) {
+class NoteRepository(private val noteDao: NoteDao) {
 
-    private val noteDao: NoteDao = AppDatabase.getInstance(application).noteDao()
+
 
     val allNotes = noteDao.getAllNotes()
     val trashedNotes = noteDao.getTrashedNotes()
@@ -36,4 +36,9 @@ class NoteRepository(application: Application) {
     fun searchNotes(query: String): Flow<List<NoteEntity>> {
         return noteDao.searchNotes(query)
     }
+
+    suspend fun permanentlyDeleteAllTrashedNotes() {
+        noteDao.permanentlyDeleteAllTrashedNotes()
+    }
+
 }

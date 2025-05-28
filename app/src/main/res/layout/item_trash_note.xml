@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -7,7 +6,7 @@
     android:layout_marginBottom="8dp">
 
     <TextView
-        android:id="@+id/trashContent"
+        android:id="@+id/noteText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="#FFFFFF"
@@ -15,13 +14,21 @@
         android:maxLines="5"
         android:ellipsize="end" />
 
+    <TextView
+        android:id="@+id/daysLeft"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/noteText"
+        android:textColor="#AAAAAA"
+        android:textSize="12sp"
+        android:paddingTop="4dp" />
+
     <ImageButton
         android:id="@+id/restoreButton"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_alignParentEnd="true"
-        android:layout_marginStart="8dp"
-        android:layout_alignTop="@id/trashContent"
+        android:layout_alignTop="@id/noteText"
         android:src="@drawable/ic_restore"
         android:background="@android:color/transparent"
         android:contentDescription="Restore" />
@@ -31,8 +38,9 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_toStartOf="@id/restoreButton"
-        android:layout_alignTop="@id/trashContent"
+        android:layout_alignTop="@id/noteText"
         android:src="@drawable/ic_delete"
         android:background="@android:color/transparent"
         android:contentDescription="Delete" />
+
 </RelativeLayout>

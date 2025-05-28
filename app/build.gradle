@@ -41,9 +41,12 @@ android {
 }
 
 dependencies {
+    implementation "com.google.android.exoplayer:exoplayer:2.19.1"
+
     implementation libs.material
     implementation libs.androidx.room.runtime
     kapt "androidx.room:room-compiler:2.7.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
 
     implementation libs.androidx.core.splashscreen
     implementation libs.kotlinx.metadata.jvm

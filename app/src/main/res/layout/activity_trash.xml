@@ -5,6 +5,18 @@
     android:background="#222222"
     android:padding="12dp">
 
+    <Button
+        android:id="@+id/emptyTrashButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Empty Trash"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/submit_button_background"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"/>
+
     <ImageButton
         android:id="@+id/backButton"
         android:layout_width="48dp"

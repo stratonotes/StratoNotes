@@ -176,7 +176,8 @@ class MainActivity : ComponentActivity() {
 
                 noteViewModel.searchNotes(query).observe(this@MainActivity) { notes ->
                     lifecycleScope.launch(Dispatchers.IO) {
-                        val folders = AppDatabase.getInstance(this@MainActivity)
+                        val folders = AppDatabase.getDatabase(this@MainActivity)
+
                             .noteDao()
                             .searchFolders("%$query%")
 
@@ -237,7 +238,8 @@ class MainActivity : ComponentActivity() {
     private fun saveNote(content: String, folderName: String) {
         lifecycleScope.launch(Dispatchers.IO) {
             val now = System.currentTimeMillis()
-            val db = AppDatabase.getInstance(this@MainActivity)
+            val db = AppDatabase.getDatabase(this@MainActivity)
+
             val noteDao = db.noteDao()
 
             var folder = noteDao.getFolderByName(folderName)
@@ -274,7 +276,7 @@ class MainActivity : ComponentActivity() {
 
     private fun loadPreviews() {
         lifecycleScope.launch(Dispatchers.IO) {
-            val notes = AppDatabase.getInstance(this@MainActivity).noteDao().get3MostRecentVisibleNotes()
+            val notes = AppDatabase.getDatabase(this@MainActivity).noteDao().get3MostRecentVisibleNotes()
             withContext(Dispatchers.Main) {
                 previewContainer.removeAllViews()
                 for (note in notes) {

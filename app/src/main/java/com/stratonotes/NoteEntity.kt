@@ -3,7 +3,12 @@ package com.stratonotes
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.ColumnInfo
+import androidx.room.Ignore
 
+data class MediaItem(
+    val type: String, // "image" or "audio"
+    val uri: String   // URI string pointing to the media file
+)
 @Entity(tableName = "notes")
 data class NoteEntity(
 
@@ -15,7 +20,7 @@ data class NoteEntity(
     val folderId: Long,
 
     @ColumnInfo(name = "content")
-    val content: String,
+    var content: String,
 
     @ColumnInfo(name = "createdAt")
     val createdAt: Long = System.currentTimeMillis(),
@@ -24,7 +29,7 @@ data class NoteEntity(
     val lastEdited: Long = System.currentTimeMillis(),
 
     @ColumnInfo(name = "isFavorite")
-    val isFavorite: Boolean = false,
+    var isFavorite: Boolean = false,
 
     @ColumnInfo(name = "isHiddenFromMain")
     val isHiddenFromMain: Boolean = false,
@@ -34,4 +39,8 @@ data class NoteEntity(
 
     @ColumnInfo(name = "isTrashed")
     val isTrashed: Boolean = false
-)
+
+) {
+    @Ignore
+    var mediaItems: MutableList<MediaItem> = mutableListOf() // UI-only field
+}

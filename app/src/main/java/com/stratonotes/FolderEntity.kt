@@ -12,7 +12,7 @@ data class FolderEntity(
     val id: Long = 0L,
 
     @ColumnInfo(name = "name")
-    val name: String,
+    var name: String,
 
     @ColumnInfo(name = "createdAt")
     val createdAt: Long = System.currentTimeMillis(),
