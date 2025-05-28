@@ -31,9 +31,9 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/folderRecycler"
         android:layout_width="match_parent"
-        android:layout_height="550dp"
+        android:layout_height="515dp"
         android:layout_below="@id/libraryToolbar"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="55dp"
         android:layout_marginBottom="82dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 

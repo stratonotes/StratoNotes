@@ -39,9 +39,12 @@ class LibraryActivity : ComponentActivity() {
         val query = intent.getStringExtra("query") ?: ""
 
         folderAdapter = FolderAdapter(
-            this,
-            mutableListOf(),
-            { note -> noteViewModel.update(note) }
+            context = this,
+            folders = mutableListOf(),
+            listener = { note, _ ->
+                noteViewModel.update(note)
+            },
+            noteLayoutResId = R.layout.item_note_library // Pass the stripped-down layout for Library screen
         )
 
         folderRecycler.adapter = folderAdapter
@@ -77,10 +80,23 @@ class LibraryActivity : ComponentActivity() {
         }
 
         findViewById<ImageButton>(R.id.deleteButton).setOnClickListener {
-            deleteMode = !deleteMode
-            folderAdapter.setDeleteMode(deleteMode)
-            folderAdapter.notifyDataSetChanged()
+            val selectedNotes = folderAdapter.getSelectedNotes()
+            if (selectedNotes.isEmpty()) {
+                Toast.makeText(this, "No notes selected for deletion.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Confirm deletion (optional)
+            selectedNotes.forEach { note ->
+                noteViewModel.delete(note)
+            }
+
+            Toast.makeText(this, "Deleted ${selectedNotes.size} notes.", Toast.LENGTH_SHORT).show()
+
+            // Reset selection state
+            folderAdapter.exitSelectionMode()
         }
+
 
         findViewById<ImageButton>(R.id.favoritesToggle).setOnClickListener {
             favoritesOnly = !favoritesOnly
