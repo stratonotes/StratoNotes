@@ -15,6 +15,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.punchpad2.FolderAdapter
 import com.example.punchpad2.R
+import android.view.View
+import android.widget.LinearLayout
+import android.widget.Button
 
 class LibraryActivity : ComponentActivity() {
 
@@ -34,7 +37,11 @@ class LibraryActivity : ComponentActivity() {
         folderRecycler.layoutManager = LinearLayoutManager(this)
 
         val searchInput = findViewById<EditText>(R.id.searchInput)
-        val btnFilter = findViewById<ImageButton>(R.id.btnFilter)
+        //val btnFilter = findViewById<ImageButton>(R.id.btnFilter)
+        val backButton = findViewById<ImageButton>(R.id.strato_button)
+        backButton.setOnClickListener {
+            finish() // Closes LibraryActivity and returns to MainActivity
+        }
 
         val query = intent.getStringExtra("query") ?: ""
 
@@ -75,33 +82,76 @@ class LibraryActivity : ComponentActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-        btnFilter.setOnClickListener {
-            showFilterGrid(btnFilter)
+        //btnFilter.setOnClickListener {
+        //    showFilterGrid(btnFilter)
+        //}
+
+        val deleteButton = findViewById<ImageButton>(R.id.deleteButton)
+        val selectionBar = findViewById<LinearLayout>(R.id.selectionBar)
+        val bottomBar = findViewById<LinearLayout>(R.id.bottomBar)
+        val cancelButton = findViewById<Button>(R.id.cancelButton)
+        val bombButton = findViewById<ImageButton>(R.id.bombButton)
+
+        deleteButton.setOnClickListener {
+            if (folderAdapter.getSelectedNotes().isEmpty()) {
+                Toast.makeText(this, "Long-press a note to select.", Toast.LENGTH_SHORT).show()
+            } else {
+                // Show selection mode UI
+                bottomBar.visibility = View.GONE
+                selectionBar.visibility = View.VISIBLE
+            }
         }
 
-        findViewById<ImageButton>(R.id.deleteButton).setOnClickListener {
+        cancelButton.setOnClickListener {
+            folderAdapter.exitSelectionMode()
+            selectionBar.visibility = View.GONE
+            bottomBar.visibility = View.VISIBLE
+        }
+
+        bombButton.setOnClickListener {
             val selectedNotes = folderAdapter.getSelectedNotes()
             if (selectedNotes.isEmpty()) {
-                Toast.makeText(this, "No notes selected for deletion.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+                Toast.makeText(this, "No notes selected.", Toast.LENGTH_SHORT).show()
+            } else {
+                selectedNotes.forEach { note ->
+                    noteViewModel.delete(note)
+                }
+                folderAdapter.exitSelectionMode()
+                selectionBar.visibility = View.GONE
+                bottomBar.visibility = View.VISIBLE
+                Toast.makeText(this, "Deleted ${selectedNotes.size} notes.", Toast.LENGTH_SHORT).show()
             }
-
-            // Confirm deletion (optional)
-            selectedNotes.forEach { note ->
-                noteViewModel.delete(note)
-            }
-
-            Toast.makeText(this, "Deleted ${selectedNotes.size} notes.", Toast.LENGTH_SHORT).show()
-
-            // Reset selection state
-            folderAdapter.exitSelectionMode()
         }
+
 
 
         findViewById<ImageButton>(R.id.favoritesToggle).setOnClickListener {
-            favoritesOnly = !favoritesOnly
-            reloadFiltered(searchInput.text.toString())
+            if (folderAdapter.getSelectedNotes().isNotEmpty()) {
+                // Selection mode: batch toggle favorites
+                val selectedNotes = folderAdapter.getSelectedNotes()
+                val makeFavorite = selectedNotes.any { !it.isFavorite } // If any are not favorite, mark all as favorite
+                selectedNotes.forEach { note ->
+                    note.isFavorite = makeFavorite
+                    noteViewModel.update(note)
+                }
+                Toast.makeText(this, if (makeFavorite) "Favorited ${selectedNotes.size} notes." else "Unfavorited ${selectedNotes.size} notes.", Toast.LENGTH_SHORT).show()
+                folderAdapter.exitSelectionMode()
+                findViewById<LinearLayout>(R.id.selectionBar).visibility = View.GONE
+                findViewById<LinearLayout>(R.id.bottomBar).visibility = View.VISIBLE
+            } else {
+                // Not in selection mode: toggle filter
+                favoritesOnly = !favoritesOnly
+                reloadFiltered(findViewById<EditText>(R.id.searchInput).text.toString())
+                val favoritesIcon = findViewById<ImageButton>(R.id.favoritesToggle)
+                if (favoritesOnly) {
+                    favoritesIcon.setImageResource(R.drawable.ic_star_filled)
+                } else {
+                    favoritesIcon.setImageResource(R.drawable.ic_star_outline)
+                }
+                Toast.makeText(this, if (favoritesOnly) "Showing favorites only." else "Showing all notes.", Toast.LENGTH_SHORT).show()
+            }
         }
+
 
         findViewById<ImageButton>(R.id.sortToggle).setOnClickListener {
             sortNewest = !sortNewest

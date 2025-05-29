@@ -18,6 +18,8 @@ import com.example.punchpad2.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.core.content.res.ResourcesCompat
+import android.graphics.Typeface
 
 class MainActivity : ComponentActivity() {
 
@@ -44,7 +46,7 @@ class MainActivity : ComponentActivity() {
     private var isTyping = false
 
     private var lastUsedFolder = "Default"
-    private val presetFolder = "StratoNote"
+    private val presetFolder = "StratoNotes"
 
     private val draftHandler = Handler()
     private var draftRunnable: Runnable? = null
@@ -57,9 +59,13 @@ class MainActivity : ComponentActivity() {
     private val DRAFT_PREFS = "DraftPrefs"
     private val KEY_DRAFT_NOTE = "draft_note"
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        noteViewModel.ensureStratoNotesFolder()
+
 
         previewContainer = findViewById(R.id.previewContainer)
         searchInput = findViewById(R.id.searchInput)
@@ -122,7 +128,7 @@ class MainActivity : ComponentActivity() {
         }
 
         loadSubmitModeFromPrefs()
-        updateSubmitLabel()
+        updateSubmitLabel() // <-- This stays here
 
         submitButton.setOnClickListener {
             val content = noteInput.text.toString().trim()
@@ -139,6 +145,7 @@ class MainActivity : ComponentActivity() {
                 SaveMode.PRESET -> saveNote(content, presetFolder)
             }
         }
+
 
         noteInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -235,6 +242,15 @@ class MainActivity : ComponentActivity() {
         loadPreviews()
     }
 
+    private fun updateSubmitButtonBackground() {
+        if (currentMode == SaveMode.PRESET) {
+            submitButton.setBackgroundResource(R.drawable.stratonotes_button_bg)
+        } else {
+            submitButton.setBackgroundResource(R.drawable.submit_button_background)
+        }
+    }
+
+
     private fun saveNote(content: String, folderName: String) {
         lifecycleScope.launch(Dispatchers.IO) {
             val now = System.currentTimeMillis()
@@ -310,16 +326,41 @@ class MainActivity : ComponentActivity() {
                 submitButton.text = "Enter text → Add to New Folder"
                 folderSettingsButton.visibility = View.GONE
             }
+
             SaveMode.RECENT -> {
                 submitButton.text = "Add note to $lastUsedFolder"
                 folderSettingsButton.visibility = View.VISIBLE
             }
+
             SaveMode.PRESET -> {
-                submitButton.text = "Enter text → Add to $presetFolder"
+                submitButton.text = "Add to → $presetFolder \uD83D\uDE80"
                 folderSettingsButton.visibility = View.GONE
             }
         }
+
+        updateSubmitButtonBackground()
+        updateSubmitButtonFont()
+
+        if (currentMode == SaveMode.PRESET) {
+            noteInput.requestFocus()
+            noteInput.postDelayed({
+                val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+                imm.showSoftInput(noteInput, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+            }, 100)
+        }
     }
+    private fun updateSubmitButtonFont() {
+        val typeface = if (currentMode == SaveMode.PRESET) {
+            ResourcesCompat.getFont(this, R.font.orbitron_regular)
+        } else {
+            null // Default system font
+        }
+
+        submitButton.typeface = typeface
+        submitButton.setTypeface(typeface, Typeface.BOLD_ITALIC)
+        submitButton.textSize = 18f
+    }
+
 
     private fun showNewFolderDialog(content: String) {
         val input = EditText(this)

@@ -3,6 +3,7 @@ package com.stratonotes
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.ColumnInfo
+import androidx.room.Dao
 
 @Entity(tableName = "folders")
 data class FolderEntity(
@@ -19,4 +20,6 @@ data class FolderEntity(
 
     @ColumnInfo(name = "lastEdited")
     val lastEdited: Long = System.currentTimeMillis()
+
+
 )

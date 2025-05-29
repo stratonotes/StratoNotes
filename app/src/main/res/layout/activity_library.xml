@@ -8,8 +8,173 @@
     android:padding="16dp"
     android:fitsSystemWindows="true">
 
-    <!-- Top search + filter bar -->
+    <!-- Top search + filter bar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/libraryToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/stratonotes_button_bg"
+        app:titleTextColor="@android:color/transparent">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/searchInput"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:background="@drawable/search_field_bg"
+                android:hint="Search…"
+                android:inputType="text"
+                android:paddingStart="5dp"
+                android:paddingEnd="20dp"
+                android:textColor="@android:color/white"
+                android:textColorHint="@android:color/white" />
+
+
+            <ImageButton
+                android:id="@+id/strato_button"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="6dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="Filter"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_stratonotes" />
+
+        </LinearLayout>
+    </com.google.android.material.appbar.MaterialToolbar>
+
+    <!-- Folder / note list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/folderRecycler"
+        android:layout_width="match_parent"
+        android:layout_height="515dp"
+        android:layout_marginTop="55dp"
+        android:layout_marginBottom="82dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <!-- Fixed bottom control bar -->
+    <LinearLayout
+        android:id="@+id/bottomBar"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="64dp"
+        android:background="#111111"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="12dp">
+
+
+
+        <ImageButton
+            android:id="@+id/favoritesToggle"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="Favorites Toggle"
+            android:src="@drawable/ic_star_outline" />
+
+        <ImageButton
+            android:id="@+id/sortToggle"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="Sort Order Toggle"
+            android:src="@drawable/ic_sort" />
+
+        <ImageButton
+            android:id="@+id/viewToggleButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="Toggle View"
+            android:src="@drawable/ic_view_toggle" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/backButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="Back"
+            android:src="@drawable/ic_back" />
+
+        <ImageButton
+            android:id="@+id/menuButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="More Options"
+            android:src="@drawable/ic_more_vert" />
+
+        <ImageButton
+            android:id="@+id/deleteButton"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="8dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="Delete Mode"
+            android:src="@drawable/ic_delete" />
+
+    </LinearLayout>
+
+    <!-- Cancel + Bomb Bar -->
+    <LinearLayout
+        android:id="@+id/selectionBar"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="64dp"
+        android:background="#111111"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:visibility="gone"
+        android:paddingHorizontal="12dp">
+
+        <Button
+            android:id="@+id/cancelButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CANCEL"
+            android:textAllCaps="true"
+            android:backgroundTint="#D45C18"
+            android:textColor="@android:color/white"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="12dp"
+            android:textSize="14sp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/bombButton"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="8dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="Delete Notes"
+            android:src="@drawable/ic_delete" />
+
+    </LinearLayout>
+
+    <!-- Bottom ad banner -->
     <LinearLayout
         android:id="@+id/dev_ad_banner"
         android:layout_width="match_parent"
@@ -28,138 +193,7 @@
             android:textSize="14sp" />
     </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/folderRecycler"
-        android:layout_width="match_parent"
-        android:layout_height="515dp"
-        android:layout_below="@id/libraryToolbar"
-        android:layout_marginTop="55dp"
-        android:layout_marginBottom="82dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
-
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/libraryToolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
-        app:titleTextColor="@android:color/transparent">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <EditText
-                android:id="@+id/searchInput"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="1"
-                android:background="@drawable/search_field_bg"
-                android:hint="Search…"
-                android:inputType="text"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:textColor="@android:color/white"
-                android:textColorHint="@android:color/white"/>
-
-            <ImageButton
-                android:id="@+id/btnFilter"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/ic_filter"
-                android:background="@android:color/transparent"
-                android:contentDescription="@string/desc_filter"/>
-
-        </LinearLayout>
-    </com.google.android.material.appbar.MaterialToolbar>
-
-    <!-- Folder / note list -->
-
-    <!-- Fixed bottom control bar -->
-
-    <LinearLayout
-        android:id="@+id/bottomBar"
-        android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:layout_gravity="bottom"
-        android:layout_marginBottom="64dp"
-        android:background="#111111">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="12dp">
-
-            <!-- Favorites Toggle -->
-            <ImageButton
-                android:id="@+id/favoritesToggle"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="@android:color/transparent"
-                android:contentDescription="Favorites Toggle"
-                android:src="@drawable/ic_star_outline" />
-
-            <!-- Sort Toggle -->
-            <ImageButton
-                android:id="@+id/sortToggle"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginStart="8dp"
-                android:background="@android:color/transparent"
-                android:contentDescription="Sort Order Toggle"
-                android:src="@drawable/ic_sort" />
-
-            <!-- View-mode Toggle -->
-            <ImageButton
-                android:id="@+id/viewToggleButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginStart="8dp"
-                android:background="@android:color/transparent"
-                android:contentDescription="Toggle View"
-                android:src="@drawable/ic_view_toggle" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-
-            <!-- Back Button -->
-            <ImageButton
-                android:id="@+id/backButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="8dp"
-                android:background="@android:color/transparent"
-                android:contentDescription="Back"
-                android:src="@drawable/ic_back" />
-
-            <!-- 3-dot Menu -->
-            <ImageButton
-                android:id="@+id/menuButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="@android:color/transparent"
-                android:contentDescription="More Options"
-                android:src="@drawable/ic_more_vert" />
-
-            <!-- Delete Button -->
-            <ImageButton
-                android:id="@+id/deleteButton"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:layout_marginStart="8dp"
-                android:background="@android:color/transparent"
-                android:contentDescription="Delete Mode"
-                android:src="@drawable/ic_delete" />
-
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- Full-screen note-editor overlay -->
+    <!-- Full-screen note-editor overlay -->
     <FrameLayout
         android:id="@+id/editorOverlay"
         android:visibility="gone"

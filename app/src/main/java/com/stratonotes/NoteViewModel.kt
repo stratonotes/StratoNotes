@@ -4,17 +4,19 @@ import android.app.Application
 import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import android.util.Log
+
 
 class NoteViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val noteRepository: NoteRepository
+    private val noteRepository: NoteRepository = NoteRepository(AppDatabase.getDatabase(application))
     val allNotes: LiveData<List<NoteEntity>>
     val trashedNotes: LiveData<List<NoteEntity>>
     val foldersWithNotes: LiveData<List<FolderWithNotes>>
 
     init {
         val noteDao = AppDatabase.getDatabase(application).noteDao()
-        noteRepository = NoteRepository(noteDao)
+
 
         allNotes = noteRepository.allNotes
         trashedNotes = noteRepository.trashedNotes
@@ -26,6 +28,19 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
             noteRepository.insert(note)
         }
     }
+
+    fun ensureStratoNotesFolder() {
+        viewModelScope.launch {
+            val existingFolders = noteRepository.getAllFolders()
+            if (existingFolders.none { it.name == "StratoNotes" }) {
+                noteRepository.insertFolder(FolderEntity(name = "StratoNotes"))
+                Log.d("NoteViewModel", "StratoNotes folder created.")
+            } else {
+                Log.d("NoteViewModel", "StratoNotes folder already exists.")
+            }
+        }
+    }
+
 
     fun delete(note: NoteEntity) {
         viewModelScope.launch {
