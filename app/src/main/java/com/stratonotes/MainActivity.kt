@@ -87,8 +87,7 @@ class MainActivity : ComponentActivity() {
         redoButton = findViewById(R.id.redo_button)
         folderSettingsButton = findViewById(R.id.folder_settings_button_1)
         searchDropdown = findViewById(R.id.searchResultsDropdown)
-
-        searchAdapter = SearchResultAdapter(this)
+        searchAdapter = SearchResultAdapter(this) { note -> showOverlay(note) }
         searchDropdown.adapter = searchAdapter
         searchDropdown.layoutManager = LinearLayoutManager(this)
 
@@ -249,17 +248,52 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun showOverlay(note: NoteEntity) {
+
         currentOverlayNote = note
 
         overlayContainer.removeAllViews()
         val inflater = layoutInflater
         val overlayView = inflater.inflate(R.layout.item_note, overlayContainer, false)
         val noteText = overlayView.findViewById<EditText>(R.id.noteText)
+        val starIcon = overlayView.findViewById<ImageView>(R.id.starIcon)
+
         noteText.setText(note.content)
         noteText.requestFocus()
+
+        // Set initial star icon state
+        starIcon.setImageResource(if (note.isFavorite) R.drawable.ic_star_filled else R.drawable.ic_star_outline)
+
+        // Star icon toggle logic
+        starIcon.setOnClickListener {
+            // Always capture the latest text from noteText
+            val updatedContent = noteText.text.toString()
+            val updatedFavorite = !currentOverlayNote!!.isFavorite
+
+            // Update currentOverlayNote with the latest state
+            currentOverlayNote = currentOverlayNote?.copy(
+                content = updatedContent,
+                isFavorite = updatedFavorite,
+                lastEdited = System.currentTimeMillis()
+            )
+
+            // Update UI star icon
+            starIcon.setImageResource(
+                if (currentOverlayNote!!.isFavorite) R.drawable.ic_star_filled
+                else R.drawable.ic_star_outline
+            )
+
+            // Save to DB
+            lifecycleScope.launch(Dispatchers.IO) {
+                noteViewModel.update(currentOverlayNote!!)
+            }
+        }
+
+
+
+
+
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(noteText, InputMethodManager.SHOW_IMPLICIT)
-
 
         xButton = ImageButton(this).apply {
             setImageResource(R.drawable.ic_close)
@@ -270,11 +304,14 @@ class MainActivity : ComponentActivity() {
                 topMargin = 16
             }
         }
+
         overlayContainer.addView(overlayView)
         overlayContainer.addView(xButton)
         overlayContainer.setBackgroundColor(resources.getColor(R.color.black, theme))
         overlayContainer.visibility = View.VISIBLE
     }
+
+
 
 
     private fun closeOverlay() {
@@ -296,7 +333,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // Hide keyboard
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(overlayContainer.windowToken, 0)
 
@@ -362,8 +398,9 @@ class MainActivity : ComponentActivity() {
                 for (note in notes) {
                     val preview = TextView(this@MainActivity).apply {
                         text = if (note.content.length > 100) note.content.substring(0, 100) + "..." else note.content
-                        setPadding(0, 16, 0, 16)
+                        setPadding(16, 16, 16, 16)
                         setTextColor(0xFFFFFFFF.toInt())
+                        textSize = 16f
                         setOnClickListener { showOverlay(note) }
                     }
                     previewContainer.addView(preview)
@@ -371,6 +408,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 
     private fun cycleMode() {
         currentMode = when (currentMode) {
@@ -473,6 +511,24 @@ class MainActivity : ComponentActivity() {
             closeOverlay()
         } else {
             super.onBackPressed()
+        }
+    }
+    override fun onPause() {
+        super.onPause()
+        if (overlayContainer.visibility == View.VISIBLE) {
+            currentOverlayNote?.let { note ->
+                val overlayView = overlayContainer.getChildAt(0)
+                val noteText = overlayView?.findViewById<EditText>(R.id.noteText)
+                val updatedContent = noteText?.text?.toString() ?: ""
+
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val updatedNote = note.copy(
+                        content = updatedContent,
+                        lastEdited = System.currentTimeMillis()
+                    )
+                    noteViewModel.update(updatedNote)
+                }
+            }
         }
     }
 

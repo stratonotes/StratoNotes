@@ -106,6 +106,11 @@ class FolderAdapter(
                     true
                 }
 
+// 🔥 Fix: Always open note overlay on noteText click (even in selection mode)
+                noteText.setOnClickListener {
+                    listener(note, false)
+                }
+
                 noteView.setOnClickListener {
                     if (selectionMode) {
                         val isChecked = !selectedNotes.contains(note)
@@ -115,6 +120,9 @@ class FolderAdapter(
                         listener(note, false)
                     }
                 }
+
+
+
 
                 if (selectionMode) {
                     checkbox?.visibility = View.VISIBLE

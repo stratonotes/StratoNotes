@@ -195,17 +195,18 @@
 
     <!-- Full-screen note-editor overlay -->
     <FrameLayout
-        android:id="@+id/editorOverlay"
-        android:visibility="gone"
+        android:id="@+id/overlayContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#CC000000">
+        android:visibility="gone">
 
-        <include
-            layout="@layout/widget_note_editor"
-            android:layout_height="wrap_content"
+        <View
+            android:id="@+id/overlayBackdrop"
             android:layout_width="match_parent"
-            android:layout_gravity="center"/>
+            android:layout_height="match_parent"
+            android:background="@android:color/black"
+            android:alpha="1.0"
+            android:clickable="true" />
 
     </FrameLayout>
 

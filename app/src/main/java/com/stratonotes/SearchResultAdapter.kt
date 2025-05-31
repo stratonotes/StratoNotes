@@ -1,19 +1,19 @@
 package com.stratonotes
 
 import android.content.Context
-import android.content.Intent
+import android.widget.Toast
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.punchpad2.R
 
 class SearchResultAdapter(
-    private val context: Context
+    private val context: Context,
+    private val onNoteClicked: (NoteEntity) -> Unit
 ) : ListAdapter<SearchResultItem, SearchResultAdapter.ResultViewHolder>(DIFF_CALLBACK) {
 
     companion object {
@@ -44,7 +44,6 @@ class SearchResultAdapter(
         return ResultViewHolder(view)
     }
 
-
     override fun onBindViewHolder(holder: ResultViewHolder, position: Int) {
         when (val item = getItem(position)) {
             is SearchResultItem.Header -> holder.bindHeader(item.label)
@@ -53,16 +52,13 @@ class SearchResultAdapter(
         }
     }
 
-
     inner class ResultViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val resultText: TextView = itemView.findViewById(R.id.searchResultText)
 
         fun bindNote(note: NoteEntity) {
             resultText.text = note.content.take(40)
             itemView.setOnClickListener {
-                val intent = Intent(context, NoteActivity::class.java)
-                intent.putExtra("note_id", note.id)
-                context.startActivity(intent)
+                onNoteClicked(note)
             }
         }
 
@@ -75,18 +71,17 @@ class SearchResultAdapter(
 
         fun bindHeader(label: String) {
             resultText.text = label
-            resultText.setTextColor(0xFFAAAAAA.toInt()) // optional: make header gray
+            resultText.setTextColor(0xFFAAAAAA.toInt())
             resultText.setPadding(16, 12, 16, 8)
-            itemView.setOnClickListener(null) // disable clicks on headers
+            itemView.setOnClickListener(null)
         }
     }
+
     override fun getItemViewType(position: Int): Int {
-            return when (getItem(position)) {
-                is SearchResultItem.Header -> 0
-                is SearchResultItem.FolderItem -> 1
-                is SearchResultItem.NoteItem -> 2
-            }
+        return when (getItem(position)) {
+            is SearchResultItem.Header -> 0
+            is SearchResultItem.FolderItem -> 1
+            is SearchResultItem.NoteItem -> 2
         }
-
     }
-
+}
