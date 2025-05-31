@@ -263,6 +263,7 @@
             android:padding="8dp">
 
             <TextView
+
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="🛍️ 50% OFF! Shop the latest gear at ShopzyMart.com"
@@ -270,4 +271,20 @@
                 android:textSize="14sp" />
         </LinearLayout>
     </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/overlayContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="55dp"
+        android:background="@android:color/black"
+        android:visibility="gone">
+
+        <!-- Tappable backdrop to close the overlay -->
+        <View
+            android:id="@+id/overlayBackdrop"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent" />
+    </FrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

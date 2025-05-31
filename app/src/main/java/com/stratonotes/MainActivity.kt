@@ -6,11 +6,14 @@ import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,12 +21,17 @@ import com.example.punchpad2.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import androidx.core.content.res.ResourcesCompat
 import android.graphics.Typeface
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var previewContainer: LinearLayout
+    private lateinit var overlayContainer: FrameLayout
+    private lateinit var adView: View
+    private var currentOverlayNote: NoteEntity? = null
+
+    private lateinit var xButton: ImageButton
+
     private lateinit var searchInput: EditText
     private lateinit var noteInput: EditText
     private lateinit var filterButton: ImageButton
@@ -59,15 +67,15 @@ class MainActivity : ComponentActivity() {
     private val DRAFT_PREFS = "DraftPrefs"
     private val KEY_DRAFT_NOTE = "draft_note"
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         noteViewModel.ensureStratoNotesFolder()
 
-
         previewContainer = findViewById(R.id.previewContainer)
+        overlayContainer = findViewById(R.id.overlayContainer)
+        adView = findViewById(R.id.dev_ad_banner)
         searchInput = findViewById(R.id.searchInput)
         noteInput = findViewById(R.id.note_input)
         filterButton = findViewById(R.id.filter_button)
@@ -84,7 +92,12 @@ class MainActivity : ComponentActivity() {
         searchDropdown.adapter = searchAdapter
         searchDropdown.layoutManager = LinearLayoutManager(this)
 
-        undoManager = UndoManager(noteInput)
+
+
+        val overlayBackdrop = findViewById<View>(R.id.overlayBackdrop)
+        overlayBackdrop.setOnClickListener { closeOverlay() }
+
+
 
         @Suppress("ClickableViewAccessibility")
         noteInput.setOnTouchListener { v, event ->
@@ -128,7 +141,7 @@ class MainActivity : ComponentActivity() {
         }
 
         loadSubmitModeFromPrefs()
-        updateSubmitLabel() // <-- This stays here
+        updateSubmitLabel()
 
         submitButton.setOnClickListener {
             val content = noteInput.text.toString().trim()
@@ -145,7 +158,6 @@ class MainActivity : ComponentActivity() {
                 SaveMode.PRESET -> saveNote(content, presetFolder)
             }
         }
-
 
         noteInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -184,7 +196,6 @@ class MainActivity : ComponentActivity() {
                 noteViewModel.searchNotes(query).observe(this@MainActivity) { notes ->
                     lifecycleScope.launch(Dispatchers.IO) {
                         val folders = AppDatabase.getDatabase(this@MainActivity)
-
                             .noteDao()
                             .searchFolders("%$query%")
 
@@ -198,8 +209,6 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
 
-
-
                         withContext(Dispatchers.Main) {
                             searchAdapter.submitList(items)
                             if (items.isNotEmpty()) {
@@ -212,13 +221,10 @@ class MainActivity : ComponentActivity() {
                                 }.start()
                             }
                         }
-
-
                     }
                 }
             }
         })
-
 
         filterButton.setOnClickListener {
             startActivity(Intent(this, LibraryActivity::class.java).apply {
@@ -242,6 +248,65 @@ class MainActivity : ComponentActivity() {
         loadPreviews()
     }
 
+    private fun showOverlay(note: NoteEntity) {
+        currentOverlayNote = note
+
+        overlayContainer.removeAllViews()
+        val inflater = layoutInflater
+        val overlayView = inflater.inflate(R.layout.item_note, overlayContainer, false)
+        val noteText = overlayView.findViewById<EditText>(R.id.noteText)
+        noteText.setText(note.content)
+        noteText.requestFocus()
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.showSoftInput(noteText, InputMethodManager.SHOW_IMPLICIT)
+
+
+        xButton = ImageButton(this).apply {
+            setImageResource(R.drawable.ic_close)
+            background = null
+            setOnClickListener { closeOverlay() }
+            layoutParams = FrameLayout.LayoutParams(100, 100, Gravity.TOP or Gravity.END).apply {
+                marginEnd = 16
+                topMargin = 16
+            }
+        }
+        overlayContainer.addView(overlayView)
+        overlayContainer.addView(xButton)
+        overlayContainer.setBackgroundColor(resources.getColor(R.color.black, theme))
+        overlayContainer.visibility = View.VISIBLE
+    }
+
+
+    private fun closeOverlay() {
+        currentOverlayNote?.let { note ->
+            val overlayView = overlayContainer.getChildAt(0)
+            val noteText = overlayView?.findViewById<EditText>(R.id.noteText)
+            val updatedContent = noteText?.text?.toString() ?: ""
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                val updatedNote = note.copy(
+                    content = updatedContent,
+                    lastEdited = System.currentTimeMillis()
+                )
+                noteViewModel.update(updatedNote)
+
+                withContext(Dispatchers.Main) {
+                    loadPreviews()
+                }
+            }
+        }
+
+        // Hide keyboard
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(overlayContainer.windowToken, 0)
+
+        overlayContainer.removeAllViews()
+        overlayContainer.visibility = View.GONE
+        currentOverlayNote = null
+    }
+
+
+
     private fun updateSubmitButtonBackground() {
         if (currentMode == SaveMode.PRESET) {
             submitButton.setBackgroundResource(R.drawable.stratonotes_button_bg)
@@ -249,7 +314,6 @@ class MainActivity : ComponentActivity() {
             submitButton.setBackgroundResource(R.drawable.submit_button_background)
         }
     }
-
 
     private fun saveNote(content: String, folderName: String) {
         lifecycleScope.launch(Dispatchers.IO) {
@@ -300,11 +364,7 @@ class MainActivity : ComponentActivity() {
                         text = if (note.content.length > 100) note.content.substring(0, 100) + "..." else note.content
                         setPadding(0, 16, 0, 16)
                         setTextColor(0xFFFFFFFF.toInt())
-                        setOnClickListener {
-                            startActivity(Intent(this@MainActivity, NoteActivity::class.java).apply {
-                                putExtra("content", note.content)
-                            })
-                        }
+                        setOnClickListener { showOverlay(note) }
                     }
                     previewContainer.addView(preview)
                 }
@@ -344,23 +404,23 @@ class MainActivity : ComponentActivity() {
         if (currentMode == SaveMode.PRESET) {
             noteInput.requestFocus()
             noteInput.postDelayed({
-                val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
-                imm.showSoftInput(noteInput, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(noteInput, InputMethodManager.SHOW_IMPLICIT)
             }, 100)
         }
     }
+
     private fun updateSubmitButtonFont() {
         val typeface = if (currentMode == SaveMode.PRESET) {
             ResourcesCompat.getFont(this, R.font.orbitron_regular)
         } else {
-            null // Default system font
+            null
         }
 
         submitButton.typeface = typeface
         submitButton.setTypeface(typeface, Typeface.BOLD_ITALIC)
         submitButton.textSize = 18f
     }
-
 
     private fun showNewFolderDialog(content: String) {
         val input = EditText(this)
@@ -408,4 +468,12 @@ class MainActivity : ComponentActivity() {
             if (it.isNotEmpty()) lastUsedFolder = it
         }
     }
+    override fun onBackPressed() {
+        if (overlayContainer.visibility == View.VISIBLE) {
+            closeOverlay()
+        } else {
+            super.onBackPressed()
+        }
+    }
+
 }
