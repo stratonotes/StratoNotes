@@ -19,6 +19,9 @@ class FolderAdapter(
     private val noteLayoutResId: Int
 ) : RecyclerView.Adapter<FolderAdapter.FolderViewHolder>() {
 
+    fun getFolderIndexById(folderId: Long): Int {
+        return folders.indexOfFirst { it.folder.id == folderId }
+    }
     private val folderStates = mutableMapOf<Long, ExpandMode>()
     private val folderLoadedCounts = mutableMapOf<Long, Int>()
     private var selectionMode = false
@@ -160,13 +163,11 @@ class FolderAdapter(
             }
 
             folderName.setOnClickListener {
-                folderStates[folderId] = when (expandMode) {
-                    ExpandMode.PARTIAL -> ExpandMode.FULL
-                    ExpandMode.FULL -> ExpandMode.COLLAPSED
-                    ExpandMode.COLLAPSED -> ExpandMode.PARTIAL
-                }
+                val newMode = if (expandMode == ExpandMode.COLLAPSED) ExpandMode.FULL else ExpandMode.COLLAPSED
+                folderStates[folderId] = newMode
                 notifyItemChanged(adapterPosition)
             }
+
 
             folderName.setOnLongClickListener {
                 val editText = EditText(context)
@@ -191,5 +192,7 @@ class FolderAdapter(
                 true
             }
         }
+
+
     }
 }

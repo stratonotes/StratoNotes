@@ -22,6 +22,7 @@ import kotlinx.coroutines.withContext
 
 class LibraryActivity : ComponentActivity() {
 
+
     private lateinit var folderAdapter: FolderAdapter
 
     private var deleteMode = false
@@ -42,6 +43,17 @@ class LibraryActivity : ComponentActivity() {
 
         val folderRecycler = findViewById<RecyclerView>(R.id.folderRecycler)
         folderRecycler.layoutManager = LinearLayoutManager(this)
+
+        val folderId = intent.getLongExtra("folder_id", -1L)
+        if (folderId != -1L) {
+            folderRecycler.post {
+                val index = folderAdapter.getFolderIndexById(folderId)
+                if (index != -1) {
+                    folderRecycler.scrollToPosition(index)
+                }
+            }
+        }
+
 
         val searchInput = findViewById<EditText>(R.id.searchInput)
         val backButton = findViewById<ImageButton>(R.id.strato_button)

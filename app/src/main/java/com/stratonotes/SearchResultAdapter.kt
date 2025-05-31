@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.punchpad2.R
+import android.content.Intent
 
 class SearchResultAdapter(
     private val context: Context,
@@ -65,9 +66,12 @@ class SearchResultAdapter(
         fun bindFolder(folder: FolderEntity) {
             resultText.text = "📂 " + folder.name.take(40)
             itemView.setOnClickListener {
-                Toast.makeText(context, "Folder: ${folder.name}", Toast.LENGTH_SHORT).show()
+                val intent = Intent(itemView.context, LibraryActivity::class.java)
+                intent.putExtra("folder_id", folder.id)
+                itemView.context.startActivity(intent)
             }
         }
+
 
         fun bindHeader(label: String) {
             resultText.text = label

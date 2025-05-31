@@ -4,7 +4,9 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="12dp"
-    android:background="#222222">
+
+    android:background="@drawable/folder_note_bg">
+
 
     <RelativeLayout
         android:layout_width="match_parent"
