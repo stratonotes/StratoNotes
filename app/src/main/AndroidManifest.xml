@@ -45,6 +45,7 @@
         <activity
             android:name="com.stratonotes.LibraryActivity"
             android:exported="false"
+            android:windowSoftInputMode="adjustNothing"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.PunchPad2" />
 

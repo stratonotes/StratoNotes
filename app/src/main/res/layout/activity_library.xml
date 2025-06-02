@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     android:background="#222222"
     android:padding="16dp"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    >
 
     <!-- Top search + filter bar -->
     <com.google.android.material.appbar.MaterialToolbar
@@ -194,20 +195,30 @@
     </LinearLayout>
 
     <!-- Full-screen note-editor overlay -->
-    <FrameLayout
-        android:id="@+id/overlayContainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone">
 
-        <View
-            android:id="@+id/overlayBackdrop"
+        <FrameLayout
+            android:id="@+id/overlayContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@android:color/black"
-            android:alpha="1.0"
-            android:clickable="true" />
+            android:layout_marginBottom="55dp"
+            android:background="@android:color/transparent"
+            android:clickable="true"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:elevation="16dp"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:visibility="gone">
 
-    </FrameLayout>
+
+            <View
+                android:id="@+id/overlayBackdrop"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:alpha="1.0"
+                android:background="@android:color/black"
+                android:clickable="true" />
+
+        </FrameLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

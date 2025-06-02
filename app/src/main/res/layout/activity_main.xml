@@ -278,7 +278,14 @@
         android:layout_height="match_parent"
         android:layout_marginBottom="55dp"
         android:background="@android:color/transparent"
+        android:clickable="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:elevation="16dp"
         android:visibility="gone">
+
 
 
     <!-- Tappable backdrop to close the overlay -->

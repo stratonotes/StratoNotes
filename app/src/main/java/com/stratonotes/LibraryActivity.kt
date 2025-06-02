@@ -163,8 +163,27 @@ class LibraryActivity : ComponentActivity() {
         val noteText = overlayView.findViewById<EditText>(R.id.noteText)
         noteText.setText(note.content)
         noteText.requestFocus()
+
+        noteText.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                val updated = currentOverlayNote?.copy(
+                    content = s.toString(),
+                    lastEdited = System.currentTimeMillis()
+                )
+                if (updated != null) {
+                    currentOverlayNote = updated
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        noteViewModel.update(updated)
+                    }
+                }
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(noteText, InputMethodManager.SHOW_IMPLICIT)
+
 
         val xButton = ImageButton(this).apply {
             setImageResource(R.drawable.ic_close)
