@@ -1,18 +1,18 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:background="@drawable/rounded_note_bg"
-    android:padding="12dp"
+
     android:clickable="true"
     android:focusable="true"
-    android:focusableInTouchMode="true">
+    android:focusableInTouchMode="true"
+    android:padding="12dp">
 
     <EditText
         android:id="@+id/noteText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true"
         android:layout_marginTop="28dp"
         android:layout_marginBottom="100dp"
         android:background="@android:color/transparent"
@@ -22,7 +22,6 @@
         android:minLines="10"
         android:overScrollMode="ifContentScrolls"
         android:padding="8dp"
-        android:textColor="#FFFFFF"
         android:textSize="16sp" />
 
     <ImageView
@@ -71,7 +70,6 @@
             android:layout_marginHorizontal="25dp"
             android:contentDescription="Redo"
             android:src="@drawable/ic_redo" />
-
     </LinearLayout>
 
 </RelativeLayout>

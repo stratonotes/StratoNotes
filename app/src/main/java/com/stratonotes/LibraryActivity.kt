@@ -19,6 +19,7 @@ import com.example.punchpad2.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import android.content.res.Resources
 
 class LibraryActivity : ComponentActivity() {
 
@@ -160,7 +161,16 @@ class LibraryActivity : ComponentActivity() {
 
         val inflater = layoutInflater
         val overlayView = inflater.inflate(R.layout.item_note, overlayContainer, false)
+        val userColor = UserColorManager.getOverlayColor(this)
+        val metrics = Resources.getSystem().displayMetrics
+        val width = (metrics.widthPixels * 0.9).toInt()
+        overlayView.layoutParams = FrameLayout.LayoutParams(width, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER)
+
+        overlayView.setBackgroundColor(userColor)
+
         val noteText = overlayView.findViewById<EditText>(R.id.noteText)
+        val starIcon = overlayView.findViewById<ImageView>(R.id.starIcon)
+
         noteText.setText(note.content)
         noteText.requestFocus()
 
@@ -181,9 +191,30 @@ class LibraryActivity : ComponentActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
+        // Star icon logic
+        starIcon.setImageResource(if (note.isFavorite) R.drawable.ic_star_filled else R.drawable.ic_star_outline)
+        starIcon.setOnClickListener {
+            val updatedContent = noteText.text.toString()
+            val updatedFavorite = !currentOverlayNote!!.isFavorite
+
+            currentOverlayNote = currentOverlayNote?.copy(
+                content = updatedContent,
+                isFavorite = updatedFavorite,
+                lastEdited = System.currentTimeMillis()
+            )
+
+            starIcon.setImageResource(
+                if (currentOverlayNote!!.isFavorite) R.drawable.ic_star_filled
+                else R.drawable.ic_star_outline
+            )
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                noteViewModel.update(currentOverlayNote!!)
+            }
+        }
+
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(noteText, InputMethodManager.SHOW_IMPLICIT)
-
 
         val xButton = ImageButton(this).apply {
             setImageResource(R.drawable.ic_close)
@@ -197,7 +228,6 @@ class LibraryActivity : ComponentActivity() {
 
         overlayContainer.addView(overlayView)
         overlayContainer.addView(xButton)
-        overlayContainer.setBackgroundColor(resources.getColor(R.color.black, theme))
         overlayContainer.visibility = View.VISIBLE
     }
 
@@ -212,10 +242,7 @@ class LibraryActivity : ComponentActivity() {
                 lastEdited = System.currentTimeMillis()
             )
 
-            // Save immediately
             noteViewModel.update(updatedNote)
-
-            // Update the current reference to the note
             currentOverlayNote = updatedNote
         }
 
@@ -226,6 +253,8 @@ class LibraryActivity : ComponentActivity() {
         overlayContainer.visibility = View.GONE
         currentOverlayNote = null
     }
+
+
 
 
     override fun onBackPressed() {

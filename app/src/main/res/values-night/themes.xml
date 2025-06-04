@@ -3,9 +3,7 @@
 
     <!-- Dark App Theme -->
     <style name="Theme.PunchPad2" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:colorBackground">#222222</item>
-        <item name="android:windowBackground">#222222</item>
-        <item name="android:textColor">#FFFFFF</item>
+        <!-- All colors are runtime-controlled -->
     </style>
 
     <!-- Dark Splash Theme (Same layout-based control) -->

@@ -75,7 +75,7 @@ class SearchResultAdapter(
 
         fun bindHeader(label: String) {
             resultText.text = label
-            resultText.setTextColor(0xFFAAAAAA.toInt())
+            resultText.setTextAppearance(android.R.style.TextAppearance_Material_Medium)
             resultText.setPadding(16, 12, 16, 8)
             itemView.setOnClickListener(null)
         }

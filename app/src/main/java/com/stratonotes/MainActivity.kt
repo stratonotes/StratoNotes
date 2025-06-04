@@ -22,6 +22,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import android.graphics.Typeface
+import android.view.ViewGroup
+import android.content.res.Resources
+
 
 class MainActivity : ComponentActivity() {
 
@@ -254,8 +257,19 @@ class MainActivity : ComponentActivity() {
         overlayContainer.removeAllViews()
         val inflater = layoutInflater
         val overlayView = inflater.inflate(R.layout.item_note, overlayContainer, false)
+        val userColor = UserColorManager.getOverlayColor(this)
+        val metrics = Resources.getSystem().displayMetrics
+        val width = (metrics.widthPixels * 0.9).toInt()
+        overlayView.layoutParams.width = width
+
         val noteText = overlayView.findViewById<EditText>(R.id.noteText)
         val starIcon = overlayView.findViewById<ImageView>(R.id.starIcon)
+        val params = FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            Gravity.CENTER
+        )
+        overlayView.layoutParams = params
 
         noteText.setText(note.content)
         noteText.requestFocus()
@@ -325,7 +339,6 @@ class MainActivity : ComponentActivity() {
 
         overlayContainer.addView(overlayView)
         overlayContainer.addView(xButton)
-        overlayContainer.setBackgroundColor(resources.getColor(R.color.black, theme))
         overlayContainer.visibility = View.VISIBLE
     }
 
@@ -417,7 +430,7 @@ class MainActivity : ComponentActivity() {
                     val preview = TextView(this@MainActivity).apply {
                         text = if (note.content.length > 100) note.content.substring(0, 100) + "..." else note.content
                         setPadding(16, 16, 16, 16)
-                        setTextColor(0xFFFFFFFF.toInt())
+                        setTextAppearance(android.R.style.TextAppearance_Material_Body1)
                         textSize = 16f
                         setOnClickListener { showOverlay(note) }
                     }

@@ -9,11 +9,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="120dp"
-        android:background="@drawable/textbox_bg"
         android:hint="Start typing…"
         android:padding="16dp"
-        android:textColor="@android:color/white"
-        android:textColorHint="@android:color/darker_gray"
         android:maxLines="10" />
 
     <!-- undo / redo / plus (floating inside bottom-right corner) -->
@@ -25,8 +22,7 @@
         android:layout_gravity="bottom|end"
         android:padding="8dp" />
 
-
-        <ImageButton
+    <ImageButton
         android:id="@+id/fabUndo"
         style="@style/Widget.MaterialComponents.Button.Icon"
         android:layout_width="48dp"
@@ -35,7 +31,7 @@
         android:background="@android:color/transparent"
         android:contentDescription="@string/desc_undo" />
 
-        <ImageButton
+    <ImageButton
         android:id="@+id/fabRedo"
         style="@style/Widget.MaterialComponents.Button.Icon"
         android:layout_width="48dp"
@@ -45,7 +41,7 @@
         android:background="@android:color/transparent"
         android:contentDescription="@string/desc_redo" />
 
-        <ImageButton
+    <ImageButton
         android:id="@+id/fabPlus"
         style="@style/Widget.MaterialComponents.Button.Icon"
         android:layout_width="48dp"
@@ -54,6 +50,5 @@
         android:src="@drawable/ic_add"
         android:background="@android:color/transparent"
         android:contentDescription="Add media" />
-
 
 </FrameLayout>

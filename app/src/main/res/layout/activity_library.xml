@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#222222"
-    android:padding="16dp"
+    android:background="@drawable/go_to_library_background"
     android:fitsSystemWindows="true"
-    >
+    android:padding="16dp">
 
-    <!-- Top search + filter bar -->
+
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/libraryToolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/stratonotes_button_bg"
         app:titleTextColor="@android:color/transparent">
 
         <LinearLayout
@@ -28,14 +25,10 @@
                 android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
-                android:background="@drawable/search_field_bg"
                 android:hint="Search…"
                 android:inputType="text"
                 android:paddingStart="5dp"
-                android:paddingEnd="20dp"
-                android:textColor="@android:color/white"
-                android:textColorHint="@android:color/white" />
-
+                android:paddingEnd="20dp" />
 
             <ImageButton
                 android:id="@+id/strato_button"
@@ -48,11 +41,9 @@
                 android:contentDescription="Filter"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_stratonotes" />
-
         </LinearLayout>
     </com.google.android.material.appbar.MaterialToolbar>
 
-    <!-- Folder / note list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/folderRecycler"
         android:layout_width="match_parent"
@@ -61,19 +52,15 @@
         android:layout_marginBottom="82dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <!-- Fixed bottom control bar -->
     <LinearLayout
         android:id="@+id/bottomBar"
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:layout_gravity="bottom"
         android:layout_marginBottom="64dp"
-        android:background="#111111"
-        android:orientation="horizontal"
         android:gravity="center_vertical"
+        android:orientation="horizontal"
         android:paddingHorizontal="12dp">
-
-
 
         <ImageButton
             android:id="@+id/favoritesToggle"
@@ -131,32 +118,27 @@
             android:background="@android:color/transparent"
             android:contentDescription="Delete Mode"
             android:src="@drawable/ic_delete" />
-
     </LinearLayout>
 
-    <!-- Cancel + Bomb Bar -->
     <LinearLayout
         android:id="@+id/selectionBar"
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:layout_gravity="bottom"
         android:layout_marginBottom="64dp"
-        android:background="#111111"
-        android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:visibility="gone"
-        android:paddingHorizontal="12dp">
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        android:visibility="gone">
 
         <Button
             android:id="@+id/cancelButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="CANCEL"
-            android:textAllCaps="true"
-            android:backgroundTint="#D45C18"
-            android:textColor="@android:color/white"
             android:paddingHorizontal="24dp"
             android:paddingVertical="12dp"
+            android:text="CANCEL"
+            android:textAllCaps="true"
             android:textSize="14sp" />
 
         <View
@@ -172,16 +154,13 @@
             android:background="@android:color/transparent"
             android:contentDescription="Delete Notes"
             android:src="@drawable/ic_delete" />
-
     </LinearLayout>
 
-    <!-- Bottom ad banner -->
     <LinearLayout
         android:id="@+id/dev_ad_banner"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_gravity="bottom"
-        android:background="#111111"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="8dp">
@@ -190,35 +169,24 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="🛍️ 50% OFF! Shop the latest gear at ShopzyMart.com"
-            android:textColor="#FFFFFF"
             android:textSize="14sp" />
     </LinearLayout>
 
-    <!-- Full-screen note-editor overlay -->
+    <FrameLayout
+        android:id="@+id/overlayContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:elevation="16dp"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:visibility="gone">
 
-        <FrameLayout
-            android:id="@+id/overlayContainer"
+        <View
+            android:id="@+id/overlayBackdrop"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="55dp"
-            android:background="@android:color/transparent"
-            android:clickable="true"
-            android:clipChildren="false"
-            android:clipToPadding="false"
-            android:elevation="16dp"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:visibility="gone">
-
-
-            <View
-                android:id="@+id/overlayBackdrop"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:alpha="1.0"
-                android:background="@android:color/black"
-                android:clickable="true" />
-
-        </FrameLayout>
-
+            android:layout_height="match_parent" />
+    </FrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
