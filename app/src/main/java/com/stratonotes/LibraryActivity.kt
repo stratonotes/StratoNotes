@@ -22,6 +22,7 @@ import kotlinx.coroutines.withContext
 import android.content.res.Resources
 import android.content.Intent
 import android.app.AlertDialog
+import android.view.ViewGroup
 
 class LibraryActivity : ComponentActivity() {
 
@@ -186,30 +187,31 @@ class LibraryActivity : ComponentActivity() {
         val iconTrash = menuOverlay.findViewById<ImageButton>(R.id.iconTrash)
         val iconAbout = menuOverlay.findViewById<ImageButton>(R.id.iconAbout)
         val iconTBA = menuOverlay.findViewById<ImageButton>(R.id.iconTBA)
+        val holeOverlay = layoutInflater.inflate(R.layout.dim_overlay_with_hole, null)
+        addContentView(holeOverlay, FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT
+        ))
+
+// Hide it when color picker closes
+        val dialog = ColorPickerDialog(this)
+        dialog.setOnDismissListener {
+            (holeOverlay.parent as ViewGroup).removeView(holeOverlay)
+        }
+        dialog.show()
 
 
-            iconColorPicker.setOnClickListener {
-                Log.d("ColorPicker", "Color picker icon tapped")
+        iconColorPicker.setOnClickListener {
+            Log.d("ColorPicker", "Color picker icon tapped")
 
-                ColorPickerOverlay(
-                    activity = this,
-                    rootContainer = overlayContainer,
-                    onApply = {
-                        folderAdapter.notifyDataSetChanged()
-                    }
-                ).show()
+            val dialog = ColorPickerDialog(this)
+            dialog.show()
 
-                menuOverlay.visibility = View.GONE
-            }
-
-            ColorPickerOverlay(
-                activity = this,
-                rootContainer = overlayContainer,
-                onApply = {
-                    folderAdapter.notifyDataSetChanged()
-                }
-            ).show()
             menuOverlay.visibility = View.GONE
+        }
+
+
+
 
 
         iconTrash.setOnClickListener {
@@ -229,6 +231,16 @@ class LibraryActivity : ComponentActivity() {
         iconTBA.setOnClickListener {
             Toast.makeText(this, "Coming soon!", Toast.LENGTH_SHORT).show()
             menuOverlay.visibility = View.GONE
+        }
+        val overlay = layoutInflater.inflate(R.layout.hole_overlay_view, null)
+        val params = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT
+        )
+        addContentView(overlay, params)
+
+        overlay.findViewById<View>(R.id.holeClickTarget).setOnClickListener {
+            startActivity(Intent(this, MainActivity::class.java))
         }
 
 

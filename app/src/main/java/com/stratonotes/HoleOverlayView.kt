@@ -1,40 +1,50 @@
 package com.stratonotes
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffXfermode
+import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
 
-class HoleOverlayView(context: Context?, attrs: AttributeSet?) :
-    View(context, attrs) {
-    private val overlayPaint = Paint()
-    private val holePaint = Paint()
+class HoleOverlayView @JvmOverloads constructor(
+    context: Context, attrs: AttributeSet? = null
+) : View(context, attrs) {
 
-    init {
-        setLayerType(LAYER_TYPE_HARDWARE, null)
+    private val dimPaint = Paint().apply {
+        color = Color.parseColor("#B3000000") // semi-transparent black
+    }
 
-        // Solid opaque dark overlay
-        overlayPaint.color = -0xeeeeef
+    private val clearPaint = Paint().apply {
+        xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+        isAntiAlias = true
+    }
 
-        // Clear hole
-        holePaint.setXfermode(PorterDuffXfermode(PorterDuff.Mode.CLEAR))
-        holePaint.isAntiAlias = true
+    private val ringPaint = Paint().apply {
+        color = Color.WHITE
+        style = Paint.Style.STROKE
+        strokeWidth = 6f
+        isAntiAlias = true
+    }
+
+    private val holeRadius = 140f
+    private val holeOffsetX = 40f
+    private val holeOffsetY = 40f
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        setLayerType(LAYER_TYPE_HARDWARE, null) // <--- CRUCIAL
     }
 
     override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
+        val cx = width - holeRadius - holeOffsetX
+        val cy = holeRadius + holeOffsetY
 
-        // Fill the whole screen with overlay
-        canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), overlayPaint)
+        // Fill entire dim background
+        canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), dimPaint)
 
-        // Draw a bigger transparent circle in the center (30% bigger)
-        val cx = width / 2f
-        val cy = height / 2f
-        val radius = 160f // was 120f → increased by 33%
+        // Clear circular hole area
+        canvas.drawCircle(cx, cy, holeRadius, clearPaint)
 
-        canvas.drawCircle(cx, cy, radius, holePaint)
+        // White outline ring
+        canvas.drawCircle(cx, cy, holeRadius, ringPaint)
     }
 }

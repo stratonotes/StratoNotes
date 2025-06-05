@@ -26,9 +26,11 @@ class ColorPickerDialog(context: Context) : Dialog(context) {
     private val prefs: SharedPreferences =
         context.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE)
 
-    override fun onCreate(savedInstanceState: Bundle) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestWindowFeature(Window.FEATURE_NO_TITLE)
+        window?.setBackgroundDrawableResource(android.R.color.transparent)
+
         setContentView(R.layout.dialog_color_picker)
         setCancelable(true)
 

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/holeOverlayContainer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent"
+    android:clickable="true"
+    android:focusable="true">
+
+<View
+android:id="@+id/cutoutView"
+android:layout_width="280dp"
+android:layout_height="280dp"
+android:layout_gravity="top|end"
+android:layout_marginTop="24dp"
+android:layout_marginEnd="16dp"
+android:background="@drawable/hole_mask" />
+    </FrameLayout>

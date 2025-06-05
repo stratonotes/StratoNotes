@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#AA000000"
-    android:padding="32dp">
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:background="@android:color/transparent"
+android:padding="32dp">
 
-    <LinearLayout
+
+<LinearLayout
         android:id="@+id/dialogContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:orientation="vertical"
-        android:background="@android:color/white"
+        android:background="@android:color/transparent"
         android:elevation="8dp"
         android:padding="24dp"
         android:gravity="center_horizontal"
