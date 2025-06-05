@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent">
+
+    <!-- This view simulates the background of either the main screen or the library -->
+    <ImageView
+        android:id="@+id/previewBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:contentDescription="Background preview" />
+
+    <!-- Optional label -->
+    <TextView
+        android:id="@+id/previewLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Preview"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:layout_margin="16dp"
+        android:layout_gravity="top|center_horizontal" />
+</FrameLayout>

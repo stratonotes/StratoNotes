@@ -22,7 +22,9 @@ object UserColorManager {
         return PreferenceManager.getDefaultSharedPreferences(context)
             .getInt(KEY_OVERLAY_COLOR, DEFAULT_OVERLAY_COLOR)
     }
-
+    fun getDefaultOverlayColor(): Int {
+        return Color.parseColor("#2E2E2E") // or whatever your default should be
+    }
     // (Optional future use)
     // fun resetOverlayColor(context: Context) {
     //     setOverlayColor(context, DEFAULT_OVERLAY_COLOR)

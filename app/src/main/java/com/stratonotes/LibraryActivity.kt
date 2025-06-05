@@ -20,6 +20,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import android.content.res.Resources
+import android.content.Intent
+import android.app.AlertDialog
 
 class LibraryActivity : ComponentActivity() {
 
@@ -153,6 +155,83 @@ class LibraryActivity : ComponentActivity() {
             sortNewest = !sortNewest
             reloadFiltered(searchInput.text.toString())
         }
+
+
+
+
+        val menuButton = findViewById<ImageButton>(R.id.menuButton)
+
+        val inflater = LayoutInflater.from(this)
+        val menuOverlay = inflater.inflate(R.layout.menu_overlay, null) as FrameLayout
+        addContentView(menuOverlay, FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT
+        ))
+
+        menuOverlay.visibility = View.GONE
+
+        menuButton.setOnClickListener {
+            menuOverlay.visibility = View.VISIBLE
+        }
+
+        menuOverlay.setOnClickListener {
+            menuOverlay.visibility = View.GONE
+        }
+
+        menuOverlay.findViewById<ImageButton>(R.id.menuCloseButton).setOnClickListener {
+            menuOverlay.visibility = View.GONE
+        }
+
+        val iconColorPicker = menuOverlay.findViewById<ImageButton>(R.id.iconColorPicker)
+        val iconTrash = menuOverlay.findViewById<ImageButton>(R.id.iconTrash)
+        val iconAbout = menuOverlay.findViewById<ImageButton>(R.id.iconAbout)
+        val iconTBA = menuOverlay.findViewById<ImageButton>(R.id.iconTBA)
+
+
+            iconColorPicker.setOnClickListener {
+                Log.d("ColorPicker", "Color picker icon tapped")
+
+                ColorPickerOverlay(
+                    activity = this,
+                    rootContainer = overlayContainer,
+                    onApply = {
+                        folderAdapter.notifyDataSetChanged()
+                    }
+                ).show()
+
+                menuOverlay.visibility = View.GONE
+            }
+
+            ColorPickerOverlay(
+                activity = this,
+                rootContainer = overlayContainer,
+                onApply = {
+                    folderAdapter.notifyDataSetChanged()
+                }
+            ).show()
+            menuOverlay.visibility = View.GONE
+
+
+        iconTrash.setOnClickListener {
+            startActivity(Intent(this, TrashActivity::class.java))
+            menuOverlay.visibility = View.GONE
+        }
+
+        iconAbout.setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle("About StratoNotes")
+                .setMessage("StratoNotes is a local-only note app with zero cloud sync.\n\nMade by Paul Stockwell.")
+                .setPositiveButton("OK", null)
+                .show()
+            menuOverlay.visibility = View.GONE
+        }
+
+        iconTBA.setOnClickListener {
+            Toast.makeText(this, "Coming soon!", Toast.LENGTH_SHORT).show()
+            menuOverlay.visibility = View.GONE
+        }
+
+
     }
 
     private fun showOverlay(note: NoteEntity) {
@@ -166,10 +245,11 @@ class LibraryActivity : ComponentActivity() {
         val width = (metrics.widthPixels * 0.9).toInt()
         overlayView.layoutParams = FrameLayout.LayoutParams(width, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER)
 
-        overlayView.setBackgroundColor(userColor)
 
         val noteText = overlayView.findViewById<EditText>(R.id.noteText)
         val starIcon = overlayView.findViewById<ImageView>(R.id.starIcon)
+
+
 
         noteText.setText(note.content)
         noteText.requestFocus()
@@ -308,4 +388,5 @@ class LibraryActivity : ComponentActivity() {
         }
         return result
     }
+
 }

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/menuOverlayRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#88000000"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!-- Menu Box -->
+    <LinearLayout
+        android:id="@+id/menuBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="32dp"
+        android:orientation="horizontal"
+        android:background="@drawable/rounded_note_bg"
+        android:padding="16dp"
+        android:elevation="10dp">
+
+        <ImageButton
+            android:id="@+id/iconColorPicker"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_color_picker"
+            android:contentDescription="Color Picker" />
+
+        <ImageButton
+            android:id="@+id/iconTrash"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_trash"
+            android:contentDescription="Trash" />
+
+        <ImageButton
+            android:id="@+id/iconAbout"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_info"
+            android:contentDescription="About" />
+
+        <ImageButton
+            android:id="@+id/iconTBA"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_tba"
+            android:contentDescription="More" />
+    </LinearLayout>
+
+    <!-- Floating X Button -->
+    <ImageButton
+        android:id="@+id/menuCloseButton"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="96dp"
+        android:layout_marginEnd="24dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_close"
+        android:contentDescription="Close Menu" />
+</FrameLayout>
