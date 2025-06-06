@@ -33,6 +33,8 @@ class ColorPickerDialog(context: Context) : Dialog(context) {
 
         setContentView(R.layout.dialog_color_picker)
         setCancelable(true)
+        setCanceledOnTouchOutside(false)
+
 
         // Load current prefs
         textColor = prefs.getInt("text_color", Color.BLACK)

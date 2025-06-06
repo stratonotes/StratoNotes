@@ -28,6 +28,7 @@ class LibraryActivity : ComponentActivity() {
 
 
     private lateinit var folderAdapter: FolderAdapter
+    private var holeOverlay: View? = null
 
     private var deleteMode = false
     private var favoritesOnly = false
@@ -187,28 +188,21 @@ class LibraryActivity : ComponentActivity() {
         val iconTrash = menuOverlay.findViewById<ImageButton>(R.id.iconTrash)
         val iconAbout = menuOverlay.findViewById<ImageButton>(R.id.iconAbout)
         val iconTBA = menuOverlay.findViewById<ImageButton>(R.id.iconTBA)
-        val holeOverlay = layoutInflater.inflate(R.layout.dim_overlay_with_hole, null)
-        addContentView(holeOverlay, FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.MATCH_PARENT
-        ))
 
-// Hide it when color picker closes
-        val dialog = ColorPickerDialog(this)
-        dialog.setOnDismissListener {
-            (holeOverlay.parent as ViewGroup).removeView(holeOverlay)
-        }
-        dialog.show()
+
+
+
 
 
         iconColorPicker.setOnClickListener {
-            Log.d("ColorPicker", "Color picker icon tapped")
-
             val dialog = ColorPickerDialog(this)
+            dialog.setCanceledOnTouchOutside(false)
             dialog.show()
 
             menuOverlay.visibility = View.GONE
         }
+
+
 
 
 
@@ -232,16 +226,7 @@ class LibraryActivity : ComponentActivity() {
             Toast.makeText(this, "Coming soon!", Toast.LENGTH_SHORT).show()
             menuOverlay.visibility = View.GONE
         }
-        val overlay = layoutInflater.inflate(R.layout.hole_overlay_view, null)
-        val params = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.MATCH_PARENT
-        )
-        addContentView(overlay, params)
 
-        overlay.findViewById<View>(R.id.holeClickTarget).setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java))
-        }
 
 
     }
