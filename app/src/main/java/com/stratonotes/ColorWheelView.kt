@@ -7,11 +7,7 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.min
-import kotlin.math.sin
-import kotlin.math.sqrt
+import kotlin.math.*
 
 class ColorWheelView : View {
     private var paint: Paint? = null
@@ -30,8 +26,8 @@ class ColorWheelView : View {
         fun onColorSelected(color: Int)
     }
 
-    fun setOnColorSelectedListener(l: (Any) -> Unit) {
-        this.listener = listener
+    fun setOnColorSelectedListener(l: OnColorSelectedListener) {
+        this.listener = l
     }
 
     constructor(context: Context?) : super(context) {
@@ -43,29 +39,36 @@ class ColorWheelView : View {
     }
 
     private fun init() {
-        paint = Paint(Paint.ANTI_ALIAS_FLAG)
-        paint!!.style = Paint.Style.STROKE
-        selectorPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-        selectorPaint!!.style = Paint.Style.STROKE
-        selectorPaint!!.strokeWidth = 6f
-        selectorPaint!!.color = Color.WHITE
+        paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+        }
+
+        selectorPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            strokeWidth = 6f
+            color = Color.WHITE
+        }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         centerX = w / 2f
         centerY = h / 2f
         outerRadius = (min(w.toDouble(), h.toDouble()) * 0.45f).toFloat()
-        innerRadius = outerRadius * 0.85f // thinner ring
+        innerRadius = outerRadius * 0.85f
         paint!!.strokeWidth = outerRadius - innerRadius
-        updateSelectorPositionFromAngle(0f) // default: 0°
+        updateSelectorPositionFromAngle(0f)
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         val ringRadius = (outerRadius + innerRadius) / 2f
 
+        // Fixed saturation and brightness
+        val saturation = 0.49f
+        val brightness = 0.64f
+
         for (i in 0..359) {
-            val hsv = floatArrayOf(i.toFloat(), 1f, 1f)
+            val hsv = floatArrayOf(i.toFloat(), saturation, brightness)
             paint!!.color = Color.HSVToColor(hsv)
             canvas.drawArc(
                 centerX - ringRadius, centerY - ringRadius,
@@ -91,17 +94,19 @@ class ColorWheelView : View {
         val dist = sqrt((dx * dx + dy * dy).toDouble()).toFloat()
 
         if (dist < innerRadius || dist > outerRadius) {
-            return false // outside the ring
+            return false
         }
 
         var angle = Math.toDegrees(atan2(dy.toDouble(), dx.toDouble())).toFloat()
         angle = (angle + 360) % 360
 
-        selectedColor = Color.HSVToColor(floatArrayOf(angle, 1f, 1f))
+        // Fix saturation and brightness here
+        val hsv = floatArrayOf(angle, 0.49f, 0.64f)
+        selectedColor = Color.HSVToColor(hsv)
+
         updateSelectorPositionFromAngle(angle)
         invalidate()
-
-        if (listener != null) listener!!.onColorSelected(selectedColor)
+        listener?.onColorSelected(selectedColor)
         return true
     }
 }
