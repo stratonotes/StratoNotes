@@ -7,11 +7,11 @@
     android:clipChildren="false"
     android:clipToPadding="false">
 
-
     <LinearLayout
         android:id="@+id/dialogContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:orientation="vertical"
         android:background="@android:color/transparent"
         android:elevation="8dp"
@@ -20,36 +20,32 @@
         android:clipChildren="false"
         android:clipToPadding="false">
 
-        <!-- Moved slightly down -->
         <com.stratonotes.ColorWheelView
-
             android:id="@+id/colorWheelView"
             android:layout_width="375dp"
             android:layout_height="375dp"
-            android:layout_marginTop="2dp"
             android:layout_gravity="center" />
 
-        <!-- Moved slightly up -->
+        <SeekBar
+            android:id="@+id/brightnessSlider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:max="100"
+            android:progress="64" />
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginTop="-300dp"
+            android:layout_marginTop="8dp"
             android:gravity="center_horizontal">
-
-            <Button
-                android:id="@+id/btnTextColor"
-                android:layout_width="180dp"
-                android:layout_height="wrap_content"
-                android:text="TEXT COLOR"
-                android:textStyle="bold"
-                android:layout_marginBottom="12dp" />
 
             <Button
                 android:id="@+id/btnAppColor"
                 android:layout_width="180dp"
                 android:layout_height="wrap_content"
-                android:text="APP COLOR"
+                android:text="SET APP COLOR"
                 android:textStyle="bold"
                 android:layout_marginBottom="12dp" />
 
@@ -61,7 +57,6 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Narrower Reset button -->
         <Button
             android:id="@+id/btnReset"
             android:layout_width="140dp"
@@ -72,7 +67,6 @@
             android:layout_marginTop="16dp"
             android:textStyle="bold" />
 
-        <!-- Bottom bar further down -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -101,6 +95,7 @@
                 android:backgroundTint="#D06030"
                 android:textColor="@android:color/white"
                 android:layout_marginStart="8dp" />
+
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>

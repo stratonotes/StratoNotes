@@ -14,8 +14,9 @@ object UserColorManager {
     private const val KEY_TEXT_COLOR = "text_color"
 
     private val DEFAULT_OVERLAY_COLOR = "#222222".toColorInt()
-    private val DEFAULT_APP_COLOR = "#5D53A3".toColorInt() // updated to preferred purple
+    private val DEFAULT_APP_COLOR = "#5D53A3".toColorInt() // preferred purple
     private val DEFAULT_TEXT_COLOR = "#FFFFFF".toColorInt()
+    private val DEFAULT_CANCEL_COLOR = "#D06030".toColorInt() // default orange for cancel
 
     enum class Mode { LIGHT, DARK }
     enum class Variant { BASE, LIGHTER, DARKER }
@@ -38,9 +39,15 @@ object UserColorManager {
             .getInt(KEY_APP_COLOR, DEFAULT_APP_COLOR)
     }
 
+    fun getAppColorHSV(context: Context): FloatArray {
+        val hsv = FloatArray(3)
+        Color.colorToHSV(getAppColor(context), hsv)
+        return hsv
+    }
+
     fun getTextColor(context: Context): Int {
-        return PreferenceManager.getDefaultSharedPreferences(context)
-            .getInt(KEY_TEXT_COLOR, DEFAULT_TEXT_COLOR)
+        val appColor = getAppColor(context)
+        return getAutoTextColor(appColor)
     }
 
     fun getAppColorVariant(context: Context, mode: Mode, variant: Variant): Int {
@@ -50,6 +57,36 @@ object UserColorManager {
             Variant.LIGHTER -> if (mode == Mode.LIGHT) getLightVariant(base) else getDarkVariant(base)
             Variant.DARKER -> if (mode == Mode.LIGHT) getDarkVariant(base) else getLightVariant(base)
         }
+    }
+
+    fun getAppPressedColor(context: Context): Int {
+        val base = getAppColor(context)
+        return getDarkVariant(base, 0.25f)
+    }
+
+    fun getDisabledColor(context: Context): Int {
+        val base = getAppColor(context)
+        return ColorUtils.setAlphaComponent(base, 100)
+    }
+
+    fun getAutoTextColor(backgroundColor: Int): Int {
+        val luminance = ColorUtils.calculateLuminance(backgroundColor)
+        return if (luminance < 0.5) Color.WHITE else Color.BLACK
+    }
+
+    fun getCancelColorRelativeTo(appColor: Int): Int {
+        val hsvApp = FloatArray(3)
+        val hsvDefaultApp = FloatArray(3)
+        val hsvDefaultCancel = FloatArray(3)
+
+        Color.colorToHSV(appColor, hsvApp)
+        Color.colorToHSV(DEFAULT_APP_COLOR, hsvDefaultApp)
+        Color.colorToHSV(DEFAULT_CANCEL_COLOR, hsvDefaultCancel)
+
+        val offset = (hsvDefaultCancel[0] - hsvDefaultApp[0] + 360f) % 360f
+        val cancelHue = (hsvApp[0] + offset) % 360f
+
+        return Color.HSVToColor(floatArrayOf(cancelHue, hsvDefaultCancel[1], hsvDefaultCancel[2]))
     }
 
     private fun getLightVariant(color: Int, factor: Float = 0.15f): Int {
@@ -64,15 +101,5 @@ object UserColorManager {
         val g = (Color.green(color) * (1 - factor)).toInt().coerceAtLeast(0)
         val b = (Color.blue(color) * (1 - factor)).toInt().coerceAtLeast(0)
         return Color.rgb(r, g, b)
-    }
-
-    fun getAppPressedColor(context: Context): Int {
-        val base = getAppColor(context)
-        return getDarkVariant(base, 0.25f) // Slightly darker than DARKER
-    }
-
-    fun getDisabledColor(context: Context): Int {
-        val base = getAppColor(context)
-        return ColorUtils.setAlphaComponent(base, 100) // translucent
     }
 }
