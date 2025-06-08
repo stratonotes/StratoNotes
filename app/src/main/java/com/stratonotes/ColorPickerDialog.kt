@@ -16,15 +16,14 @@ class ColorPickerDialog(context: Context) : Dialog(context) {
 
     private val defaultBlue = Color.parseColor("#5D53A3")
 
-    private var savedColor = 0             // stored in SharedPreferences
-    private var previousSessionColor = 0   // remembered only during this session
-    private var sessionColor = 0           // updated on dialog open or "Set App Color"
-    private var currentColor = 0           // live preview as user drags or changes
+    private var savedColor = 0              // saved to SharedPreferences
+    private var sessionColor = 0            // snapshot when dialog opens or user taps "Set App Color"
+    private var currentColor = 0            // live editing color
 
     private var currentHue = 250f
     private var currentBrightness = 0.64f
 
-    private var resetStage = 0             // 0 = ready to reset to previous, 1 = default, 2 = stop
+    private var resetStage = 0              // 0 = not used, 1 = back to session, 2 = back to default
 
     private lateinit var wheel: ColorWheelView
     private lateinit var brightnessSlider: SeekBar
@@ -38,13 +37,10 @@ class ColorPickerDialog(context: Context) : Dialog(context) {
         setCancelable(true)
         setCanceledOnTouchOutside(false)
 
-        // Pull SharedPreferences value
         savedColor = prefs.getInt("app_color", defaultBlue)
-        previousSessionColor = savedColor
         sessionColor = savedColor
         currentColor = savedColor
 
-        // Initialize UI references
         wheel = findViewById(R.id.colorWheelView)
         brightnessSlider = findViewById(R.id.brightnessSlider)
         val btnAppColor = findViewById<Button>(R.id.btnAppColor)
@@ -84,52 +80,50 @@ class ColorPickerDialog(context: Context) : Dialog(context) {
 
         btnAppColor.text = "SET APP COLOR"
         btnAppColor.setOnClickListener {
-            // Capture the current saved state before changing it
-            previousSessionColor = savedColor
-
-            // Update the color to the user's new selection
             currentColor = Color.HSVToColor(floatArrayOf(currentHue, 0.49f, currentBrightness))
             prefs.edit().putInt("app_color", currentColor).apply()
-
-            // Update tracking states
             savedColor = currentColor
             sessionColor = currentColor
             resetStage = 0
-
             Toast.makeText(context, "App color set", Toast.LENGTH_SHORT).show()
             updateResetButton()
         }
 
-
         btnReset.setOnClickListener {
-            val targetColor = when (resetStage) {
+            when (resetStage) {
                 0 -> {
+                    applyColor(sessionColor)
                     resetStage = 1
-                    previousSessionColor
+                    Toast.makeText(context, "Reset to saved color", Toast.LENGTH_SHORT).show()
                 }
                 1 -> {
+                    applyColor(defaultBlue)
                     resetStage = 2
-                    defaultBlue
+                    Toast.makeText(context, "Reset to default color", Toast.LENGTH_SHORT).show()
                 }
-                else -> return@setOnClickListener // Do nothing on third+ tap
+                else -> {} // do nothing
             }
-
-            applyColor(targetColor)
-            updateColor()
             updateResetButton()
-
-            val msg = when (resetStage) {
-                1 -> "Reset to saved color"
-                2 -> "Reset to default color"
-                else -> ""
-            }
-            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
         }
 
         btnSave.setOnClickListener { dismiss() }
         btnCancel.setOnClickListener { dismiss() }
 
         updateResetButton()
+    }
+
+    private fun applyColor(color: Int) {
+        val hsv = FloatArray(3)
+        Color.colorToHSV(color, hsv)
+        currentHue = hsv[0]
+        currentBrightness = hsv[2]
+        currentColor = color
+
+        brightnessSlider.progress = (currentBrightness * 100).toInt()
+        wheel.setHue(currentHue)
+        wheel.setBrightness(currentBrightness)
+        wheel.updateSelectorPositionFromAngle(currentHue)
+        wheel.setInitialColor(color)
     }
 
     private fun updateResetButton() {
@@ -139,24 +133,6 @@ class ColorPickerDialog(context: Context) : Dialog(context) {
             1 -> "Reset to Default"
             else -> "Reset"
         }
-    }
-
-    private fun applyColor(color: Int) {
-        val hsv = FloatArray(3)
-        Color.colorToHSV(color, hsv)
-        currentHue = hsv[0]
-        currentBrightness = hsv[2]
-        currentColor = color
-        brightnessSlider.progress = (currentBrightness * 100).toInt()
-        wheel.setHue(currentHue)
-        wheel.setBrightness(currentBrightness)
-        wheel.updateSelectorPositionFromAngle(currentHue)
-        wheel.setInitialColor(color)
-    }
-
-    private fun updateColor() {
-        val hsv = floatArrayOf(currentHue, 0.49f, currentBrightness)
-        currentColor = Color.HSVToColor(hsv)
     }
 
     fun setHue(value: Float) {
