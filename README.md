@@ -5,7 +5,7 @@
 ---
 
 ## 🚀 Features
-
+- Fastest note-taking, non-widget app on the market
 - Create and edit notes
 - Organize notes into folders
 - View note details
@@ -16,7 +16,7 @@
 
 ## 📁 Tech Stack
 
-- **Language:** Java
+- **Language:** Java + Kotlin
 - **Architecture:** MVVM
 - **Database:** Room (SQLite)
 - **UI:** XML Layouts, RecyclerView, DialogFragments
@@ -53,4 +53,4 @@ View full terms here: [LICENSE](https://github.com/BadSkyFate/StratoNotes/blob/m
 
 
 🤝 Contributing
-Pull requests welcome. For major changes, please open an issue first to discuss what you would like to change.
+Contributions are closed at this time. If you would like to contribute to the next project, please let me know by contacting me via email at stratonotes@gmail.com
