@@ -23,6 +23,7 @@ import android.content.res.Resources
 import android.content.Intent
 import android.app.AlertDialog
 import android.view.ViewGroup
+import android.graphics.Color
 
 class LibraryActivity : ComponentActivity() {
 
@@ -41,6 +42,12 @@ class LibraryActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_library)
+
+        val prefs = getSharedPreferences("theme_prefs", MODE_PRIVATE)
+        val appColor = prefs.getInt("app_color", Color.parseColor("#5D53A3"))
+
+        val root = findViewById<View>(R.id.rootContainer)
+        root.setBackgroundColor(appColor)
 
         overlayContainer = findViewById(R.id.overlayContainer)
         val overlayBackdrop = findViewById<View>(R.id.overlayBackdrop)
@@ -195,7 +202,9 @@ class LibraryActivity : ComponentActivity() {
 
 
         iconColorPicker.setOnClickListener {
-            val dialog = ColorPickerDialog(this)
+            val root = findViewById<View>(R.id.rootContainer)
+            val dialog = ColorPickerDialog(this, root)
+
             dialog.setCanceledOnTouchOutside(false)
             dialog.show()
 
@@ -365,7 +374,9 @@ class LibraryActivity : ComponentActivity() {
             folderAdapter.updateFilteredList(filterFolders(folders, query))
         }
     }
-
+    fun refreshFolderListColors() {
+        folderAdapter.notifyDataSetChanged()
+    }
     private fun filterFolders(original: List<FolderWithNotes>, query: String): List<FolderWithNotes> {
         val result = mutableListOf<FolderWithNotes>()
         for (folder in original) {
@@ -385,5 +396,7 @@ class LibraryActivity : ComponentActivity() {
         }
         return result
     }
+
+
 
 }

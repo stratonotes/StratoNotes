@@ -1,16 +1,21 @@
 package com.example.punchpad2
 
 import android.content.Context
+import android.graphics.drawable.GradientDrawable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.ColorUtils
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.stratonotes.FolderWithNotes
 import com.stratonotes.NoteEntity
 import com.example.punchpad2.R
+import com.stratonotes.UserColorManager
 
 class FolderAdapter(
     private val context: Context,
@@ -60,14 +65,61 @@ class FolderAdapter(
     }
 
     override fun onBindViewHolder(holder: FolderViewHolder, position: Int) {
-        holder.bind(folders[position])
+        val folder = folders[position]
+        val note = folder.notes.firstOrNull() ?: return
+
+        holder.bind(folder)
+
+        val context = holder.itemView.context
+        val folderColor = UserColorManager.getFolderColor(context)
+        val noteColor = UserColorManager.getNoteColor(context)
+
+        // Apply folder title shading
+        holder.folderName.setBackgroundColor(folderColor)
+
+        // Decide background drawable based on note length (for corner hint)
+        val bgRes = if (note.content.length > 150) {
+            R.drawable.note_expanded_background
+        } else {
+            R.drawable.note_preview_background
+        }
+
+        val shapeDrawable = ContextCompat.getDrawable(context, bgRes)?.mutate()
+        if (shapeDrawable != null) {
+            DrawableCompat.setTint(shapeDrawable, noteColor)
+            holder.notesContainer.background = shapeDrawable
+        } else {
+            holder.notesContainer.setBackgroundColor(noteColor)
+        }
+
+        // Apply bottom fade if note is long
+        val fadeView = holder.itemView.findViewById<View>(R.id.noteFade)
+        if (note.content.length > 150) {
+            val topColor = noteColor
+            val bottomColor = ColorUtils.setAlphaComponent(noteColor, 0)
+
+            val gradient = GradientDrawable(
+                GradientDrawable.Orientation.BOTTOM_TOP,
+                intArrayOf(topColor, bottomColor)
+            )
+            gradient.cornerRadius = 0f
+            fadeView.background = gradient
+            fadeView.visibility = View.VISIBLE
+        } else {
+            fadeView.visibility = View.GONE
+        }
     }
+
+
+
+
+
 
     override fun getItemCount(): Int = folders.size
 
     inner class FolderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val folderName: TextView = itemView.findViewById(R.id.folderName)
-        private val notesContainer: LinearLayout = itemView.findViewById(R.id.notesContainer)
+        val folderName: TextView = itemView.findViewById(R.id.folderName)
+        val notesContainer: LinearLayout = itemView.findViewById(R.id.notesContainer)
 
         fun bind(folderWithNotes: FolderWithNotes) {
 

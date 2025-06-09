@@ -10,6 +10,8 @@ import android.view.View
 import kotlin.math.*
 
 class ColorWheelView : View {
+    private var currentColor: Int = Color.HSVToColor(floatArrayOf(0f, 1f, 1f))
+
     private var paint: Paint? = null
     private var selectorPaint: Paint? = null
     private var centerX = 0f
@@ -171,6 +173,19 @@ class ColorWheelView : View {
         updateSelectorPositionFromAngle(currentHue)
         selectedColor = color
         listener?.onColorSelected(color)
+        invalidate()
+    }
+
+    interface OnColorChangeListener {
+        fun onColorChanged(newColor: Int)
+    }
+
+    var colorChangeListener: OnColorChangeListener? = null
+
+    fun updateColorFromWheel(hue: Float) {
+        val newColor = Color.HSVToColor(floatArrayOf(hue, 1f, 1f))
+        currentColor = newColor
+        colorChangeListener?.onColorChanged(newColor)
         invalidate()
     }
 

@@ -14,12 +14,9 @@ object UserColorManager {
     private const val KEY_TEXT_COLOR = "text_color"
 
     private val DEFAULT_OVERLAY_COLOR = "#222222".toColorInt()
-    private val DEFAULT_APP_COLOR = "#5D53A3".toColorInt() // preferred purple
+    private val DEFAULT_APP_COLOR = "#5D53A3".toColorInt()
     private val DEFAULT_TEXT_COLOR = "#FFFFFF".toColorInt()
-    private val DEFAULT_CANCEL_COLOR = "#D06030".toColorInt() // default orange for cancel
-
-    enum class Mode { LIGHT, DARK }
-    enum class Variant { BASE, LIGHTER, DARKER }
+    private val DEFAULT_CANCEL_COLOR = "#D06030".toColorInt()
 
     fun setOverlayColor(context: Context, color: Int) {
         PreferenceManager.getDefaultSharedPreferences(context).edit {
@@ -35,39 +32,10 @@ object UserColorManager {
     fun getDefaultOverlayColor(): Int = DEFAULT_OVERLAY_COLOR
 
     fun getAppColor(context: Context): Int {
-        return PreferenceManager.getDefaultSharedPreferences(context)
-            .getInt(KEY_APP_COLOR, DEFAULT_APP_COLOR)
+        val prefs = context.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE)
+        return prefs.getInt(KEY_APP_COLOR, DEFAULT_APP_COLOR)
     }
 
-    fun getAppColorHSV(context: Context): FloatArray {
-        val hsv = FloatArray(3)
-        Color.colorToHSV(getAppColor(context), hsv)
-        return hsv
-    }
-
-    fun getTextColor(context: Context): Int {
-        val appColor = getAppColor(context)
-        return getAutoTextColor(appColor)
-    }
-
-    fun getAppColorVariant(context: Context, mode: Mode, variant: Variant): Int {
-        val base = getAppColor(context)
-        return when (variant) {
-            Variant.BASE -> base
-            Variant.LIGHTER -> if (mode == Mode.LIGHT) getLightVariant(base) else getDarkVariant(base)
-            Variant.DARKER -> if (mode == Mode.LIGHT) getDarkVariant(base) else getLightVariant(base)
-        }
-    }
-
-    fun getAppPressedColor(context: Context): Int {
-        val base = getAppColor(context)
-        return getDarkVariant(base, 0.25f)
-    }
-
-    fun getDisabledColor(context: Context): Int {
-        val base = getAppColor(context)
-        return ColorUtils.setAlphaComponent(base, 100)
-    }
 
     fun getAutoTextColor(backgroundColor: Int): Int {
         val luminance = ColorUtils.calculateLuminance(backgroundColor)
@@ -89,17 +57,23 @@ object UserColorManager {
         return Color.HSVToColor(floatArrayOf(cancelHue, hsvDefaultCancel[1], hsvDefaultCancel[2]))
     }
 
-    private fun getLightVariant(color: Int, factor: Float = 0.15f): Int {
-        val r = (Color.red(color) + (255 - Color.red(color)) * factor).toInt().coerceAtMost(255)
-        val g = (Color.green(color) + (255 - Color.green(color)) * factor).toInt().coerceAtMost(255)
-        val b = (Color.blue(color) + (255 - Color.blue(color)) * factor).toInt().coerceAtMost(255)
-        return Color.rgb(r, g, b)
+    fun getFolderColor(context: Context): Int {
+        val base = getAppColor(context)
+        val hsv = FloatArray(3)
+        Color.colorToHSV(base, hsv)
+        // Slightly dim and desaturate for folder bars
+        hsv[1] = (hsv[1] * 0.92f).coerceIn(0f, 1f)
+        hsv[2] = (hsv[2] * 0.88f).coerceIn(0f, 1f)
+        return Color.HSVToColor(hsv)
     }
 
-    private fun getDarkVariant(color: Int, factor: Float = 0.15f): Int {
-        val r = (Color.red(color) * (1 - factor)).toInt().coerceAtLeast(0)
-        val g = (Color.green(color) * (1 - factor)).toInt().coerceAtLeast(0)
-        val b = (Color.blue(color) * (1 - factor)).toInt().coerceAtLeast(0)
-        return Color.rgb(r, g, b)
+    fun getNoteColor(context: Context): Int {
+        val base = getAppColor(context)
+        val hsv = FloatArray(3)
+        Color.colorToHSV(base, hsv)
+        // Slightly desaturate and brighten notes
+        hsv[1] = (hsv[1] * 0.78f).coerceIn(0f, 1f)
+        hsv[2] = (hsv[2] * 1.08f).coerceAtMost(1f)
+        return Color.HSVToColor(hsv)
     }
 }
