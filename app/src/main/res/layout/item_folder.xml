@@ -1,19 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/folderRoot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="12dp">
+    android:paddingTop="8dp"
+    android:paddingBottom="0dp"
+    android:background="@android:color/transparent"
+    android:elevation="0dp">
 
+    <!-- Folder Header Block -->
     <RelativeLayout
+        android:id="@+id/folderHeader"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@drawable/folder_header_background"
+        android:padding="12dp"
+        android:elevation="2dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true">
 
         <TextView
             android:id="@+id/folderName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Folder Title"
+            android:textColor="#FFFFFF"
             android:textSize="18sp"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true" />
@@ -30,12 +43,14 @@
             android:contentDescription="Expand Folder" />
     </RelativeLayout>
 
+    <!-- Note Content Block -->
     <LinearLayout
         android:id="@+id/notesContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:visibility="gone"
+        android:background="@android:color/transparent"
         android:paddingTop="8dp"
         android:paddingStart="4dp"
         android:paddingEnd="4dp" />

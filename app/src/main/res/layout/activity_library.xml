@@ -52,6 +52,9 @@
         android:layout_height="515dp"
         android:layout_marginTop="55dp"
         android:layout_marginBottom="82dp"
+        android:clipToPadding="false"
+        android:clipChildren="false"
+
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <LinearLayout

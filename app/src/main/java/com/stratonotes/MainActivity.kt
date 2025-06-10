@@ -24,7 +24,7 @@ import kotlinx.coroutines.withContext
 import android.graphics.Typeface
 import android.view.ViewGroup
 import android.content.res.Resources
-
+import android.graphics.Color
 
 class MainActivity : ComponentActivity() {
 
@@ -73,6 +73,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        val prefs = getSharedPreferences("theme_prefs", MODE_PRIVATE)
+        val appColor = prefs.getInt("app_color", Color.parseColor("#5D53A3"))
+        val root = findViewById<View>(R.id.rootContainer)
+        root.setBackgroundColor(appColor)
+
 
         noteViewModel.ensureStratoNotesFolder()
 
@@ -89,6 +94,12 @@ class MainActivity : ComponentActivity() {
         undoButton = findViewById(R.id.undo_button)
         redoButton = findViewById(R.id.redo_button)
         folderSettingsButton = findViewById(R.id.folder_settings_button_1)
+        folderSettingsButton.setOnClickListener {
+            val root = findViewById<View>(R.id.rootContainer)
+            val dialog = ColorPickerDialog(this, root)
+            dialog.show()
+        }
+
         searchDropdown = findViewById(R.id.searchResultsDropdown)
         searchAdapter = SearchResultAdapter(this) { note -> showOverlay(note) }
         searchDropdown.adapter = searchAdapter
@@ -246,6 +257,12 @@ class MainActivity : ComponentActivity() {
                 mediaMenu.animate().translationX(0f).alpha(1f).setDuration(200).start()
             }
         }
+        folderSettingsButton.setOnClickListener {
+            val root = findViewById<View>(R.id.rootContainer)
+            val dialog = ColorPickerDialog(this, root)
+            dialog.show()
+        }
+
 
         loadPreviews()
     }
@@ -562,5 +579,13 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    override fun onResume() {
+        super.onResume()
+        val prefs = getSharedPreferences("theme_prefs", MODE_PRIVATE)
+        val appColor = prefs.getInt("app_color", Color.parseColor("#5D53A3"))
+        val root = findViewById<View>(R.id.rootContainer)
+        root.setBackgroundColor(appColor)
+    }
+
 
 }

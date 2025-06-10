@@ -74,6 +74,11 @@ class FolderAdapter(
         val folderColor = UserColorManager.getFolderColor(context)
         val noteColor = UserColorManager.getNoteColor(context)
 
+        val tabView = holder.itemView.findViewById<View>(R.id.folderHeader)
+        val drawable = ContextCompat.getDrawable(tabView.context, R.drawable.folder_header_background)?.mutate()
+        (drawable as? GradientDrawable)?.setColor(folderColor)
+        tabView.background = drawable
+
         // Apply folder title shading
         holder.folderName.setBackgroundColor(folderColor)
 
