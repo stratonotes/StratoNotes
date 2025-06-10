@@ -53,5 +53,8 @@
         android:background="@android:color/transparent"
         android:paddingTop="8dp"
         android:paddingStart="4dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+
         android:paddingEnd="4dp" />
 </LinearLayout>

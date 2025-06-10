@@ -101,7 +101,7 @@ class FolderAdapter(
         val fadeView = holder.itemView.findViewById<View>(R.id.noteFade)
         if (note.content.length > 150) {
             val topColor = noteColor
-            val bottomColor = ColorUtils.setAlphaComponent(noteColor, 0)
+            val bottomColor = ColorUtils.setAlphaComponent(folderColor, 0)
 
             val gradient = GradientDrawable(
                 GradientDrawable.Orientation.BOTTOM_TOP,
