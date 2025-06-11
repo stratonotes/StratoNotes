@@ -1,6 +1,7 @@
 package com.example.punchpad2
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.util.Log
 import android.view.LayoutInflater
@@ -14,7 +15,6 @@ import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.stratonotes.FolderWithNotes
 import com.stratonotes.NoteEntity
-import com.example.punchpad2.R
 import com.stratonotes.UserColorManager
 
 class FolderAdapter(
@@ -27,6 +27,7 @@ class FolderAdapter(
     fun getFolderIndexById(folderId: Long): Int {
         return folders.indexOfFirst { it.folder.id == folderId }
     }
+
     private val folderStates = mutableMapOf<Long, ExpandMode>()
     private val folderLoadedCounts = mutableMapOf<Long, Int>()
     private var selectionMode = false
@@ -68,8 +69,6 @@ class FolderAdapter(
         val folder = folders[position]
         val note = folder.notes.firstOrNull() ?: return
 
-        holder.bind(folder)
-
         val context = holder.itemView.context
         val folderColor = UserColorManager.getFolderColor(context)
         val noteColor = UserColorManager.getNoteColor(context)
@@ -79,10 +78,8 @@ class FolderAdapter(
         (drawable as? GradientDrawable)?.setColor(folderColor)
         tabView.background = drawable
 
-        // Apply folder title shading
         holder.folderName.setBackgroundColor(folderColor)
 
-        // Decide background drawable based on note length (for corner hint)
         val bgRes = if (note.content.length > 150) {
             R.drawable.note_expanded_background
         } else {
@@ -92,20 +89,17 @@ class FolderAdapter(
         val shapeDrawable = ContextCompat.getDrawable(context, bgRes)?.mutate()
         if (shapeDrawable != null) {
             DrawableCompat.setTint(shapeDrawable, noteColor)
-            holder.notesContainer.background = shapeDrawable
-        } else {
-            holder.notesContainer.setBackgroundColor(noteColor)
         }
 
-        // Apply bottom fade if note is long
+        holder.bind(folder, noteColor, shapeDrawable)
+
         val fadeView = holder.itemView.findViewById<View>(R.id.noteFade)
         if (note.content.length > 150) {
-            val topColor = noteColor
-            val bottomColor = ColorUtils.setAlphaComponent(folderColor, 0)
-
+            val fadeBottom = folderColor
+            val fadeTop = ColorUtils.setAlphaComponent(folderColor, 0)
             val gradient = GradientDrawable(
                 GradientDrawable.Orientation.BOTTOM_TOP,
-                intArrayOf(topColor, bottomColor)
+                intArrayOf(fadeBottom, fadeTop)
             )
             gradient.cornerRadius = 0f
             fadeView.background = gradient
@@ -115,20 +109,13 @@ class FolderAdapter(
         }
     }
 
-
-
-
-
-
     override fun getItemCount(): Int = folders.size
 
     inner class FolderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val folderName: TextView = itemView.findViewById(R.id.folderName)
         val notesContainer: LinearLayout = itemView.findViewById(R.id.notesContainer)
 
-        fun bind(folderWithNotes: FolderWithNotes) {
-
-
+        fun bind(folderWithNotes: FolderWithNotes, noteColor: Int, shapeDrawable: Drawable?) {
             val folderId = folderWithNotes.folder.id
             val folderText = folderWithNotes.folder.name ?: "(Unnamed)"
             folderName.text = folderText
@@ -137,7 +124,8 @@ class FolderAdapter(
             val maxCount = folderLoadedCounts.getOrDefault(folderId, 50)
 
             notesContainer.removeAllViews()
-            notesContainer.visibility = if (expandMode == ExpandMode.COLLAPSED) View.GONE else View.VISIBLE
+            notesContainer.visibility =
+                if (expandMode == ExpandMode.COLLAPSED) View.GONE else View.VISIBLE
 
             val notesToShow = when (expandMode) {
                 ExpandMode.COLLAPSED -> emptyList()
@@ -150,11 +138,17 @@ class FolderAdapter(
                 val noteText = noteView.findViewById<TextView>(R.id.noteText)
                 val starIcon = noteView.findViewById<ImageView>(R.id.starIcon)
                 val checkbox = noteView.findViewById<CheckBox?>(R.id.noteCheckbox)
+
                 starIcon.setImageResource(if (note.isFavorite) R.drawable.ic_star_filled else R.drawable.ic_star_outline)
                 starIcon.visibility = View.VISIBLE
 
+                if (shapeDrawable != null) {
+                    noteView.background = shapeDrawable.constantState?.newDrawable()?.mutate()
+                } else {
+                    noteView.setBackgroundColor(noteColor)
+                }
+
                 noteText.text = note.content
-                starIcon.setImageResource(if (note.isFavorite) R.drawable.ic_star_filled else R.drawable.ic_star_outline)
 
                 noteText.setOnLongClickListener {
                     if (!selectionMode) {
@@ -166,7 +160,6 @@ class FolderAdapter(
                     true
                 }
 
-// 🔥 Fix: Always open note overlay on noteText click (even in selection mode)
                 noteText.setOnClickListener {
                     listener(note, false)
                 }
@@ -180,9 +173,6 @@ class FolderAdapter(
                         listener(note, false)
                     }
                 }
-
-
-
 
                 if (selectionMode) {
                     checkbox?.visibility = View.VISIBLE
@@ -220,11 +210,11 @@ class FolderAdapter(
             }
 
             folderName.setOnClickListener {
-                val newMode = if (expandMode == ExpandMode.COLLAPSED) ExpandMode.FULL else ExpandMode.COLLAPSED
+                val newMode =
+                    if (expandMode == ExpandMode.COLLAPSED) ExpandMode.FULL else ExpandMode.COLLAPSED
                 folderStates[folderId] = newMode
                 notifyItemChanged(adapterPosition)
             }
-
 
             folderName.setOnLongClickListener {
                 val editText = EditText(context)
@@ -249,7 +239,5 @@ class FolderAdapter(
                 true
             }
         }
-
-
     }
 }

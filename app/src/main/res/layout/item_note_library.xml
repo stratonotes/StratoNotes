@@ -1,5 +1,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
+
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/rounded_note_bg"
     android:clickable="true"
@@ -60,12 +61,12 @@
     <View
         android:id="@+id/noteFade"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="36dp"
         android:layout_alignBottom="@id/noteText"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:background="@android:color/transparent"
+        android:layout_alignStart="@id/noteText"
+        android:layout_alignEnd="@id/noteText"
+        android:background="@android:color/transparent" />
 
 
-        android:visibility="gone" />
+
 </RelativeLayout>
