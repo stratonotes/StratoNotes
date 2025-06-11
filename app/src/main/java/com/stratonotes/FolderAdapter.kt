@@ -67,11 +67,9 @@ class FolderAdapter(
 
     override fun onBindViewHolder(holder: FolderViewHolder, position: Int) {
         val folder = folders[position]
-        val note = folder.notes.firstOrNull() ?: return
 
         val context = holder.itemView.context
         val folderColor = UserColorManager.getFolderColor(context)
-        val noteColor = UserColorManager.getNoteColor(context)
 
         val tabView = holder.itemView.findViewById<View>(R.id.folderHeader)
         val drawable = ContextCompat.getDrawable(tabView.context, R.drawable.folder_header_background)?.mutate()
@@ -80,33 +78,7 @@ class FolderAdapter(
 
         holder.folderName.setBackgroundColor(folderColor)
 
-        val bgRes = if (note.content.length > 150) {
-            R.drawable.note_expanded_background
-        } else {
-            R.drawable.note_preview_background
-        }
-
-        val shapeDrawable = ContextCompat.getDrawable(context, bgRes)?.mutate()
-        if (shapeDrawable != null) {
-            DrawableCompat.setTint(shapeDrawable, noteColor)
-        }
-
-        holder.bind(folder, noteColor, shapeDrawable)
-
-        val fadeView = holder.itemView.findViewById<View>(R.id.noteFade)
-        if (note.content.length > 150) {
-            val fadeBottom = folderColor
-            val fadeTop = ColorUtils.setAlphaComponent(folderColor, 0)
-            val gradient = GradientDrawable(
-                GradientDrawable.Orientation.BOTTOM_TOP,
-                intArrayOf(fadeBottom, fadeTop)
-            )
-            gradient.cornerRadius = 0f
-            fadeView.background = gradient
-            fadeView.visibility = View.VISIBLE
-        } else {
-            fadeView.visibility = View.GONE
-        }
+        holder.bind(folder)
     }
 
     override fun getItemCount(): Int = folders.size
@@ -115,7 +87,7 @@ class FolderAdapter(
         val folderName: TextView = itemView.findViewById(R.id.folderName)
         val notesContainer: LinearLayout = itemView.findViewById(R.id.notesContainer)
 
-        fun bind(folderWithNotes: FolderWithNotes, noteColor: Int, shapeDrawable: Drawable?) {
+        fun bind(folderWithNotes: FolderWithNotes) {
             val folderId = folderWithNotes.folder.id
             val folderText = folderWithNotes.folder.name ?: "(Unnamed)"
             folderName.text = folderText
@@ -133,20 +105,43 @@ class FolderAdapter(
                 ExpandMode.FULL -> folderWithNotes.notes.take(maxCount)
             }
 
+            val noteColor = UserColorManager.getNoteColor(context)
+            val folderColor = UserColorManager.getFolderColor(context)
+
             notesToShow.forEach { note ->
                 val noteView = LayoutInflater.from(context).inflate(noteLayoutResId, notesContainer, false)
                 val noteText = noteView.findViewById<TextView>(R.id.noteText)
                 val starIcon = noteView.findViewById<ImageView>(R.id.starIcon)
                 val checkbox = noteView.findViewById<CheckBox?>(R.id.noteCheckbox)
+                val fadeView = noteView.findViewById<View>(R.id.noteFade)
+
+                val bgRes = if (note.content.length > 150) {
+                    R.drawable.note_expanded_background
+                } else {
+                    R.drawable.note_preview_background
+                }
+
+                ContextCompat.getDrawable(context, bgRes)?.mutate()?.let { drawable ->
+                    DrawableCompat.setTint(drawable, noteColor)
+                    noteView.background = drawable
+                } ?: noteView.setBackgroundColor(noteColor)
+
+                if (note.content.length > 150) {
+                    val fadeBottom = folderColor
+                    val fadeTop = ColorUtils.setAlphaComponent(folderColor, 0)
+                    val gradient = GradientDrawable(
+                        GradientDrawable.Orientation.BOTTOM_TOP,
+                        intArrayOf(fadeBottom, fadeTop)
+                    )
+                    gradient.cornerRadius = 0f
+                    fadeView.background = gradient
+                    fadeView.visibility = View.VISIBLE
+                } else {
+                    fadeView.visibility = View.GONE
+                }
 
                 starIcon.setImageResource(if (note.isFavorite) R.drawable.ic_star_filled else R.drawable.ic_star_outline)
                 starIcon.visibility = View.VISIBLE
-
-                if (shapeDrawable != null) {
-                    noteView.background = shapeDrawable.constantState?.newDrawable()?.mutate()
-                } else {
-                    noteView.setBackgroundColor(noteColor)
-                }
 
                 noteText.text = note.content
 
