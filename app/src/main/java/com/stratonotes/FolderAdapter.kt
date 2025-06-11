@@ -56,7 +56,8 @@ class FolderAdapter(
             }
         }
         selectedNotes.clear()
-        selectionMode = false
+
+
         notifyDataSetChanged()
     }
 

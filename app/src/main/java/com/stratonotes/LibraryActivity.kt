@@ -109,7 +109,7 @@ class LibraryActivity : ComponentActivity() {
         val selectionBar = findViewById<LinearLayout>(R.id.selectionBar)
         val bottomBar = findViewById<LinearLayout>(R.id.bottomBar)
         val cancelButton = findViewById<Button>(R.id.cancelButton)
-        val bombButton = findViewById<ImageButton>(R.id.bombButton)
+        val bombButton = findViewById<Button>(R.id.bombButton)
 
         deleteButton.setOnClickListener {
             if (folderAdapter.getSelectedNotes().isEmpty()) {
@@ -125,6 +125,8 @@ class LibraryActivity : ComponentActivity() {
             selectionBar.visibility = View.GONE
             bottomBar.visibility = View.VISIBLE
         }
+        val cancelColor = UserColorManager.getCancelColorRelativeTo(UserColorManager.getAppColor(this))
+        bombButton.setBackgroundColor(cancelColor)
 
         bombButton.setOnClickListener {
             val selectedNotes = folderAdapter.getSelectedNotes()
@@ -138,6 +140,7 @@ class LibraryActivity : ComponentActivity() {
                 Toast.makeText(this, "Deleted ${selectedNotes.size} notes.", Toast.LENGTH_SHORT).show()
             }
         }
+
 
         findViewById<ImageButton>(R.id.favoritesToggle).setOnClickListener {
             if (folderAdapter.getSelectedNotes().isNotEmpty()) {
@@ -239,6 +242,8 @@ class LibraryActivity : ComponentActivity() {
 
 
     }
+
+
 
     private fun showOverlay(note: NoteEntity) {
         currentOverlayNote = note
@@ -342,14 +347,24 @@ class LibraryActivity : ComponentActivity() {
 
 
 
-
     override fun onBackPressed() {
         if (overlayContainer.visibility == View.VISIBLE) {
             closeOverlay()
-        } else {
-            super.onBackPressed()
+            return
         }
+
+        if (folderAdapter.getSelectedNotes().isNotEmpty()) {
+            folderAdapter.exitSelectionMode()
+            findViewById<LinearLayout>(R.id.selectionBar).visibility = View.GONE
+            findViewById<LinearLayout>(R.id.bottomBar).visibility = View.VISIBLE
+            return
+        }
+
+        super.onBackPressed()
     }
+
+
+
     override fun onPause() {
         super.onPause()
         if (overlayContainer.visibility == View.VISIBLE) {

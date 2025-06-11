@@ -36,11 +36,9 @@
 
         <ImageButton
             android:id="@+id/expandButton"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="false"
             android:background="@android:color/transparent"
             android:contentDescription="Expand Folder"
             android:src="@drawable/ic_arrow_drop_down" />
