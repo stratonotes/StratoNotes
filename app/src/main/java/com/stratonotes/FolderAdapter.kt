@@ -157,10 +157,6 @@ class FolderAdapter(
                 }
 
                 noteText.setOnClickListener {
-                    listener(note, false)
-                }
-
-                noteView.setOnClickListener {
                     if (selectionMode) {
                         val isChecked = !selectedNotes.contains(note)
                         if (isChecked) selectedNotes.add(note) else selectedNotes.remove(note)
@@ -169,6 +165,7 @@ class FolderAdapter(
                         listener(note, false)
                     }
                 }
+
 
                 if (selectionMode) {
                     checkbox?.visibility = View.VISIBLE
@@ -185,7 +182,7 @@ class FolderAdapter(
                 starIcon.setOnClickListener {
                     note.isFavorite = !note.isFavorite
                     starIcon.setImageResource(if (note.isFavorite) R.drawable.ic_star_filled else R.drawable.ic_star_outline)
-                    listener(note, false)
+
                 }
 
                 notesContainer.addView(noteView)

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/aboutBody"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="StratoNotes is a local-only note app with zero cloud sync."
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:paddingBottom="8dp"/>
+
+    <TextView
+        android:id="@+id/aboutSignature"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Made by Paul Stockwell"
+        android:textStyle="bold"
+        android:textColor="@color/purple"
+        android:gravity="center"
+        android:paddingTop="8dp"/>
+</LinearLayout>
