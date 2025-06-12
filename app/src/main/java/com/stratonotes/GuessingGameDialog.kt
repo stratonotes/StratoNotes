@@ -4,7 +4,9 @@ import android.app.AlertDialog
 import android.content.Context
 import android.view.LayoutInflater
 import android.widget.*
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import com.example.punchpad2.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.CoroutineScope
@@ -12,14 +14,14 @@ import kotlin.random.Random
 
 class GuessingGameDialog(
     private val context: Context,
-    private val scope: CoroutineScope,
+    private val lifecycleOwner: LifecycleOwner,
     private val getAllNotes: suspend () -> List<NoteEntity>
 ) {
     private val asked = mutableSetOf<String>()
 
     fun launch() {
-        scope.lifecycleScope.launchWhenStarted {
-            val notes = withContext(Dispatchers.IO) { getAllNotes() }
+        lifecycleOwner.lifecycleScope.launchWhenStarted {
+            val notes = getAllNotes()
             val allText = notes.joinToString(" ") { it.content }.lowercase()
 
             val wordFreq = Regex("\\b[a-z]{3,}\\b").findAll(allText)
@@ -39,14 +41,12 @@ class GuessingGameDialog(
                 .filter { it.value >= 2 }
 
             val allOptions = (wordFreq + letterFreq + digitFreq).toMutableMap()
-
-            // Remove previously asked
             allOptions.keys.removeAll(asked)
 
             if (allOptions.isEmpty()) {
                 asked.clear()
                 Toast.makeText(context, "All questions used. Resetting...", Toast.LENGTH_SHORT).show()
-                return@launch
+                return@launchWhenStarted
             }
 
             val (target, count) = allOptions.entries.random()

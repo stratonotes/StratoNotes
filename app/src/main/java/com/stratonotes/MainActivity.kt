@@ -1,5 +1,6 @@
 package com.stratonotes
 
+import android.animation.ObjectAnimator
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
@@ -25,6 +26,12 @@ import android.graphics.Typeface
 import android.view.ViewGroup
 import android.content.res.Resources
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.ColorUtils
+import androidx.core.graphics.drawable.DrawableCompat
+import android.animation.ValueAnimator
+import androidx.core.animation.doOnEnd
 
 class MainActivity : ComponentActivity() {
 
@@ -40,8 +47,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var filterButton: ImageButton
     private lateinit var submitButton: Button
     private lateinit var clearDraftButton: Button
-    private lateinit var plusButton: ImageButton
-    private lateinit var mediaMenu: LinearLayout
+
     private lateinit var undoButton: ImageButton
     private lateinit var redoButton: ImageButton
     private lateinit var folderSettingsButton: ImageButton
@@ -73,10 +79,30 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        val root = findViewById<View>(R.id.rootContainer)
+
+        val parent = findViewById<RelativeLayout>(R.id.textboxWrapper)
+        val menuView = layoutInflater.inflate(R.layout.widget_pill_menu, parent, false)
+        parent.addView(menuView)
+
+        this.initPillMenu(menuView)
+
+
         val prefs = getSharedPreferences("theme_prefs", MODE_PRIVATE)
         val appColor = prefs.getInt("app_color", Color.parseColor("#5D53A3"))
-        val root = findViewById<View>(R.id.rootContainer)
+
         root.setBackgroundColor(appColor)
+
+// Tint plus button background with user color
+        val plus = menuView.findViewById<ImageButton>(R.id.iconPlus)
+        DrawableCompat.setTint(plus.background.mutate(), appColor)
+
+// Tint pill background with user color
+        val pill = menuView.findViewById<LinearLayout>(R.id.pillContainer)
+        pill.background?.mutate()?.let {
+            DrawableCompat.setTint(it, appColor)
+            pill.background = it
+        }
 
 
         noteViewModel.ensureStratoNotesFolder()
@@ -89,8 +115,7 @@ class MainActivity : ComponentActivity() {
         filterButton = findViewById(R.id.filter_button)
         submitButton = findViewById(R.id.submit_button)
         clearDraftButton = findViewById(R.id.clear_draft_button)
-        plusButton = findViewById(R.id.plus_button)
-        mediaMenu = findViewById(R.id.media_menu)
+
         undoButton = findViewById(R.id.undo_button)
         redoButton = findViewById(R.id.redo_button)
         folderSettingsButton = findViewById(R.id.folder_settings_button_1)
@@ -105,6 +130,14 @@ class MainActivity : ComponentActivity() {
         searchDropdown.adapter = searchAdapter
         searchDropdown.layoutManager = LinearLayoutManager(this)
 
+        val noteColor = UserColorManager.getNoteColor(this)
+        val folderColor = UserColorManager.getFolderColor(this)
+
+        noteInput.setBackgroundColor(noteColor)
+
+        submitButton.setBackgroundColor(folderColor)
+
+        clearDraftButton.setBackgroundColor(folderColor)
 
 
         val overlayBackdrop = findViewById<View>(R.id.overlayBackdrop)
@@ -245,18 +278,7 @@ class MainActivity : ComponentActivity() {
             })
         }
 
-        plusButton.setOnClickListener {
-            if (mediaMenu.visibility == View.VISIBLE) {
-                mediaMenu.animate().translationX(mediaMenu.width.toFloat()).alpha(0f).setDuration(200).withEndAction {
-                    mediaMenu.visibility = View.GONE
-                }
-            } else {
-                mediaMenu.translationX = mediaMenu.width.toFloat()
-                mediaMenu.alpha = 0f
-                mediaMenu.visibility = View.VISIBLE
-                mediaMenu.animate().translationX(0f).alpha(1f).setDuration(200).start()
-            }
-        }
+
         folderSettingsButton.setOnClickListener {
             val root = findViewById<View>(R.id.rootContainer)
             val dialog = ColorPickerDialog(this, root)
@@ -443,19 +465,50 @@ class MainActivity : ComponentActivity() {
             val notes = AppDatabase.getDatabase(this@MainActivity).noteDao().get3MostRecentVisibleNotes()
             withContext(Dispatchers.Main) {
                 previewContainer.removeAllViews()
+
                 for (note in notes) {
-                    val preview = TextView(this@MainActivity).apply {
-                        text = if (note.content.length > 100) note.content.substring(0, 100) + "..." else note.content
-                        setPadding(16, 16, 16, 16)
-                        setTextAppearance(android.R.style.TextAppearance_Material_Body1)
-                        textSize = 16f
-                        setOnClickListener { showOverlay(note) }
+                    val previewView = layoutInflater.inflate(R.layout.item_note_preview, previewContainer, false)
+                    val noteText = previewView.findViewById<EditText>(R.id.noteText)
+                    val fadeView = previewView.findViewById<View>(R.id.noteFade)
+
+                    noteText.setText(note.content)
+                    noteText.setOnClickListener { showOverlay(note) }
+
+                    val noteColor = UserColorManager.getNoteColor(this@MainActivity)
+                    val folderColor = UserColorManager.getFolderColor(this@MainActivity)
+
+                    val bgRes = if (note.content.length > 150) {
+                        R.drawable.note_expanded_background
+                    } else {
+                        R.drawable.note_preview_background
                     }
-                    previewContainer.addView(preview)
+
+                    ContextCompat.getDrawable(this@MainActivity, bgRes)?.mutate()?.let { drawable ->
+                        DrawableCompat.setTint(drawable, noteColor)
+                        previewView.background = drawable
+                    } ?: previewView.setBackgroundColor(noteColor)
+
+                    if (note.content.length > 150) {
+                        val fadeBottom = folderColor
+                        val fadeTop = ColorUtils.setAlphaComponent(folderColor, 0)
+                        val gradient = GradientDrawable(
+                            GradientDrawable.Orientation.BOTTOM_TOP,
+                            intArrayOf(fadeBottom, fadeTop)
+                        )
+                        gradient.cornerRadius = 0f
+                        fadeView.background = gradient
+                        fadeView.visibility = View.VISIBLE
+                    } else {
+                        fadeView.visibility = View.GONE
+                    }
+
+                    previewContainer.addView(previewView)
                 }
             }
+
         }
     }
+
 
 
     private fun cycleMode() {
@@ -588,4 +641,77 @@ class MainActivity : ComponentActivity() {
     }
 
 
-}
+
+
+    private fun initPillMenu(rootView: View) {
+        val pill = rootView.findViewById<LinearLayout>(R.id.pillContainer)
+        val plus = rootView.findViewById<ImageButton>(R.id.iconPlus)
+        val icons = listOf(
+            rootView.findViewById<ImageButton>(R.id.iconAddImage),
+            rootView.findViewById<ImageButton>(R.id.iconAddAudio),
+            rootView.findViewById<ImageButton>(R.id.iconMore),
+            rootView.findViewById<ImageButton>(R.id.iconDelete)
+        )
+
+        var expanded = false
+
+        plus.setOnClickListener {
+            expanded = !expanded
+
+            // Always show container before expanding
+            if (expanded) pill.visibility = View.VISIBLE
+
+            val iconWidthPx = (40 * rootView.resources.displayMetrics.density).toInt()
+            val paddingPx = (24 * rootView.resources.displayMetrics.density).toInt()  // 12dp padding start + end
+            val targetWidth = if (expanded) (iconWidthPx * (icons.size + 1) + paddingPx) else 0
+
+            val animator = ValueAnimator.ofInt(pill.width, targetWidth)
+            animator.duration = 250
+            animator.addUpdateListener { animation ->
+                val value = animation.animatedValue as Int
+                pill.layoutParams.width = value
+                pill.requestLayout()
+            }
+
+            animator.addListener(object : android.animation.AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: android.animation.Animator) {
+                    if (!expanded) pill.visibility = View.GONE
+                }
+            })
+
+            animator.start()
+
+            // Animate plus rotation
+            val rotation = if (expanded) 45f else 0f
+            ObjectAnimator.ofFloat(plus, View.ROTATION, rotation).apply {
+                duration = 200
+                start()
+            }
+
+            // Toggle icon visibility
+            icons.forEach { icon ->
+                icon.visibility = if (expanded) View.VISIBLE else View.GONE
+            }
+        }
+
+
+
+
+    // Animate plus rotation
+            val rotation = if (expanded) 45f else 0f
+            ObjectAnimator.ofFloat(plus, View.ROTATION, rotation).apply {
+                duration = 200
+                start()
+            }
+
+            // Toggle icon visibility
+            icons.forEach { icon ->
+                icon.visibility = if (expanded) View.VISIBLE else View.GONE
+            }
+        }
+    }
+
+
+
+
+

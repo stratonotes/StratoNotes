@@ -47,4 +47,9 @@ class NoteRepository(private val db: AppDatabase) {
         noteDao.permanentlyDeleteAllTrashedNotes()
     }
 
+    suspend fun getAllNotesNow(): List<NoteEntity> {
+        return noteDao.getAllNotesNow()
+    }
+
 }
+

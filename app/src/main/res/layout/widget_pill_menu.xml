@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <!-- Outer container pinned to bottom end -->
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="56dp"
+            android:layout_gravity="center"
+            android:clipChildren="true">
+
+        <!-- Pill slides in behind the button -->
+        <LinearLayout
+            android:id="@+id/pillContainer"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/pill_menu_bg"
+            android:elevation="6dp"
+            android:translationZ="6dp"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp">
+
+            <ImageButton
+                android:id="@+id/iconAddImage"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_image"
+                android:contentDescription="Add Image"
+                android:visibility="gone" />
+
+            <ImageButton
+                android:id="@+id/iconAddAudio"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_record_add"
+                android:contentDescription="Add Audio"
+                android:visibility="gone" />
+
+            <ImageButton
+                android:id="@+id/iconMore"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_more_vert"
+                android:contentDescription="More Options"
+                android:visibility="gone" />
+
+            <ImageButton
+                android:id="@+id/iconDelete"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_delete"
+                android:contentDescription="Delete Note"
+                android:visibility="gone" />
+        </LinearLayout>
+        </FrameLayout>
+
+        <!-- Plus button always on top -->
+        <ImageButton
+            android:id="@+id/iconPlus"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_gravity="end|center_vertical"
+            android:background="@drawable/pill_circle_bg"
+            android:src="@drawable/ic_plus"
+            android:contentDescription="Toggle Menu"
+            android:elevation="8dp"
+            android:translationZ="8dp" />
+    </FrameLayout>
+</FrameLayout>

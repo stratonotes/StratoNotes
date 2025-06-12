@@ -225,14 +225,28 @@ class LibraryActivity : ComponentActivity() {
             menuOverlay.visibility = View.GONE
         }
 
+
         iconAbout.setOnClickListener {
+            val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_about, null)
+            val signature = dialogView.findViewById<TextView>(R.id.aboutSignature)
+
+            val userColor = UserColorManager.getAppColor(this)
+            signature.setTextColor(userColor)
+
+            signature.setOnClickListener {
+                GuessingGameDialog(this, this, noteViewModel::getAllNotesNow).launch()
+            }
+
+
             AlertDialog.Builder(this)
                 .setTitle("About StratoNotes")
-                .setMessage("StratoNotes is a local-only note app with zero cloud sync.\n\nMade by Paul Stockwell.")
+                .setView(dialogView)
                 .setPositiveButton("OK", null)
                 .show()
+
             menuOverlay.visibility = View.GONE
         }
+
 
         iconTBA.setOnClickListener {
             Toast.makeText(this, "Coming soon!", Toast.LENGTH_SHORT).show()

@@ -85,4 +85,8 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
             noteRepository.permanentlyDeleteAllTrashedNotes()
         }
     }
+    suspend fun getAllNotesNow(): List<NoteEntity> {
+        return noteRepository.getAllNotesNow()
+    }
+
 }

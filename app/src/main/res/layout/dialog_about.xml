@@ -17,9 +17,8 @@
         android:id="@+id/aboutSignature"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Made by Paul Stockwell"
-        android:textStyle="bold"
-        android:textColor="@color/purple"
         android:gravity="center"
-        android:paddingTop="8dp"/>
+        android:paddingTop="8dp"
+        android:text="Made by Paul Stockwell"
+        android:textStyle="bold" />
 </LinearLayout>

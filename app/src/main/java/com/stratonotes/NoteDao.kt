@@ -68,4 +68,8 @@ interface NoteDao {
     @Query("DELETE FROM notes WHERE isTrashed = 1")
     suspend fun permanentlyDeleteAllTrashedNotes()
 
+    @Query("SELECT * FROM notes WHERE isTrashed = 0 ORDER BY lastEdited DESC")
+    suspend fun getAllNotesNow(): List<NoteEntity>
+
+
 }
