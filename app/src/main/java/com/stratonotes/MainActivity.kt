@@ -80,9 +80,13 @@ class MainActivity : ComponentActivity() {
         setContentView(R.layout.activity_main)
 
         val root = findViewById<View>(R.id.rootContainer)
-        val parent = findViewById<RelativeLayout>(R.id.textboxWrapper)
+        val parent = findViewById<MaterialCardView>(R.id.note_input_card)
         val menuView = layoutInflater.inflate(R.layout.widget_pill_menu, parent, false)
         parent.addView(menuView)
+
+        menuView.elevation = 20f
+
+
         this.initPillMenu(menuView)
 
         val prefs = getSharedPreferences("theme_prefs", MODE_PRIVATE)
