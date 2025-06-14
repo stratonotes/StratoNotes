@@ -1,97 +1,104 @@
-<com.google.android.material.card.MaterialCardView
-android:id="@+id/noteCard"
- xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    app:cardBackgroundColor="?attr/colorSurface"
-
+    android:id="@+id/cardWrapper"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
+    android:padding="4dp"
+    android:clipChildren="false"
+    android:clipToPadding="false">
 
-    app:cardCornerRadius="16dp"
-    >
-
-    <!-- NEW WRAPPER for user color targeting -->
-    <LinearLayout
-        android:id="@+id/noteContainer"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/noteCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_margin="4dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="1dp"
+        app:strokeWidth="0dp"
+        app:strokeColor="@android:color/transparent"
+        app:cardBackgroundColor="@android:color/transparent"
+        android:clipToOutline="true"
+        android:outlineProvider="background">
 
-        <RelativeLayout
+        <LinearLayout
+            android:id="@+id/noteContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-            android:clickable="true"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:padding="12dp">
-
-            <EditText
-                android:id="@+id/noteText"
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:layout_marginTop="28dp"
-                android:layout_marginBottom="100dp"
-                android:background="@android:color/transparent"
-                android:gravity="top|start"
-                android:inputType="textMultiLine"
-                android:lineSpacingExtra="6dp"
-                android:minLines="10"
-                android:overScrollMode="ifContentScrolls"
-                android:padding="8dp"
-                android:textSize="16sp" />
+                android:clickable="true"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:padding="12dp">
 
-            <ImageView
-                android:id="@+id/starIcon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentEnd="true"
-                android:layout_marginStart="8dp"
-                android:layout_marginRight="50dp"
-                android:contentDescription="Favorite Star"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
-                android:src="@drawable/ic_star_outline" />
-
-            <LinearLayout
-                android:id="@+id/mediaContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/noteText"
-                android:layout_marginTop="8dp"
-                android:orientation="vertical" />
-
-            <LinearLayout
-                android:id="@+id/undoRedoContainer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentBottom="true"
-                android:layout_marginBottom="62dp"
-                android:orientation="horizontal">
+                <EditText
+                    android:id="@+id/noteText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginTop="28dp"
+                    android:layout_marginBottom="100dp"
+                    android:background="@android:color/transparent"
+                    android:gravity="top|start"
+                    android:inputType="textMultiLine"
+                    android:lineSpacingExtra="6dp"
+                    android:minLines="10"
+                    android:overScrollMode="ifContentScrolls"
+                    android:padding="8dp"
+                    android:textSize="16sp" />
 
                 <ImageView
-                    android:id="@+id/undoButton"
+                    android:id="@+id/starIcon"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:layout_gravity="bottom"
-                    android:contentDescription="Undo"
-                    android:src="@drawable/ic_undo" />
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginRight="50dp"
+                    android:contentDescription="Favorite Star"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:src="@drawable/ic_star_outline" />
 
-                <ImageView
-                    android:id="@+id/redoButton"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_gravity="bottom"
-                    android:layout_marginHorizontal="25dp"
-                    android:contentDescription="Redo"
-                    android:src="@drawable/ic_redo" />
-            </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/mediaContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/noteText"
+                    android:layout_marginTop="8dp"
+                    android:orientation="vertical" />
 
-        </RelativeLayout>
-    </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/undoRedoContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginBottom="62dp"
+                    android:orientation="horizontal">
 
-</com.google.android.material.card.MaterialCardView>
+                    <ImageView
+                        android:id="@+id/undoButton"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="bottom"
+                        android:contentDescription="Undo"
+                        android:src="@drawable/ic_undo" />
+
+                    <ImageView
+                        android:id="@+id/redoButton"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="bottom"
+                        android:layout_marginHorizontal="25dp"
+                        android:contentDescription="Redo"
+                        android:src="@drawable/ic_redo" />
+                </LinearLayout>
+
+            </RelativeLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</FrameLayout>

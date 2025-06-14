@@ -23,15 +23,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import android.graphics.Typeface
-import android.view.ViewGroup
-import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.DrawableCompat
 import android.animation.ValueAnimator
-import androidx.core.animation.doOnEnd
+import android.view.ViewGroup
 import com.google.android.material.card.MaterialCardView
 
 class MainActivity : ComponentActivity() {
@@ -80,31 +78,28 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val root = findViewById<View>(R.id.rootContainer)
 
+        val root = findViewById<View>(R.id.rootContainer)
         val parent = findViewById<RelativeLayout>(R.id.textboxWrapper)
         val menuView = layoutInflater.inflate(R.layout.widget_pill_menu, parent, false)
         parent.addView(menuView)
-
         this.initPillMenu(menuView)
-
 
         val prefs = getSharedPreferences("theme_prefs", MODE_PRIVATE)
         val appColor = prefs.getInt("app_color", Color.parseColor("#5D53A3"))
+        val noteColor = UserColorManager.getNoteColor(this)
+        val folderColor = UserColorManager.getFolderColor(this)
 
         root.setBackgroundColor(appColor)
 
-// Tint plus button background with user color
         val plus = menuView.findViewById<ImageButton>(R.id.iconPlus)
         DrawableCompat.setTint(plus.background.mutate(), appColor)
 
-// Tint pill background with user color
         val pill = menuView.findViewById<LinearLayout>(R.id.pillContainer)
         pill.background?.mutate()?.let {
             DrawableCompat.setTint(it, appColor)
             pill.background = it
         }
-
 
         noteViewModel.ensureStratoNotesFolder()
 
@@ -116,12 +111,19 @@ class MainActivity : ComponentActivity() {
         filterButton = findViewById(R.id.filter_button)
         submitButton = findViewById(R.id.submit_button)
         clearDraftButton = findViewById(R.id.clear_draft_button)
-
         undoButton = findViewById(R.id.undo_button)
         redoButton = findViewById(R.id.redo_button)
         folderSettingsButton = findViewById(R.id.folder_settings_button_1)
+
+        val textboxWrapper = findViewById<View>(R.id.textboxWrapper)
+        val noteCard = findViewById<MaterialCardView>(R.id.note_input_card)
+        textboxWrapper.background?.mutate()?.let {
+            DrawableCompat.setTint(it, noteColor)
+            textboxWrapper.background = it
+        }
+        noteCard.setCardBackgroundColor(noteColor)
+
         folderSettingsButton.setOnClickListener {
-            val root = findViewById<View>(R.id.rootContainer)
             val dialog = ColorPickerDialog(this, root)
             dialog.show()
         }
@@ -131,20 +133,12 @@ class MainActivity : ComponentActivity() {
         searchDropdown.adapter = searchAdapter
         searchDropdown.layoutManager = LinearLayoutManager(this)
 
-        val noteColor = UserColorManager.getNoteColor(this)
-        val folderColor = UserColorManager.getFolderColor(this)
-
         noteInput.setBackgroundColor(noteColor)
-
         submitButton.setBackgroundColor(folderColor)
-
         clearDraftButton.setBackgroundColor(folderColor)
-
 
         val overlayBackdrop = findViewById<View>(R.id.overlayBackdrop)
         overlayBackdrop.setOnClickListener { closeOverlay() }
-
-
 
         @Suppress("ClickableViewAccessibility")
         noteInput.setOnTouchListener { v, event ->
@@ -183,33 +177,11 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        redoButton.setOnClickListener {
-            undoManager.redo()
-        }
-
-        loadSubmitModeFromPrefs()
-        updateSubmitLabel()
-
-        submitButton.setOnClickListener {
-            val content = noteInput.text.toString().trim()
-            if (content.isEmpty()) {
-                cycleMode()
-                saveSubmitModeToPrefs(currentMode.name, if (currentMode == SaveMode.PRESET) presetFolder else lastUsedFolder)
-                updateSubmitLabel()
-                return@setOnClickListener
-            }
-
-            when (currentMode) {
-                SaveMode.NEW -> showNewFolderDialog(content)
-                SaveMode.RECENT -> showConfirmDialog(content, lastUsedFolder)
-                SaveMode.PRESET -> saveNote(content, presetFolder)
-            }
-        }
+        redoButton.setOnClickListener { undoManager.redo() }
 
         noteInput.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun afterTextChanged(s: Editable?) {}
-
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 isTyping = true
                 draftRunnable?.let { draftHandler.removeCallbacks(it) }
@@ -220,13 +192,10 @@ class MainActivity : ComponentActivity() {
                 draftHandler.postDelayed(draftRunnable!!, 500)
             }
         })
-        searchInput.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
+        searchInput.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(editable: Editable?) {
                 val query = editable?.toString() ?: ""
-
                 if (query.length > 100) {
                     Toast.makeText(this@MainActivity, "Search is limited to 100 characters.", Toast.LENGTH_SHORT).show()
                     return
@@ -243,18 +212,16 @@ class MainActivity : ComponentActivity() {
                 noteViewModel.searchNotes(query).observe(this@MainActivity) { notes ->
                     lifecycleScope.launch(Dispatchers.IO) {
                         val folders = AppDatabase.getDatabase(this@MainActivity)
-                            .noteDao()
-                            .searchFolders("%$query%")
+                            .noteDao().searchFolders("%$query%")
 
                         val items = (folders.map { SearchResultItem.FolderItem(it) } +
-                                notes.map { SearchResultItem.NoteItem(it) })
-                            .sortedBy {
-                                when (it) {
-                                    is SearchResultItem.FolderItem -> it.folder.name.lowercase()
-                                    is SearchResultItem.NoteItem -> it.note.content.lowercase()
-                                    is SearchResultItem.Header -> TODO()
-                                }
+                                notes.map { SearchResultItem.NoteItem(it) }).sortedBy {
+                            when (it) {
+                                is SearchResultItem.FolderItem -> it.folder.name.lowercase()
+                                is SearchResultItem.NoteItem -> it.note.content.lowercase()
+                                else -> ""
                             }
+                        }
 
                         withContext(Dispatchers.Main) {
                             searchAdapter.submitList(items)
@@ -271,6 +238,9 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
         filterButton.setOnClickListener {
@@ -279,18 +249,16 @@ class MainActivity : ComponentActivity() {
             })
         }
 
-
-        folderSettingsButton.setOnClickListener {
-            val root = findViewById<View>(R.id.rootContainer)
-            val dialog = ColorPickerDialog(this, root)
-            dialog.show()
-        }
-
-
+        loadSubmitModeFromPrefs()
+        updateSubmitLabel()
         loadPreviews()
     }
 
-    private fun showOverlay(note: NoteEntity) {
+    // ... showOverlay(), closeOverlay(), saveNote(), updateSubmitLabel(), updateSubmitButtonFont(), etc.
+    // remain unchanged and should follow the same fixes for elevation, rounded corners, and color
+
+
+private fun showOverlay(note: NoteEntity) {
 
         currentOverlayNote = note
 
@@ -304,7 +272,12 @@ class MainActivity : ComponentActivity() {
         overlayView.findViewById<MaterialCardView>(R.id.noteCard).setCardBackgroundColor(backgroundColor)
 
 
+        val noteCard = overlayView.findViewById<MaterialCardView>(R.id.noteCard)
+        val cardWrapper = overlayView.findViewById<View>(R.id.cardWrapper)
 
+        val userColor = UserColorManager.getNoteColor(this)
+
+        noteCard.setCardBackgroundColor(userColor)
 
 
         val overlayColor = UserColorManager.getOverlayColor(this)
