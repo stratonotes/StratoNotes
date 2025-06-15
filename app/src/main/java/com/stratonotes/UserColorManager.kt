@@ -36,7 +36,6 @@ object UserColorManager {
         return prefs.getInt(KEY_APP_COLOR, DEFAULT_APP_COLOR)
     }
 
-
     fun getAutoTextColor(backgroundColor: Int): Int {
         val luminance = ColorUtils.calculateLuminance(backgroundColor)
         return if (luminance < 0.5) Color.WHITE else Color.BLACK

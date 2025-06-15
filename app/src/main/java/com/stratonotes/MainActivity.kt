@@ -29,7 +29,12 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.DrawableCompat
 import android.animation.ValueAnimator
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.IntentFilter
 import android.view.ViewGroup
+import androidx.core.widget.NestedScrollView
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.material.card.MaterialCardView
 
 class MainActivity : ComponentActivity() {
@@ -74,6 +79,60 @@ class MainActivity : ComponentActivity() {
     private val KEY_FOLDER = "lastFolderName"
     private val DRAFT_PREFS = "DraftPrefs"
     private val KEY_DRAFT_NOTE = "draft_note"
+
+    private val themeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val color = intent?.getIntExtra("color", -1) ?: return
+            applyThemeColor(color)
+        }
+    }
+
+    private fun applyThemeColor(color: Int) {
+        val root = findViewById<View>(R.id.rootContainer)
+        root.setBackgroundColor(color)
+
+        val noteColor = UserColorManager.getNoteColor(this)
+        val folderColor = UserColorManager.getFolderColor(this)
+
+        // Update edit card background
+        val noteInputCard = findViewById<MaterialCardView>(R.id.note_input_card)
+        noteInputCard.setCardBackgroundColor(noteColor)
+
+        // Update actual EditText background
+        val noteInput = findViewById<EditText>(R.id.note_input)
+        noteInput.setBackgroundColor(noteColor)
+
+        // Tint textbox wrapper background
+        val textboxWrapper = findViewById<View>(R.id.textboxWrapper)
+        textboxWrapper.background?.mutate()?.let {
+            DrawableCompat.setTint(it, noteColor)
+            textboxWrapper.background = it
+        }
+
+        // Update overlay card if visible
+        if (overlayContainer.visibility == View.VISIBLE) {
+            val overlayView = overlayContainer.getChildAt(0)
+            val noteCard = overlayView?.findViewById<MaterialCardView>(R.id.noteCard)
+            noteCard?.setCardBackgroundColor(noteColor)
+        }
+
+        // Re-tint the plus button in pill menu
+        val plus = findViewById<ImageButton>(R.id.iconPlus)
+        plus.background?.mutate()?.let {
+            DrawableCompat.setTint(it, color)
+            plus.background = it
+        }
+
+        // Update buttons
+        refreshSlideoutColors()
+
+        submitButton.setBackgroundColor(folderColor)
+        clearDraftButton.setBackgroundColor(folderColor)
+
+        // Update preview notes
+        loadPreviews()
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -143,6 +202,23 @@ class MainActivity : ComponentActivity() {
 
         val overlayBackdrop = findViewById<View>(R.id.overlayBackdrop)
         overlayBackdrop.setOnClickListener { closeOverlay() }
+
+        submitButton.setOnClickListener {
+            val content = noteInput.text.toString().trim()
+            if (content.isEmpty()) {
+                cycleMode()
+                saveSubmitModeToPrefs(currentMode.name, if (currentMode == SaveMode.PRESET) presetFolder else lastUsedFolder)
+                updateSubmitLabel()
+                return@setOnClickListener
+            }
+
+            when (currentMode) {
+                SaveMode.NEW -> showNewFolderDialog(content)
+                SaveMode.RECENT -> showConfirmDialog(content, lastUsedFolder)
+                SaveMode.PRESET -> saveNote(content, presetFolder)
+            }
+        }
+
 
         @Suppress("ClickableViewAccessibility")
         noteInput.setOnTouchListener { v, event ->
@@ -256,11 +332,29 @@ class MainActivity : ComponentActivity() {
         loadSubmitModeFromPrefs()
         updateSubmitLabel()
         loadPreviews()
+
+
     }
 
     // ... showOverlay(), closeOverlay(), saveNote(), updateSubmitLabel(), updateSubmitButtonFont(), etc.
     // remain unchanged and should follow the same fixes for elevation, rounded corners, and color
 
+    private fun refreshSlideoutColors() {
+        val appColor = UserColorManager.getAppColor(this)
+
+        val pill = findViewById<LinearLayout>(R.id.pillContainer)
+        val pillBg = ContextCompat.getDrawable(this, R.drawable.pill_menu_bg)?.mutate()
+        if (pillBg != null) {
+            DrawableCompat.setTint(pillBg, appColor)
+            pill.background = pillBg
+        }
+
+        val plus = findViewById<ImageButton>(R.id.iconPlus)
+        plus?.background?.mutate()?.let {
+            DrawableCompat.setTint(it, appColor)
+            plus.background = it
+        }
+    }
 
 private fun showOverlay(note: NoteEntity) {
 
@@ -283,6 +377,8 @@ private fun showOverlay(note: NoteEntity) {
 
         noteCard.setCardBackgroundColor(userColor)
 
+        val scroll = overlayView.findViewById<NestedScrollView>(R.id.noteScroll)
+        scroll.isNestedScrollingEnabled = true
 
         val overlayColor = UserColorManager.getOverlayColor(this)
         val menuView = layoutInflater.inflate(R.layout.widget_pill_menu, overlayView as ViewGroup, false)
@@ -461,20 +557,27 @@ private fun showOverlay(note: NoteEntity) {
 
     private fun loadPreviews() {
         lifecycleScope.launch(Dispatchers.IO) {
-            val notes = AppDatabase.getDatabase(this@MainActivity).noteDao().get3MostRecentVisibleNotes()
+            val notes = AppDatabase.getDatabase(this@MainActivity)
+                .noteDao().get3MostRecentVisibleNotes()
+
             withContext(Dispatchers.Main) {
                 previewContainer.removeAllViews()
 
+                // ✅ Move color fetch *outside* loop so it's consistent and fresh
+                val noteColor = UserColorManager.getNoteColor(this@MainActivity)
+                val folderColor = UserColorManager.getFolderColor(this@MainActivity)
+
                 for (note in notes) {
-                    val previewView = layoutInflater.inflate(R.layout.item_note_preview, previewContainer, false)
+                    val previewView = layoutInflater.inflate(
+                        R.layout.item_note_preview,
+                        previewContainer,
+                        false
+                    )
                     val noteText = previewView.findViewById<EditText>(R.id.noteText)
                     val fadeView = previewView.findViewById<View>(R.id.noteFade)
 
                     noteText.setText(note.content)
                     noteText.setOnClickListener { showOverlay(note) }
-
-                    val noteColor = UserColorManager.getNoteColor(this@MainActivity)
-                    val folderColor = UserColorManager.getFolderColor(this@MainActivity)
 
                     val bgRes = if (note.content.length > 150) {
                         R.drawable.note_expanded_background
@@ -482,10 +585,13 @@ private fun showOverlay(note: NoteEntity) {
                         R.drawable.note_preview_background
                     }
 
-                    ContextCompat.getDrawable(this@MainActivity, bgRes)?.mutate()?.let { drawable ->
+                    val drawable = ContextCompat.getDrawable(this@MainActivity, bgRes)?.mutate()
+                    if (drawable != null) {
                         DrawableCompat.setTint(drawable, noteColor)
                         previewView.background = drawable
-                    } ?: previewView.setBackgroundColor(noteColor)
+                    } else {
+                        previewView.setBackgroundColor(noteColor)
+                    }
 
                     if (note.content.length > 150) {
                         val fadeBottom = folderColor
@@ -504,9 +610,9 @@ private fun showOverlay(note: NoteEntity) {
                     previewContainer.addView(previewView)
                 }
             }
-
         }
     }
+
 
 
 
@@ -521,12 +627,12 @@ private fun showOverlay(note: NoteEntity) {
     private fun updateSubmitLabel() {
         when (currentMode) {
             SaveMode.NEW -> {
-                submitButton.text = "Enter text → Add to New Folder"
+                submitButton.text = "Add to → New Folder"
                 folderSettingsButton.visibility = View.GONE
             }
 
             SaveMode.RECENT -> {
-                submitButton.text = "Add note to $lastUsedFolder"
+                submitButton.text = "Add to → $lastUsedFolder"
                 folderSettingsButton.visibility = View.VISIBLE
             }
 
@@ -615,6 +721,7 @@ private fun showOverlay(note: NoteEntity) {
     }
     override fun onPause() {
         super.onPause()
+
         if (overlayContainer.visibility == View.VISIBLE) {
             currentOverlayNote?.let { note ->
                 val overlayView = overlayContainer.getChildAt(0)
@@ -630,14 +737,25 @@ private fun showOverlay(note: NoteEntity) {
                 }
             }
         }
+
+        // Always unregister
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(themeReceiver)
     }
+
+
     override fun onResume() {
         super.onResume()
+
         val prefs = getSharedPreferences("theme_prefs", MODE_PRIVATE)
         val appColor = prefs.getInt("app_color", Color.parseColor("#5D53A3"))
-        val root = findViewById<View>(R.id.rootContainer)
-        root.setBackgroundColor(appColor)
+        applyThemeColor(appColor)
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            themeReceiver, IntentFilter("com.stratonotes.THEME_COLOR_CHANGED")
+        )
     }
+
+
 
 
 

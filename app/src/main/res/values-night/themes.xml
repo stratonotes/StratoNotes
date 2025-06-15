@@ -4,13 +4,14 @@
     <!-- Dark App Theme -->
     <style name="Theme.PunchPad2" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- All colors are runtime-controlled -->
+        <item name="android:windowFullscreen">false</item>
     </style>
 
     <!-- Dark Splash Theme (Same layout-based control) -->
     <style name="Theme.PunchPad2.Splash" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:windowBackground">@android:color/black</item>
         <item name="android:windowNoTitle">true</item>
-        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowFullscreen">false</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="postSplashScreenTheme">@style/Theme.PunchPad2</item>
     </style>

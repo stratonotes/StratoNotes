@@ -4,6 +4,7 @@
     <!-- Base App Theme -->
     <style name="Theme.PunchPad2" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- All colors are runtime-controlled -->
+        <item name="android:windowFullscreen">false</item>
     </style>
 
     <!-- Splash Theme (Now fully controlled by activity_splash.xml) -->

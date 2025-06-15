@@ -3,6 +3,7 @@ package com.stratonotes
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
@@ -10,6 +11,7 @@ import android.util.Log
 import android.view.View
 import android.view.Window
 import android.widget.*
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.punchpad2.R
 
 class ColorPickerDialog(context: Context, private val rootView: View?) : Dialog(context) {
@@ -61,7 +63,7 @@ class ColorPickerDialog(context: Context, private val rootView: View?) : Dialog(
         val btnAppColor = findViewById<Button>(R.id.btnAppColor)
         val btnBackgroundImage = findViewById<Button>(R.id.btnBackgroundImage)
         btnReset = findViewById(R.id.btnReset)
-        val btnSave = findViewById<Button>(R.id.btnSave)
+
         val btnCancel = findViewById<Button>(R.id.btnCancel)
 
 
@@ -80,6 +82,8 @@ class ColorPickerDialog(context: Context, private val rootView: View?) : Dialog(
 
                 // Live preview
                 rootView?.setBackgroundColor(currentColor)
+
+                Log.d("ColorTest", "Preview updated with $currentColor onChange")
             }
         })
 
@@ -89,12 +93,14 @@ class ColorPickerDialog(context: Context, private val rootView: View?) : Dialog(
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 currentBrightness = progress / 100f
                 wheel.setBrightness(currentBrightness)
-                currentColor = Color.HSVToColor(floatArrayOf(currentHue, 0.5f, currentBrightness))
+
                 resetStage = 0
                 updateResetButton()
 
                 // Live preview
                 rootView?.setBackgroundColor(currentColor)
+
+                Log.d("ColorTest", "Preview updated with $currentColor onChange")
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -109,10 +115,14 @@ class ColorPickerDialog(context: Context, private val rootView: View?) : Dialog(
             savedColor = currentColor
             sessionColor = currentColor
             resetStage = 0
-            Toast.makeText(context, "App color set", Toast.LENGTH_SHORT).show()
+
             updateResetButton()
 
             (context as? LibraryActivity)?.refreshFolderListColors()
+
+            val intent = Intent("com.stratonotes.THEME_COLOR_CHANGED")
+            intent.putExtra("color", currentColor)
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
 
 
         }
@@ -138,7 +148,7 @@ class ColorPickerDialog(context: Context, private val rootView: View?) : Dialog(
             updateResetButton()
         }
 
-        btnSave.setOnClickListener { dismiss() }
+
         btnCancel.setOnClickListener { dismiss() }
 
         updateResetButton()

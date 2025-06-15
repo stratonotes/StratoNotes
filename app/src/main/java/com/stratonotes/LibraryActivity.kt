@@ -22,8 +22,14 @@ import kotlinx.coroutines.withContext
 import android.content.res.Resources
 import android.content.Intent
 import android.app.AlertDialog
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.IntentFilter
 import android.view.ViewGroup
 import android.graphics.Color
+import androidx.core.graphics.drawable.DrawableCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.google.android.material.card.MaterialCardView
 
 class LibraryActivity : ComponentActivity() {
 
@@ -38,6 +44,14 @@ class LibraryActivity : ComponentActivity() {
     private val noteViewModel: NoteViewModel by viewModels()
     private lateinit var overlayContainer: FrameLayout
     private var currentOverlayNote: NoteEntity? = null
+
+    private val themeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val color = intent?.getIntExtra("color", -1) ?: return
+            applyThemeColor(color)
+        }
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -265,6 +279,10 @@ class LibraryActivity : ComponentActivity() {
 
         val inflater = layoutInflater
         val overlayView = inflater.inflate(R.layout.item_note, overlayContainer, false)
+        val noteCard = overlayView.findViewById<MaterialCardView>(R.id.noteCard)
+        val backgroundColor = UserColorManager.getNoteColor(this)
+        noteCard.setCardBackgroundColor(backgroundColor)
+
         val userColor = UserColorManager.getOverlayColor(this)
         val metrics = Resources.getSystem().displayMetrics
         val width = (metrics.widthPixels * 0.9).toInt()
@@ -377,10 +395,24 @@ class LibraryActivity : ComponentActivity() {
         super.onBackPressed()
     }
 
+    private fun applyThemeColor(color: Int) {
+        val root = findViewById<View>(R.id.rootContainer)
+        root.setBackgroundColor(color)
+
+        if (overlayContainer.visibility == View.VISIBLE) {
+            val overlayView = overlayContainer.getChildAt(0)
+            val noteCard = overlayView?.findViewById<MaterialCardView>(R.id.noteCard)
+            noteCard?.setCardBackgroundColor(UserColorManager.getNoteColor(this))
+        }
+
+        refreshFolderListColors()
+    }
+
 
 
     override fun onPause() {
         super.onPause()
+
         if (overlayContainer.visibility == View.VISIBLE) {
             currentOverlayNote?.let { note ->
                 val overlayView = overlayContainer.getChildAt(0)
@@ -396,13 +428,32 @@ class LibraryActivity : ComponentActivity() {
                 }
             }
         }
+
+        // Always unregister broadcast receiver
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(themeReceiver)
     }
+
+
+    override fun onResume() {
+        super.onResume()
+
+        val prefs = getSharedPreferences("theme_prefs", MODE_PRIVATE)
+        val appColor = prefs.getInt("app_color", Color.parseColor("#5D53A3"))
+        val root = findViewById<View>(R.id.rootContainer)
+        root.setBackgroundColor(appColor)
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            themeReceiver, IntentFilter("com.stratonotes.THEME_COLOR_CHANGED")
+        )
+    }
+
 
     private fun reloadFiltered(query: String) {
         noteViewModel.getFoldersWithPreviews().observe(this) { folders ->
             folderAdapter.updateFilteredList(filterFolders(folders, query))
         }
     }
+
     fun refreshFolderListColors() {
         folderAdapter.notifyDataSetChanged()
     }
