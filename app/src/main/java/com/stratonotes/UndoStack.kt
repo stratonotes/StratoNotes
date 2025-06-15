@@ -6,6 +6,9 @@ class UndoStack {
     private var index = -1
 
     fun push(snapshot: UndoSnapshot) {
+        // Ignore if same as current snapshot
+        if (stack.getOrNull(index) == snapshot) return
+
         // Remove anything above the current index (if redo path existed)
         while (stack.size > index + 1) {
             stack.removeAt(stack.lastIndex)
@@ -16,10 +19,12 @@ class UndoStack {
         // Keep only last 50 snapshots
         if (stack.size > 50) {
             stack.removeAt(0)
+            index = stack.lastIndex
+        } else {
+            index = stack.lastIndex
         }
-
-        index = stack.lastIndex
     }
+
 
     fun canUndo(): Boolean = index >= 1
 

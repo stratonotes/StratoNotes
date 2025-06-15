@@ -36,8 +36,12 @@ import android.view.ViewGroup
 import androidx.core.widget.NestedScrollView
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.material.card.MaterialCardView
+import kotlinx.coroutines.flow.first
+
 
 class MainActivity : ComponentActivity() {
+
+    private val STRATONOTES_INTERNAL_FOLDER = "StratoNotes"
 
     private lateinit var previewContainer: LinearLayout
     private lateinit var overlayContainer: FrameLayout
@@ -63,11 +67,13 @@ class MainActivity : ComponentActivity() {
     private val noteViewModel: NoteViewModel by viewModels()
 
     private enum class SaveMode { NEW, RECENT, PRESET }
+
     private var currentMode = SaveMode.NEW
     private var isTyping = false
 
     private var lastUsedFolder = "Default"
-    private val presetFolder = "StratoNotes"
+
+    private var presetFolderName = "QuickNotes" // User-editable display label
 
     private val draftHandler = Handler()
     private var draftRunnable: Runnable? = null
@@ -166,6 +172,9 @@ class MainActivity : ComponentActivity() {
 
         noteViewModel.ensureStratoNotesFolder()
 
+
+
+
         previewContainer = findViewById(R.id.previewContainer)
         overlayContainer = findViewById(R.id.overlayContainer)
         adView = findViewById(R.id.dev_ad_banner)
@@ -174,6 +183,8 @@ class MainActivity : ComponentActivity() {
         filterButton = findViewById(R.id.filter_button)
         submitButton = findViewById(R.id.submit_button)
         clearDraftButton = findViewById(R.id.clear_draft_button)
+        undoManager = UndoManager(noteInput)
+
         undoButton = findViewById(R.id.undo_button)
         redoButton = findViewById(R.id.redo_button)
         folderSettingsButton = findViewById(R.id.folder_settings_button_1)
@@ -187,9 +198,10 @@ class MainActivity : ComponentActivity() {
         noteCard.setCardBackgroundColor(noteColor)
 
         folderSettingsButton.setOnClickListener {
-            val dialog = ColorPickerDialog(this, root)
-            dialog.show()
+            showPresetFolderDialog()
         }
+
+
 
         searchDropdown = findViewById(R.id.searchResultsDropdown)
         searchAdapter = SearchResultAdapter(this) { note -> showOverlay(note) }
@@ -207,7 +219,11 @@ class MainActivity : ComponentActivity() {
             val content = noteInput.text.toString().trim()
             if (content.isEmpty()) {
                 cycleMode()
-                saveSubmitModeToPrefs(currentMode.name, if (currentMode == SaveMode.PRESET) presetFolder else lastUsedFolder)
+                saveSubmitModeToPrefs(
+                    currentMode.name,
+                    if (currentMode == SaveMode.PRESET) STRATONOTES_INTERNAL_FOLDER else lastUsedFolder
+
+                )
                 updateSubmitLabel()
                 return@setOnClickListener
             }
@@ -215,7 +231,8 @@ class MainActivity : ComponentActivity() {
             when (currentMode) {
                 SaveMode.NEW -> showNewFolderDialog(content)
                 SaveMode.RECENT -> showConfirmDialog(content, lastUsedFolder)
-                SaveMode.PRESET -> saveNote(content, presetFolder)
+                SaveMode.PRESET -> saveNote(content, STRATONOTES_INTERNAL_FOLDER)
+
             }
         }
 
@@ -277,7 +294,11 @@ class MainActivity : ComponentActivity() {
             override fun afterTextChanged(editable: Editable?) {
                 val query = editable?.toString() ?: ""
                 if (query.length > 100) {
-                    Toast.makeText(this@MainActivity, "Search is limited to 100 characters.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Search is limited to 100 characters.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     return
                 }
 
@@ -329,6 +350,16 @@ class MainActivity : ComponentActivity() {
             })
         }
 
+        folderSettingsButton.setOnClickListener {
+            if (currentMode == SaveMode.PRESET) {
+                showPresetFolderDialog()
+            } else {
+                val dialog = ColorPickerDialog(this, root)
+                dialog.show()
+            }
+        }
+
+
         loadSubmitModeFromPrefs()
         updateSubmitLabel()
         loadPreviews()
@@ -336,8 +367,26 @@ class MainActivity : ComponentActivity() {
 
     }
 
-    // ... showOverlay(), closeOverlay(), saveNote(), updateSubmitLabel(), updateSubmitButtonFont(), etc.
-    // remain unchanged and should follow the same fixes for elevation, rounded corners, and color
+
+
+    private fun showPresetFolderDialog() {
+        val input = EditText(this)
+        input.hint = "New folder name"
+        AlertDialog.Builder(this)
+            .setTitle("Rename Preset Folder")
+            .setView(input)
+            .setPositiveButton("Save") { _, _ ->
+                val name = input.text.toString().trim()
+                if (name.isNotEmpty()) {
+                    presetFolderName = name
+                    updateSubmitLabel()
+                } else {
+                    Toast.makeText(this, "Name cannot be empty", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
 
     private fun refreshSlideoutColors() {
         val appColor = UserColorManager.getAppColor(this)
@@ -356,7 +405,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-private fun showOverlay(note: NoteEntity) {
+    private fun showOverlay(note: NoteEntity) {
 
         currentOverlayNote = note
 
@@ -367,7 +416,8 @@ private fun showOverlay(note: NoteEntity) {
         val overlayView = inflater.inflate(R.layout.item_note, overlayContainer, false)
 
         val backgroundColor = UserColorManager.getNoteColor(this)
-        overlayView.findViewById<MaterialCardView>(R.id.noteCard).setCardBackgroundColor(backgroundColor)
+        overlayView.findViewById<MaterialCardView>(R.id.noteCard)
+            .setCardBackgroundColor(backgroundColor)
 
 
         val noteCard = overlayView.findViewById<MaterialCardView>(R.id.noteCard)
@@ -381,7 +431,8 @@ private fun showOverlay(note: NoteEntity) {
         scroll.isNestedScrollingEnabled = true
 
         val overlayColor = UserColorManager.getOverlayColor(this)
-        val menuView = layoutInflater.inflate(R.layout.widget_pill_menu, overlayView as ViewGroup, false)
+        val menuView =
+            layoutInflater.inflate(R.layout.widget_pill_menu, overlayView as ViewGroup, false)
 
         val pill = menuView.findViewById<LinearLayout>(R.id.pillContainer)
         val pillBg = ContextCompat.getDrawable(this, R.drawable.pill_menu_bg)?.mutate()
@@ -400,10 +451,21 @@ private fun showOverlay(note: NoteEntity) {
         (overlayView as ViewGroup).addView(menuView)
 
 
-
         val noteText = overlayView.findViewById<EditText>(R.id.noteText)
         val starIcon = overlayView.findViewById<ImageView>(R.id.starIcon)
 
+        val undoButton = overlayView.findViewById<ImageButton>(R.id.undo_button)
+        val redoButton = overlayView.findViewById<ImageButton>(R.id.redo_button)
+
+        val overlayUndoManager = UndoManager(noteText)
+
+        undoButton.setOnClickListener {
+            overlayUndoManager.undo()
+        }
+
+        redoButton.setOnClickListener {
+            overlayUndoManager.redo()
+        }
 
         noteText.setText(note.content)
         noteText.requestFocus()
@@ -421,6 +483,7 @@ private fun showOverlay(note: NoteEntity) {
                     }
                 }
             }
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
@@ -455,9 +518,6 @@ private fun showOverlay(note: NoteEntity) {
         }
 
 
-
-
-
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(noteText, InputMethodManager.SHOW_IMPLICIT)
 
@@ -475,8 +535,6 @@ private fun showOverlay(note: NoteEntity) {
         overlayContainer.addView(xButton)
         overlayContainer.visibility = View.VISIBLE
     }
-
-
 
 
     private fun closeOverlay() {
@@ -505,7 +563,6 @@ private fun showOverlay(note: NoteEntity) {
         overlayContainer.visibility = View.GONE
         currentOverlayNote = null
     }
-
 
 
     private fun updateSubmitButtonBackground() {
@@ -548,7 +605,8 @@ private fun showOverlay(note: NoteEntity) {
                 isTyping = false
                 updateSubmitLabel()
                 loadPreviews()
-                getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE).edit().remove(KEY_DRAFT_NOTE).apply()
+                getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE).edit().remove(KEY_DRAFT_NOTE)
+                    .apply()
                 clearDraftButton.visibility = View.GONE
                 Toast.makeText(this@MainActivity, "Saved to $folderName", Toast.LENGTH_SHORT).show()
             }
@@ -614,8 +672,6 @@ private fun showOverlay(note: NoteEntity) {
     }
 
 
-
-
     private fun cycleMode() {
         currentMode = when (currentMode) {
             SaveMode.NEW -> SaveMode.RECENT
@@ -637,12 +693,23 @@ private fun showOverlay(note: NoteEntity) {
             }
 
             SaveMode.PRESET -> {
-                submitButton.text = "Add to → $presetFolder \uD83D\uDE80"
+                submitButton.text = "Add to → $presetFolderName 🚀"
                 folderSettingsButton.visibility = View.GONE
             }
         }
 
         updateSubmitButtonBackground()
+        updateSubmitButtonFont()
+
+        if (currentMode == SaveMode.PRESET) {
+            noteInput.requestFocus()
+            noteInput.postDelayed({
+                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(noteInput, InputMethodManager.SHOW_IMPLICIT)
+            }, 100)
+        }
+
+    updateSubmitButtonBackground()
         updateSubmitButtonFont()
 
         if (currentMode == SaveMode.PRESET) {
@@ -667,23 +734,69 @@ private fun showOverlay(note: NoteEntity) {
     }
 
     private fun showNewFolderDialog(content: String) {
-        val input = EditText(this)
-        input.hint = "Folder name"
-        AlertDialog.Builder(this)
-            .setTitle("Create Folder")
-            .setView(input)
-            .setPositiveButton("Save") { _, _ ->
-                val folderName = input.text.toString().trim()
-                if (folderName.isNotEmpty()) {
-                    saveNote(content, folderName)
-                    lastUsedFolder = folderName
-                } else {
-                    Toast.makeText(this, "Folder name can't be empty", Toast.LENGTH_SHORT).show()
+        val context = this
+        val container = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(32, 24, 32, 8)
+        }
+
+        val input = EditText(context).apply {
+            hint = "Folder name"
+        }
+
+        val scroll = ScrollView(context)
+        val list = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+
+        scroll.addView(list)
+        container.addView(input)
+        container.addView(scroll)
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val all = AppDatabase.getDatabase(context).noteDao().getAllFolders().first()
+            val folders = all
+                .filter { it.name != STRATONOTES_INTERNAL_FOLDER }
+                .map { it.name }
+
+
+
+            withContext(Dispatchers.Main) {
+                folders.forEach { name ->
+                    val label = TextView(context).apply {
+                        text = name
+                        textSize = 16f
+                        setPadding(8, 8, 8, 16)
+                        setTextColor(Color.WHITE)
+                        setOnClickListener {
+                            input.setText(name)
+                        }
+                    }
+                    list.addView(label)
                 }
+
+
+
+        AlertDialog.Builder(context)
+                    .setTitle("Create or Select Folder")
+                    .setView(container)
+                    .setPositiveButton("Save") { _, _ ->
+                        val folderName = input.text.toString().trim()
+                        if (folderName.isNotEmpty()) {
+                            saveNote(content, folderName)
+                            lastUsedFolder = folderName
+                        } else {
+                            Toast.makeText(context, "Folder name can't be empty", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+        }
     }
+
+
+
 
     private fun showConfirmDialog(content: String, folderName: String) {
         AlertDialog.Builder(this)
