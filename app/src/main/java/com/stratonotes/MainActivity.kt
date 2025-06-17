@@ -33,10 +33,13 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
 import android.view.ViewGroup
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.widget.NestedScrollView
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.flow.first
+import androidx.core.view.isVisible
+import kotlinx.coroutines.async
 
 
 class MainActivity : ComponentActivity() {
@@ -144,6 +147,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+
         val root = findViewById<View>(R.id.rootContainer)
         val parent = findViewById<MaterialCardView>(R.id.note_input_card)
         val menuView = layoutInflater.inflate(R.layout.widget_pill_menu, parent, false)
@@ -201,11 +205,56 @@ class MainActivity : ComponentActivity() {
             showPresetFolderDialog()
         }
 
-
-
         searchDropdown = findViewById(R.id.searchResultsDropdown)
-        searchAdapter = SearchResultAdapter(this) { note -> showOverlay(note) }
+
+        val dropdownColor = UserColorManager.getNoteColor(this)
+        searchDropdown.setBackgroundColor(dropdownColor)
+
+        root.setOnTouchListener { _, _ ->
+            if (searchDropdown.visibility == View.VISIBLE) {
+                searchDropdown.visibility = View.GONE
+            }
+            false
+        }
+
+
+        searchAdapter = SearchResultAdapter(this) { item ->
+            when (item) {
+                is SearchResultItem.NoteItem -> {
+                    searchDropdown.visibility = View.GONE
+                    showOverlay(item.note)
+                }
+                is SearchResultItem.FolderItem -> {
+                    startActivity(Intent(this, LibraryActivity::class.java).apply {
+                        putExtra("query", item.folder.name)
+                    })
+                }
+                else -> {
+                    // no-op (required for exhaustiveness)
+                }
+            }
+        }
+
+
         searchDropdown.adapter = searchAdapter
+        searchDropdown.layoutManager = LinearLayoutManager(this)
+
+// ✅ This now runs safely after adapter init
+        searchDropdown.viewTreeObserver.addOnGlobalLayoutListener {
+            val itemHeightPx = resources.getDimensionPixelSize(R.dimen.search_result_item_height)
+            val visibleItems = minOf(searchAdapter.itemCount, 4)
+            val desiredHeight = itemHeightPx * visibleItems
+
+            searchDropdown.layoutParams.height = desiredHeight
+            searchDropdown.requestLayout()
+        }
+
+
+
+        searchDropdown.adapter = searchAdapter
+
+
+
         searchDropdown.layoutManager = LinearLayoutManager(this)
 
         noteInput.setBackgroundColor(noteColor)
@@ -292,50 +341,55 @@ class MainActivity : ComponentActivity() {
 
         searchInput.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(editable: Editable?) {
-                val query = editable?.toString() ?: ""
-                if (query.length > 100) {
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Search is limited to 100 characters.",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return
-                }
+                val query = editable?.toString()?.trim() ?: ""
 
-                if (query.isBlank()) {
-                    searchDropdown.animate().alpha(0f).setDuration(100).withEndAction {
-                        searchDropdown.visibility = View.GONE
-                    }.start()
+                if (query.isEmpty()) {
                     searchAdapter.submitList(emptyList())
+                    searchDropdown.visibility = View.GONE
                     return
                 }
 
-                noteViewModel.searchNotes(query).observe(this@MainActivity) { notes ->
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        val folders = AppDatabase.getDatabase(this@MainActivity)
-                            .noteDao().searchFolders("%$query%")
+                val safeQuery = query
+                    .replace("\\", "\\\\")
+                    .replace("%", "\\%")
+                    .replace("_", "\\_")
 
-                        val items = (folders.map { SearchResultItem.FolderItem(it) } +
-                                notes.map { SearchResultItem.NoteItem(it) }).sortedBy {
-                            when (it) {
-                                is SearchResultItem.FolderItem -> it.folder.name.lowercase()
-                                is SearchResultItem.NoteItem -> it.note.content.lowercase()
-                                else -> ""
-                            }
-                        }
+                lifecycleScope.launch {
+                    val foldersDeferred = async(Dispatchers.IO) {
+                        AppDatabase.getDatabase(this@MainActivity)
+                            .noteDao().searchFolders("%$safeQuery%")
+                    }
 
-                        withContext(Dispatchers.Main) {
-                            searchAdapter.submitList(items)
-                            if (items.isNotEmpty()) {
-                                searchDropdown.alpha = 0f
-                                searchDropdown.visibility = View.VISIBLE
-                                searchDropdown.animate().alpha(1f).setDuration(150).start()
-                            } else {
-                                searchDropdown.animate().alpha(0f).setDuration(100).withEndAction {
-                                    searchDropdown.visibility = View.GONE
-                                }.start()
-                            }
+                    val noteResults = withContext(Dispatchers.IO) {
+                        AppDatabase.getDatabase(this@MainActivity)
+                            .noteDao().searchNotesRaw("%$safeQuery%")
+                    }
+
+                    val folders = foldersDeferred.await()
+                    val folderItems = folders.map { SearchResultItem.FolderItem(it) }
+                    val noteItems = noteResults.map { SearchResultItem.NoteItem(it) }
+
+                    val combined = (folderItems + noteItems).sortedBy {
+                        when (it) {
+                            is SearchResultItem.FolderItem -> it.folder.name.lowercase()
+                            is SearchResultItem.NoteItem -> it.note.content.lowercase()
+                            else -> ""
                         }
+                    }
+
+
+                    searchAdapter.submitList(combined)
+
+                    if (combined.isNotEmpty()) {
+                        if (searchDropdown.visibility != View.VISIBLE) {
+                            searchDropdown.alpha = 0f
+                            searchDropdown.visibility = View.VISIBLE
+                            searchDropdown.animate().alpha(1f).setDuration(150).start()
+                        }
+                    } else {
+                        searchDropdown.animate().alpha(0f).setDuration(100).withEndAction {
+                            searchDropdown.visibility = View.GONE
+                        }.start()
                     }
                 }
             }
@@ -343,6 +397,7 @@ class MainActivity : ComponentActivity() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
+
 
         filterButton.setOnClickListener {
             startActivity(Intent(this, LibraryActivity::class.java).apply {
@@ -358,6 +413,29 @@ class MainActivity : ComponentActivity() {
                 dialog.show()
             }
         }
+
+        val searchBarContainer = findViewById<View>(R.id.searchBarContainer)
+
+
+        searchDropdown.post {
+            val topOffset = findViewById<View>(R.id.searchBarContainer).bottom
+
+            val screenHeight = resources.displayMetrics.heightPixels
+            val desiredHeightInPx = (screenHeight * 0.45).toInt()
+
+            val params = CoordinatorLayout.LayoutParams(
+                CoordinatorLayout.LayoutParams.MATCH_PARENT,
+                desiredHeightInPx
+            )
+            params.topMargin = topOffset
+            searchDropdown.layoutParams = params
+
+            val dropdownColor = UserColorManager.getNoteColor(this)
+            searchDropdown.setBackgroundColor(dropdownColor)
+
+        }
+
+
 
 
         loadSubmitModeFromPrefs()
@@ -469,24 +547,6 @@ class MainActivity : ComponentActivity() {
 
         noteText.setText(note.content)
         noteText.requestFocus()
-
-        noteText.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                val updated = currentOverlayNote?.copy(
-                    content = s.toString(),
-                    lastEdited = System.currentTimeMillis()
-                )
-                if (updated != null) {
-                    currentOverlayNote = updated
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        noteViewModel.update(updated)
-                    }
-                }
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        })
 
 
         // Set initial star icon state
@@ -699,17 +759,6 @@ class MainActivity : ComponentActivity() {
         }
 
         updateSubmitButtonBackground()
-        updateSubmitButtonFont()
-
-        if (currentMode == SaveMode.PRESET) {
-            noteInput.requestFocus()
-            noteInput.postDelayed({
-                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.showSoftInput(noteInput, InputMethodManager.SHOW_IMPLICIT)
-            }, 100)
-        }
-
-    updateSubmitButtonBackground()
         updateSubmitButtonFont()
 
         if (currentMode == SaveMode.PRESET) {

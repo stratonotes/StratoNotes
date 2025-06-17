@@ -62,7 +62,7 @@ interface NoteDao {
     @Query("SELECT COUNT(*) FROM folders WHERE name = :name")
     suspend fun countFoldersByName(name: String): Int
 
-    @Query("SELECT * FROM folders WHERE name LIKE :term ORDER BY createdAt DESC")
+    @Query("SELECT * FROM folders WHERE name LIKE :term COLLATE NOCASE ORDER BY createdAt DESC")
     fun searchFolders(term: String): List<FolderEntity>
 
     @Query("DELETE FROM notes WHERE isTrashed = 1")
@@ -70,6 +70,9 @@ interface NoteDao {
 
     @Query("SELECT * FROM notes WHERE isTrashed = 0 ORDER BY lastEdited DESC")
     suspend fun getAllNotesNow(): List<NoteEntity>
+
+    @Query("SELECT * FROM notes WHERE content LIKE :query ESCAPE '\\' ORDER BY lastEdited DESC")
+    suspend fun searchNotesRaw(query: String): List<NoteEntity>
 
 
 }

@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/rootContainer"
@@ -52,11 +54,14 @@
             <ListView
                 android:id="@+id/liveSearchResults"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_marginTop="56dp"
                 android:dividerHeight="1dp"
                 android:elevation="8dp"
                 android:visibility="gone" />
+
+
+
         </FrameLayout>
 
         <LinearLayout
@@ -158,14 +163,7 @@
 
 
 
-        <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/searchResultsDropdown"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:nestedScrollingEnabled="false"
-                android:overScrollMode="never"
-                android:visibility="gone" />
+
 
             <ImageButton
                 android:id="@+id/undo_button"
@@ -250,4 +248,17 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </FrameLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/searchResultsDropdown"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginTop="100dp"
+        android:background="@android:color/background_dark"
+        android:elevation="30dp"
+        android:nestedScrollingEnabled="true"
+        android:overScrollMode="never"
+        android:visibility="gone"
+        android:maxHeight="420dp" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

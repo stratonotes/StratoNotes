@@ -1,7 +1,7 @@
 package com.stratonotes
 
 import android.content.Context
-import android.widget.Toast
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,11 +10,10 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.punchpad2.R
-import android.content.Intent
 
 class SearchResultAdapter(
     private val context: Context,
-    private val onNoteClicked: (NoteEntity) -> Unit
+    private val onItemClick: (SearchResultItem) -> Unit
 ) : ListAdapter<SearchResultItem, SearchResultAdapter.ResultViewHolder>(DIFF_CALLBACK) {
 
     companion object {
@@ -46,38 +45,33 @@ class SearchResultAdapter(
     }
 
     override fun onBindViewHolder(holder: ResultViewHolder, position: Int) {
-        when (val item = getItem(position)) {
-            is SearchResultItem.Header -> holder.bindHeader(item.label)
-            is SearchResultItem.FolderItem -> holder.bindFolder(item.folder)
-            is SearchResultItem.NoteItem -> holder.bindNote(item.note)
-        }
+        val item = getItem(position)
+        holder.bind(item)
     }
 
     inner class ResultViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val resultText: TextView = itemView.findViewById(R.id.searchResultText)
 
-        fun bindNote(note: NoteEntity) {
-            resultText.text = note.content.take(40)
-            itemView.setOnClickListener {
-                onNoteClicked(note)
+        fun bind(item: SearchResultItem) {
+            when (item) {
+                is SearchResultItem.NoteItem -> {
+                    resultText.text = item.note.content.take(40)
+                }
+                is SearchResultItem.FolderItem -> {
+                    resultText.text = "📂 " + item.folder.name.take(40)
+                }
+                is SearchResultItem.Header -> {
+                    resultText.text = item.label
+                    resultText.setTextAppearance(android.R.style.TextAppearance_Material_Medium)
+                    resultText.setPadding(16, 12, 16, 8)
+                }
             }
-        }
 
-        fun bindFolder(folder: FolderEntity) {
-            resultText.text = "📂 " + folder.name.take(40)
+            // Unified click listener for all item types (used in MainActivity)
             itemView.setOnClickListener {
-                val intent = Intent(itemView.context, LibraryActivity::class.java)
-                intent.putExtra("folder_id", folder.id)
-                itemView.context.startActivity(intent)
+
+                onItemClick(item)
             }
-        }
-
-
-        fun bindHeader(label: String) {
-            resultText.text = label
-            resultText.setTextAppearance(android.R.style.TextAppearance_Material_Medium)
-            resultText.setPadding(16, 12, 16, 8)
-            itemView.setOnClickListener(null)
         }
     }
 
