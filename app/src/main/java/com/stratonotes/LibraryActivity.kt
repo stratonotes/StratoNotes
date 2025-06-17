@@ -344,8 +344,8 @@ class LibraryActivity : ComponentActivity() {
             background = null
             setOnClickListener { closeOverlay() }
             layoutParams = FrameLayout.LayoutParams(100, 100, Gravity.TOP or Gravity.END).apply {
-                marginEnd = 16
-                topMargin = 16
+                marginEnd = 44
+                topMargin = 44
             }
         }
 

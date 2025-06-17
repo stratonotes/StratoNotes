@@ -111,6 +111,14 @@ class MainActivity : ComponentActivity() {
         val noteInput = findViewById<EditText>(R.id.note_input)
         noteInput.setBackgroundColor(noteColor)
 
+        noteInput.setOnTouchListener { view, _ ->
+            if (searchDropdown.isVisible) {
+                searchDropdown.visibility = View.GONE
+                view.performClick()
+            }
+            false
+        }
+
         // Tint textbox wrapper background
         val textboxWrapper = findViewById<View>(R.id.textboxWrapper)
         textboxWrapper.background?.mutate()?.let {
@@ -136,7 +144,8 @@ class MainActivity : ComponentActivity() {
         refreshSlideoutColors()
 
         submitButton.setBackgroundColor(folderColor)
-        clearDraftButton.setBackgroundColor(folderColor)
+        DrawableCompat.setTint(clearDraftButton.background.mutate(), folderColor)
+
 
         // Update preview notes
         loadPreviews()
@@ -258,7 +267,7 @@ class MainActivity : ComponentActivity() {
         searchDropdown.layoutManager = LinearLayoutManager(this)
 
         noteInput.setBackgroundColor(noteColor)
-        submitButton.setBackgroundColor(folderColor)
+        DrawableCompat.setTint(submitButton.background.mutate(), folderColor)
         clearDraftButton.setBackgroundColor(folderColor)
 
         val overlayBackdrop = findViewById<View>(R.id.overlayBackdrop)
@@ -266,14 +275,19 @@ class MainActivity : ComponentActivity() {
 
         submitButton.setOnClickListener {
             val content = noteInput.text.toString().trim()
+
             if (content.isEmpty()) {
                 cycleMode()
                 saveSubmitModeToPrefs(
                     currentMode.name,
                     if (currentMode == SaveMode.PRESET) STRATONOTES_INTERNAL_FOLDER else lastUsedFolder
-
                 )
                 updateSubmitLabel()
+
+                // ✅ Ensure background tint stays correct when mode changes
+                val folderColor = UserColorManager.getFolderColor(this)
+                DrawableCompat.setTint(submitButton.background.mutate(), folderColor)
+
                 return@setOnClickListener
             }
 
@@ -281,9 +295,13 @@ class MainActivity : ComponentActivity() {
                 SaveMode.NEW -> showNewFolderDialog(content)
                 SaveMode.RECENT -> showConfirmDialog(content, lastUsedFolder)
                 SaveMode.PRESET -> saveNote(content, STRATONOTES_INTERNAL_FOLDER)
-
             }
+
+            // ✅ Also apply tint again after saving (covers shape fallback case)
+            val folderColor = UserColorManager.getFolderColor(this)
+            DrawableCompat.setTint(submitButton.background.mutate(), folderColor)
         }
+
 
 
         @Suppress("ClickableViewAccessibility")
@@ -493,6 +511,15 @@ class MainActivity : ComponentActivity() {
 
         val overlayView = inflater.inflate(R.layout.item_note, overlayContainer, false)
 
+        val metrics = resources.displayMetrics
+        val width = (metrics.widthPixels * 0.9).toInt()
+        overlayView.layoutParams = FrameLayout.LayoutParams(
+            width,
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            Gravity.CENTER
+        )
+
+
         val backgroundColor = UserColorManager.getNoteColor(this)
         overlayView.findViewById<MaterialCardView>(R.id.noteCard)
             .setCardBackgroundColor(backgroundColor)
@@ -511,6 +538,7 @@ class MainActivity : ComponentActivity() {
         val overlayColor = UserColorManager.getOverlayColor(this)
         val menuView =
             layoutInflater.inflate(R.layout.widget_pill_menu, overlayView as ViewGroup, false)
+
 
         val pill = menuView.findViewById<LinearLayout>(R.id.pillContainer)
         val pillBg = ContextCompat.getDrawable(this, R.drawable.pill_menu_bg)?.mutate()
@@ -586,8 +614,8 @@ class MainActivity : ComponentActivity() {
             background = null
             setOnClickListener { closeOverlay() }
             layoutParams = FrameLayout.LayoutParams(100, 100, Gravity.TOP or Gravity.END).apply {
-                marginEnd = 16
-                topMargin = 16
+                marginEnd = 44
+                topMargin = 44
             }
         }
 

@@ -4,7 +4,7 @@
     android:orientation="horizontal"
     android:padding="8dp"
     android:gravity="center_vertical"
-    android:background="?attr/selectableItemBackground">
+    >
 
     <TextView
         android:id="@+id/searchResultText"
