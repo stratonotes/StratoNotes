@@ -339,19 +339,14 @@ class LibraryActivity : ComponentActivity() {
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(noteText, InputMethodManager.SHOW_IMPLICIT)
 
-        val xButton = ImageButton(this).apply {
-            setImageResource(R.drawable.ic_close)
-            background = null
-            setOnClickListener { closeOverlay() }
-            layoutParams = FrameLayout.LayoutParams(100, 100, Gravity.TOP or Gravity.END).apply {
-                marginEnd = 44
-                topMargin = 44
-            }
-        }
+
 
         overlayContainer.addView(overlayView)
-        overlayContainer.addView(xButton)
         overlayContainer.visibility = View.VISIBLE
+
+        val closeButton = overlayView.findViewById<ImageView>(R.id.closeButton)
+        closeButton.setOnClickListener { closeOverlay() }
+
     }
 
     private fun closeOverlay() {

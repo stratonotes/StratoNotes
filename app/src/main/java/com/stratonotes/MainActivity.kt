@@ -156,8 +156,23 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val root = findViewById<CoordinatorLayout>(R.id.rootContainer) // or your outermost layout
 
-        val root = findViewById<View>(R.id.rootContainer)
+        val overlay = layoutInflater.inflate(R.layout.wordchar_counter_overlay, root, false)
+        root.addView(overlay)
+
+        val counterText = overlay.findViewById<TextView>(R.id.wordCharCounter)
+        noteInput.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                val text = s?.toString() ?: ""
+                val words = text.trim().split("\\s+".toRegex()).filter { it.isNotEmpty() }.size
+                val chars = text.length
+                counterText.text = "$words\n$chars"
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+
         val parent = findViewById<MaterialCardView>(R.id.note_input_card)
         val menuView = layoutInflater.inflate(R.layout.widget_pill_menu, parent, false)
         parent.addView(menuView)
@@ -576,6 +591,9 @@ class MainActivity : ComponentActivity() {
         noteText.setText(note.content)
         noteText.requestFocus()
 
+        val wordCounter = overlayView.findViewById<TextView>(R.id.wordCount)
+        val charCounter = overlayView.findViewById<TextView>(R.id.charCount)
+        bindTextCounter(noteText, wordCounter, charCounter)
 
         // Set initial star icon state
         starIcon.setImageResource(if (note.isFavorite) R.drawable.ic_star_filled else R.drawable.ic_star_outline)
@@ -609,19 +627,13 @@ class MainActivity : ComponentActivity() {
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(noteText, InputMethodManager.SHOW_IMPLICIT)
 
-        xButton = ImageButton(this).apply {
-            setImageResource(R.drawable.ic_close)
-            background = null
-            setOnClickListener { closeOverlay() }
-            layoutParams = FrameLayout.LayoutParams(100, 100, Gravity.TOP or Gravity.END).apply {
-                marginEnd = 44
-                topMargin = 44
-            }
-        }
 
         overlayContainer.addView(overlayView)
-        overlayContainer.addView(xButton)
         overlayContainer.visibility = View.VISIBLE
+
+        val closeButton = overlayView.findViewById<ImageView>(R.id.closeButton)
+        closeButton.setOnClickListener { closeOverlay() }
+
     }
 
 
@@ -872,15 +884,33 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
-
-
     private fun showConfirmDialog(content: String, folderName: String) {
         AlertDialog.Builder(this)
             .setTitle("Save to $folderName?")
             .setPositiveButton("Yes") { _, _ -> saveNote(content, folderName) }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun bindTextCounter(editText: EditText, wordView: TextView, charView: TextView) {
+        val watcher = object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                val text = s?.toString() ?: ""
+                val wordCount = text.trim().split("\\s+".toRegex()).filter { it.isNotEmpty() }.size
+                val charCount = text.length
+                wordView.text = wordCount.toString()
+                charView.text = charCount.toString()
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        }
+
+        editText.addTextChangedListener(watcher)
+
+        // Initialize immediately
+        val currentText = editText.text?.toString() ?: ""
+        wordView.text = currentText.trim().split("\\s+".toRegex()).filter { it.isNotEmpty() }.size.toString()
+        charView.text = currentText.length.toString()
     }
 
     private fun saveSubmitModeToPrefs(mode: String, folderName: String) {
