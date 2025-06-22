@@ -29,6 +29,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.DrawableCompat
 import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
@@ -40,6 +41,9 @@ import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.flow.first
 import androidx.core.view.isVisible
 import kotlinx.coroutines.async
+import android.os.Looper
+import androidx.core.graphics.toColorInt
+import androidx.core.content.edit
 
 
 class MainActivity : ComponentActivity() {
@@ -51,7 +55,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var adView: View
     private var currentOverlayNote: NoteEntity? = null
 
-    private lateinit var xButton: ImageButton
+
 
     private lateinit var searchInput: EditText
     private lateinit var noteInput: EditText
@@ -78,9 +82,10 @@ class MainActivity : ComponentActivity() {
 
     private var presetFolderName = "QuickNotes" // User-editable display label
 
-    private val draftHandler = Handler()
+    private val draftHandler = Handler(Looper.getMainLooper())
+
     private var draftRunnable: Runnable? = null
-    private var clearFadeRunnable: Runnable? = null
+
     private var isClearFading = false
 
     private val PREFS_NAME = "SubmitPrefs"
@@ -111,6 +116,7 @@ class MainActivity : ComponentActivity() {
         val noteInput = findViewById<EditText>(R.id.note_input)
         noteInput.setBackgroundColor(noteColor)
 
+        @Suppress("ClickableViewAccessibility")
         noteInput.setOnTouchListener { view, _ ->
             if (searchDropdown.isVisible) {
                 searchDropdown.visibility = View.GONE
@@ -127,7 +133,7 @@ class MainActivity : ComponentActivity() {
         }
 
         // Update overlay card if visible
-        if (overlayContainer.visibility == View.VISIBLE) {
+        if (overlayContainer.isVisible) {
             val overlayView = overlayContainer.getChildAt(0)
             val noteCard = overlayView?.findViewById<MaterialCardView>(R.id.noteCard)
             noteCard?.setCardBackgroundColor(noteColor)
@@ -152,10 +158,11 @@ class MainActivity : ComponentActivity() {
     }
 
 
+    @SuppressLint("CutPasteId", "ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        noteInput = findViewById(R.id.note_input)
         val root = findViewById<CoordinatorLayout>(R.id.rootContainer) // or your outermost layout
 
         val overlay = layoutInflater.inflate(R.layout.wordchar_counter_overlay, root, false)
@@ -163,6 +170,7 @@ class MainActivity : ComponentActivity() {
 
         val counterText = overlay.findViewById<TextView>(R.id.wordCharCounter)
         noteInput.addTextChangedListener(object : TextWatcher {
+            @SuppressLint("SetTextI18n")
             override fun afterTextChanged(s: Editable?) {
                 val text = s?.toString() ?: ""
                 val words = text.trim().split("\\s+".toRegex()).filter { it.isNotEmpty() }.size
@@ -173,17 +181,17 @@ class MainActivity : ComponentActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-        val parent = findViewById<MaterialCardView>(R.id.note_input_card)
+        val parent = findViewById<ViewGroup>(R.id.note_input_card)
         val menuView = layoutInflater.inflate(R.layout.widget_pill_menu, parent, false)
-        parent.addView(menuView)
 
+        parent.addView(menuView)
         menuView.elevation = 20f
 
 
         this.initPillMenu(menuView)
 
         val prefs = getSharedPreferences("theme_prefs", MODE_PRIVATE)
-        val appColor = prefs.getInt("app_color", Color.parseColor("#5D53A3"))
+        val appColor = prefs.getInt("app_color", "#5D53A3".toColorInt())
         val noteColor = UserColorManager.getNoteColor(this)
         val folderColor = UserColorManager.getFolderColor(this)
 
@@ -207,7 +215,7 @@ class MainActivity : ComponentActivity() {
         overlayContainer = findViewById(R.id.overlayContainer)
         adView = findViewById(R.id.dev_ad_banner)
         searchInput = findViewById(R.id.searchInput)
-        noteInput = findViewById(R.id.note_input)
+
         filterButton = findViewById(R.id.filter_button)
         submitButton = findViewById(R.id.submit_button)
         clearDraftButton = findViewById(R.id.clear_draft_button)
@@ -218,11 +226,13 @@ class MainActivity : ComponentActivity() {
         folderSettingsButton = findViewById(R.id.folder_settings_button_1)
 
         val textboxWrapper = findViewById<View>(R.id.textboxWrapper)
-        val noteCard = findViewById<MaterialCardView>(R.id.note_input_card)
+
         textboxWrapper.background?.mutate()?.let {
             DrawableCompat.setTint(it, noteColor)
             textboxWrapper.background = it
         }
+        val noteCard = findViewById<MaterialCardView>(R.id.note_input_card)
+
         noteCard.setCardBackgroundColor(noteColor)
 
         folderSettingsButton.setOnClickListener {
@@ -235,9 +245,10 @@ class MainActivity : ComponentActivity() {
         searchDropdown.setBackgroundColor(dropdownColor)
 
         root.setOnTouchListener { _, _ ->
-            if (searchDropdown.visibility == View.VISIBLE) {
+            if (searchDropdown.isVisible) {
                 searchDropdown.visibility = View.GONE
             }
+            root.performClick()
             false
         }
 
@@ -299,9 +310,6 @@ class MainActivity : ComponentActivity() {
                 )
                 updateSubmitLabel()
 
-                // ✅ Ensure background tint stays correct when mode changes
-                val folderColor = UserColorManager.getFolderColor(this)
-                DrawableCompat.setTint(submitButton.background.mutate(), folderColor)
 
                 return@setOnClickListener
             }
@@ -313,7 +321,6 @@ class MainActivity : ComponentActivity() {
             }
 
             // ✅ Also apply tint again after saving (covers shape fallback case)
-            val folderColor = UserColorManager.getFolderColor(this)
             DrawableCompat.setTint(submitButton.background.mutate(), folderColor)
         }
 
@@ -340,19 +347,14 @@ class MainActivity : ComponentActivity() {
 
         clearDraftButton.setOnClickListener {
             noteInput.setText("")
-            getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE).edit().remove(KEY_DRAFT_NOTE).apply()
+            getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE).edit { remove(KEY_DRAFT_NOTE) }
             clearDraftButton.visibility = View.GONE
         }
 
         undoButton.setOnClickListener {
             if (undoManager.canUndo()) {
                 undoManager.undo()
-                if (isClearFading) {
-                    draftHandler.removeCallbacks(clearFadeRunnable!!)
-                    clearDraftButton.alpha = 1f
-                    clearDraftButton.visibility = View.VISIBLE
-                    isClearFading = false
-                }
+
             }
         }
 
@@ -365,8 +367,9 @@ class MainActivity : ComponentActivity() {
                 isTyping = true
                 draftRunnable?.let { draftHandler.removeCallbacks(it) }
                 draftRunnable = Runnable {
-                    getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE).edit()
-                        .putString(KEY_DRAFT_NOTE, noteInput.text.toString()).apply()
+                    getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE).edit {
+                        putString(KEY_DRAFT_NOTE, noteInput.text.toString())
+                    }
                 }
                 draftHandler.postDelayed(draftRunnable!!, 500)
             }
@@ -447,7 +450,8 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        val searchBarContainer = findViewById<View>(R.id.searchBarContainer)
+        // TODO: animate search bar in/out later
+        //val searchBarContainer = findViewById<View>(R.id.searchBarContainer)
 
 
         searchDropdown.post {
@@ -463,7 +467,6 @@ class MainActivity : ComponentActivity() {
             params.topMargin = topOffset
             searchDropdown.layoutParams = params
 
-            val dropdownColor = UserColorManager.getNoteColor(this)
             searchDropdown.setBackgroundColor(dropdownColor)
 
         }
@@ -541,7 +544,7 @@ class MainActivity : ComponentActivity() {
 
 
         val noteCard = overlayView.findViewById<MaterialCardView>(R.id.noteCard)
-        val cardWrapper = overlayView.findViewById<View>(R.id.cardWrapper)
+
 
         val userColor = UserColorManager.getNoteColor(this)
 
@@ -569,7 +572,7 @@ class MainActivity : ComponentActivity() {
         }
 
         initPillMenu(menuView)
-        (overlayView as ViewGroup).addView(menuView)
+        (overlayView).addView(menuView)
 
 
         val noteText = overlayView.findViewById<EditText>(R.id.noteText)
@@ -705,8 +708,9 @@ class MainActivity : ComponentActivity() {
                 isTyping = false
                 updateSubmitLabel()
                 loadPreviews()
-                getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE).edit().remove(KEY_DRAFT_NOTE)
-                    .apply()
+                getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE).edit {
+                    remove(KEY_DRAFT_NOTE)
+                }
                 clearDraftButton.visibility = View.GONE
                 Toast.makeText(this@MainActivity, "Saved to $folderName", Toast.LENGTH_SHORT).show()
             }
@@ -783,22 +787,26 @@ class MainActivity : ComponentActivity() {
     private fun updateSubmitLabel() {
         when (currentMode) {
             SaveMode.NEW -> {
-                submitButton.text = "Add to → New Folder"
+                submitButton.text = getString(R.string.button_add_to_new_folder)
                 folderSettingsButton.visibility = View.GONE
             }
 
             SaveMode.RECENT -> {
-                submitButton.text = "Add to → $lastUsedFolder"
+                val formatted = getString(R.string.button_add_to_prefix) + " $lastUsedFolder"
+                submitButton.text = formatted
                 folderSettingsButton.visibility = View.VISIBLE
             }
 
             SaveMode.PRESET -> {
-                submitButton.text = "Add to → $presetFolderName 🚀"
+                val formatted = getString(R.string.button_add_to_prefix) + " $presetFolderName " + getString(R.string.button_preset_suffix)
+                submitButton.text = formatted
                 folderSettingsButton.visibility = View.GONE
             }
         }
 
-        updateSubmitButtonBackground()
+
+
+    updateSubmitButtonBackground()
         updateSubmitButtonFont()
 
         if (currentMode == SaveMode.PRESET) {
@@ -932,8 +940,10 @@ class MainActivity : ComponentActivity() {
             if (it.isNotEmpty()) lastUsedFolder = it
         }
     }
+    @Deprecated("Use OnBackPressedDispatcher instead.")
+
     override fun onBackPressed() {
-        if (overlayContainer.visibility == View.VISIBLE) {
+        if (overlayContainer.isVisible) {
             closeOverlay()
         } else {
             super.onBackPressed()
@@ -942,7 +952,7 @@ class MainActivity : ComponentActivity() {
     override fun onPause() {
         super.onPause()
 
-        if (overlayContainer.visibility == View.VISIBLE) {
+        if (overlayContainer.isVisible) {
             currentOverlayNote?.let { note ->
                 val overlayView = overlayContainer.getChildAt(0)
                 val noteText = overlayView?.findViewById<EditText>(R.id.noteText)
@@ -967,7 +977,7 @@ class MainActivity : ComponentActivity() {
         super.onResume()
 
         val prefs = getSharedPreferences("theme_prefs", MODE_PRIVATE)
-        val appColor = prefs.getInt("app_color", Color.parseColor("#5D53A3"))
+        val appColor = prefs.getInt("app_color", "#5D53A3".toColorInt())
         applyThemeColor(appColor)
 
         LocalBroadcastManager.getInstance(this).registerReceiver(

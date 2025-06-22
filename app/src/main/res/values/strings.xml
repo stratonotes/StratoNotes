@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- App Metadata -->
     <string name="app_name">PunchPad2</string>
+
+    <!-- Accessibility Descriptions -->
     <string name="desc_filter">Filter</string>
     <string name="desc_undo">Undo</string>
     <string name="desc_redo">Redo</string>
@@ -9,5 +13,77 @@
     <string name="desc_move_up">Move up</string>
     <string name="desc_move_down">Move down</string>
     <string name="desc_delete">Delete</string>
+
+    <!-- App Navigation -->
+    <string name="go_to_library">Go to Library</string>
+
+    <!-- Folder Names -->
+    <string name="folder_stratonotes">StratoNotes</string>
+    <string name="folder_default">Default</string>
+    <string name="folder_quicknotes">QuickNotes</string>
+    <string name="folder_unnamed">(Unnamed)</string>
+
+    <!-- Buttons -->
+    <string name="button_add_to_new_folder">Add to → New Folder</string>
+    <string name="button_add_to_prefix">Add to →</string>
+    <string name="button_preset_suffix">🚀</string>
+    <string name="button_yes">Yes</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="button_save">Save</string>
+    <string name="button_ok">OK</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_reset">Reset</string>
+    <string name="btn_reset_to_default">Reset to Default</string>
+    <string name="btn_set_app_color">SET APP COLOR</string>
+    <string name="button_load_more">Load More</string>
+
+    <!-- Input Hints -->
+    <string name="hint_new_folder_name">New folder name</string>
+    <string name="hint_folder_name">Folder name</string>
+
+    <!-- Titles -->
+    <string name="title_create_or_select_folder">Create or Select Folder</string>
+    <string name="title_rename_preset_folder">Rename Preset Folder</string>
+    <string name="title_save_to_folder">Save to %1$s?</string>
+
+    <!-- Dialogs -->
+    <string name="dialog_about_title">About StratoNotes</string>
+    <string name="dialog_folder_delete_warning">This folder contains notes. Delete anyway?</string>
+
+    <!-- Toasts -->
+    <string name="toast_unsaved_restored">Unsaved note restored</string>
+    <string name="toast_saved_to">Saved to %1$s</string>
+    <string name="toast_empty_name">Name cannot be empty</string>
+    <string name="toast_empty_folder">Folder name can\'t be empty</string>
+    <string name="toast_all_questions_used">All questions used. Resetting...</string>
+    <string name="toast_coming_soon">Coming soon!</string>
+    <string name="toast_reset_saved_color">Reset to saved color</string>
+    <string name="toast_reset_default_color">Reset to default color</string>
+    <string name="toast_notes_deleted">Deleted %1$d notes.</string>
+    <string name="toast_notes_favorited">Favorited %1$d notes.</string>
+    <string name="toast_notes_unfavorited">Unfavorited %1$d notes.</string>
+    <string name="toast_select_note_first">Long-press a note to select.</string>
+    <string name="toast_no_notes_selected">No notes selected.</string>
+    <string name="toast_showing_favorites">Showing favorites only.</string>
+    <string name="toast_showing_all_notes">Showing all notes.</string>
+    <string name="toast_search_limit">Search is limited to 100 characters.</string>
+
+    <!-- Static Messages -->
+    <string name="search_limit_exceeded">Search is limited to 100 characters.</string>
+    <string name="image_save_success">Image saved to PunchPad2 folder.</string>
+    <string name="unsupported_image_format">Unsupported image format. Could not import.</string>
+    <string name="empty_state_no_notes">No contents yet</string>
+    <string name="preview_hint">This panel displays three of the most recent entries.</string>
+    <string name="trash_days_left">%1$d days left until permanent deletion</string>
+
+    <!-- Guessing Game -->
+    <string name="guessing_game_title">Guessing Game</string>
+    <string name="guessing_game_prompt">How many times does &quot;%1$s&quot; appear in your notes?</string>
+    <string name="guessing_game_submit">Submit</string>
+    <string name="guessing_game_close">Close</string>
+    <string name="guessing_game_play_again">Play Again</string>
+    <string name="guessing_game_enter_number">Enter a number!</string>
+    <string name="guessing_game_correct">✅ Correct!</string>
+    <string name="guessing_game_incorrect">❌ Nope. The correct answer was %1$d.</string>
 
 </resources>
