@@ -7,6 +7,7 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.util.AttributeSet
 import android.view.View
+import androidx.core.graphics.toColorInt
 
 class HoleOverlayView(context: Context?, attrs: AttributeSet?) :
     View(context, attrs) {
@@ -16,8 +17,9 @@ class HoleOverlayView(context: Context?, attrs: AttributeSet?) :
     init {
         setLayerType(LAYER_TYPE_HARDWARE, null)
 
-        // Solid opaque dark overlay
-        overlayPaint.color = -0xeeeeef
+        overlayPaint.color = "#111111".toColorInt()
+
+
 
         // Clear hole
         holePaint.setXfermode(PorterDuffXfermode(PorterDuff.Mode.CLEAR))

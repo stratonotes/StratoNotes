@@ -86,4 +86,10 @@
     <string name="guessing_game_correct">✅ Correct!</string>
     <string name="guessing_game_incorrect">❌ Nope. The correct answer was %1$d.</string>
 
+
+    <string name="set_app_color">SET APP COLOR</string>
+    <string name="reset">Reset</string>
+    <string name="reset_to_default">Reset to Default</string>
+    <string name="reset_to_saved">Reset to saved color</string>
+
 </resources>

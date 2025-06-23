@@ -1,5 +1,5 @@
 package com.stratonotes
-
+@Suppress("unused")
 object NoteConverter {
     fun fromEntity(entity: NoteEntity): Note {
         return Note().apply {

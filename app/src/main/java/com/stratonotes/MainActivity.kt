@@ -48,7 +48,7 @@ import androidx.core.content.edit
 
 class MainActivity : ComponentActivity() {
 
-    private val STRATONOTES_INTERNAL_FOLDER = "StratoNotes"
+    private val internalStratoFolder = "StratoNotes"
 
     private lateinit var previewContainer: LinearLayout
     private lateinit var overlayContainer: FrameLayout
@@ -86,13 +86,11 @@ class MainActivity : ComponentActivity() {
 
     private var draftRunnable: Runnable? = null
 
-    private var isClearFading = false
-
-    private val PREFS_NAME = "SubmitPrefs"
-    private val KEY_MODE = "lastMode"
-    private val KEY_FOLDER = "lastFolderName"
-    private val DRAFT_PREFS = "DraftPrefs"
-    private val KEY_DRAFT_NOTE = "draft_note"
+    private val prefsName = "SubmitPrefs"
+    private val keyMode = "lastMode"
+    private val keyFolderName = "lastFolderName"
+    private val draftPrefsName = "DraftPrefs"
+    private val keyDraftNote = "draft_note"
 
     private val themeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -306,7 +304,7 @@ class MainActivity : ComponentActivity() {
                 cycleMode()
                 saveSubmitModeToPrefs(
                     currentMode.name,
-                    if (currentMode == SaveMode.PRESET) STRATONOTES_INTERNAL_FOLDER else lastUsedFolder
+                    if (currentMode == SaveMode.PRESET) internalStratoFolder else lastUsedFolder
                 )
                 updateSubmitLabel()
 
@@ -317,7 +315,7 @@ class MainActivity : ComponentActivity() {
             when (currentMode) {
                 SaveMode.NEW -> showNewFolderDialog(content)
                 SaveMode.RECENT -> showConfirmDialog(content, lastUsedFolder)
-                SaveMode.PRESET -> saveNote(content, STRATONOTES_INTERNAL_FOLDER)
+                SaveMode.PRESET -> saveNote(content, internalStratoFolder)
             }
 
             // ✅ Also apply tint again after saving (covers shape fallback case)
@@ -338,7 +336,7 @@ class MainActivity : ComponentActivity() {
             false
         }
 
-        val draft = getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE).getString(KEY_DRAFT_NOTE, null)
+        val draft = getSharedPreferences(draftPrefsName, MODE_PRIVATE).getString(keyDraftNote, null)
         if (!draft.isNullOrEmpty()) {
             noteInput.setText(draft)
             clearDraftButton.visibility = View.VISIBLE
@@ -347,7 +345,7 @@ class MainActivity : ComponentActivity() {
 
         clearDraftButton.setOnClickListener {
             noteInput.setText("")
-            getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE).edit { remove(KEY_DRAFT_NOTE) }
+            getSharedPreferences(draftPrefsName, MODE_PRIVATE).edit { remove(keyDraftNote) }
             clearDraftButton.visibility = View.GONE
         }
 
@@ -367,8 +365,8 @@ class MainActivity : ComponentActivity() {
                 isTyping = true
                 draftRunnable?.let { draftHandler.removeCallbacks(it) }
                 draftRunnable = Runnable {
-                    getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE).edit {
-                        putString(KEY_DRAFT_NOTE, noteInput.text.toString())
+                    getSharedPreferences(draftPrefsName, MODE_PRIVATE).edit {
+                        putString(keyDraftNote, noteInput.text.toString())
                     }
                 }
                 draftHandler.postDelayed(draftRunnable!!, 500)
@@ -708,8 +706,8 @@ class MainActivity : ComponentActivity() {
                 isTyping = false
                 updateSubmitLabel()
                 loadPreviews()
-                getSharedPreferences(DRAFT_PREFS, MODE_PRIVATE).edit {
-                    remove(KEY_DRAFT_NOTE)
+                getSharedPreferences(draftPrefsName, MODE_PRIVATE).edit {
+                    remove(keyDraftNote)
                 }
                 clearDraftButton.visibility = View.GONE
                 Toast.makeText(this@MainActivity, "Saved to $folderName", Toast.LENGTH_SHORT).show()
@@ -756,11 +754,10 @@ class MainActivity : ComponentActivity() {
                     }
 
                     if (note.content.length > 150) {
-                        val fadeBottom = folderColor
                         val fadeTop = ColorUtils.setAlphaComponent(folderColor, 0)
                         val gradient = GradientDrawable(
                             GradientDrawable.Orientation.BOTTOM_TOP,
-                            intArrayOf(fadeBottom, fadeTop)
+                            intArrayOf(folderColor, fadeTop)
                         )
                         gradient.cornerRadius = 0f
                         fadeView.background = gradient
@@ -768,6 +765,7 @@ class MainActivity : ComponentActivity() {
                     } else {
                         fadeView.visibility = View.GONE
                     }
+
 
                     previewContainer.addView(previewView)
                 }
@@ -853,7 +851,7 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             val all = AppDatabase.getDatabase(context).noteDao().getAllFolders().first()
             val folders = all
-                .filter { it.name != STRATONOTES_INTERNAL_FOLDER }
+                .filter { it.name != internalStratoFolder }
                 .map { it.name }
 
 
@@ -922,56 +920,24 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun saveSubmitModeToPrefs(mode: String, folderName: String) {
-        getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit().apply {
-            putString(KEY_MODE, mode)
-            putString(KEY_FOLDER, folderName)
+        getSharedPreferences(prefsName, MODE_PRIVATE).edit().apply {
+            putString(keyMode, mode)
+            putString(keyFolderName, folderName)
             apply()
         }
     }
 
     private fun loadSubmitModeFromPrefs() {
-        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-        when (prefs.getString(KEY_MODE, "RECENT")) {
-            "NEW" -> currentMode = SaveMode.NEW
-            "PRESET" -> currentMode = SaveMode.PRESET
-            else -> currentMode = SaveMode.RECENT
+        val prefs = getSharedPreferences(prefsName, MODE_PRIVATE)
+        currentMode = when (prefs.getString(keyMode, "RECENT")) {
+            "NEW" -> SaveMode.NEW
+            "PRESET" -> SaveMode.PRESET
+            else -> SaveMode.RECENT
         }
-        prefs.getString(KEY_FOLDER, "")?.let {
+        prefs.getString(keyFolderName, "")?.let {
             if (it.isNotEmpty()) lastUsedFolder = it
         }
     }
-    @Deprecated("Use OnBackPressedDispatcher instead.")
-
-    override fun onBackPressed() {
-        if (overlayContainer.isVisible) {
-            closeOverlay()
-        } else {
-            super.onBackPressed()
-        }
-    }
-    override fun onPause() {
-        super.onPause()
-
-        if (overlayContainer.isVisible) {
-            currentOverlayNote?.let { note ->
-                val overlayView = overlayContainer.getChildAt(0)
-                val noteText = overlayView?.findViewById<EditText>(R.id.noteText)
-                val updatedContent = noteText?.text?.toString() ?: ""
-
-                lifecycleScope.launch(Dispatchers.IO) {
-                    val updatedNote = note.copy(
-                        content = updatedContent,
-                        lastEdited = System.currentTimeMillis()
-                    )
-                    noteViewModel.update(updatedNote)
-                }
-            }
-        }
-
-        // Always unregister
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(themeReceiver)
-    }
-
 
     override fun onResume() {
         super.onResume()
@@ -989,7 +955,7 @@ class MainActivity : ComponentActivity() {
 
 
 
-
+    @Suppress("RemoveExplicitTypeArguments")
     private fun initPillMenu(rootView: View) {
         val pill = rootView.findViewById<LinearLayout>(R.id.pillContainer)
         val plus = rootView.findViewById<ImageButton>(R.id.iconPlus)

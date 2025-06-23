@@ -2,7 +2,6 @@ package com.stratonotes
 
 import android.app.Dialog
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
@@ -11,18 +10,19 @@ import android.util.Log
 import android.view.View
 import android.view.Window
 import android.widget.*
+import androidx.core.content.edit
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.punchpad2.R
+import androidx.core.graphics.toColorInt
 
 class ColorPickerDialog(context: Context, private val rootView: View?) : Dialog(context) {
-
 
     private val prefs: SharedPreferences =
         context.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE)
 
     // Real default color = #444588
     private val defaultHex = "#444588"
-    private val defaultColor = Color.parseColor(defaultHex)
+    private val defaultColor = defaultHex.toColorInt()
     private val defaultHSV = FloatArray(3).also {
         Color.colorToHSV(defaultColor, it)
     }
@@ -39,7 +39,6 @@ class ColorPickerDialog(context: Context, private val rootView: View?) : Dialog(
     private lateinit var wheel: ColorWheelView
     private lateinit var brightnessSlider: SeekBar
     private lateinit var btnReset: Button
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,11 +60,8 @@ class ColorPickerDialog(context: Context, private val rootView: View?) : Dialog(
         wheel = findViewById(R.id.colorWheelView)
         brightnessSlider = findViewById(R.id.brightnessSlider)
         val btnAppColor = findViewById<Button>(R.id.btnAppColor)
-        val btnBackgroundImage = findViewById<Button>(R.id.btnBackgroundImage)
         btnReset = findViewById(R.id.btnReset)
-
         val btnCancel = findViewById<Button>(R.id.btnCancel)
-
 
         applyColor(currentColor)
 
@@ -78,11 +74,8 @@ class ColorPickerDialog(context: Context, private val rootView: View?) : Dialog(
                 currentColor = color
                 resetStage = 0
                 updateResetButton()
-                Log.d("ColorTest", "rootView = ${rootView}, color = $currentColor")
 
-                // Live preview
                 rootView?.setBackgroundColor(currentColor)
-
                 Log.d("ColorTest", "Preview updated with $currentColor onChange")
             }
         })
@@ -93,13 +86,9 @@ class ColorPickerDialog(context: Context, private val rootView: View?) : Dialog(
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 currentBrightness = progress / 100f
                 wheel.setBrightness(currentBrightness)
-
                 resetStage = 0
                 updateResetButton()
-
-                // Live preview
                 rootView?.setBackgroundColor(currentColor)
-
                 Log.d("ColorTest", "Preview updated with $currentColor onChange")
             }
 
@@ -107,15 +96,16 @@ class ColorPickerDialog(context: Context, private val rootView: View?) : Dialog(
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        btnAppColor.text = "SET APP COLOR"
+        btnAppColor.setText(R.string.set_app_color)
         btnAppColor.setOnClickListener {
             currentColor = Color.HSVToColor(floatArrayOf(currentHue, 0.5f, currentBrightness))
-            prefs.edit().putInt("app_color", currentColor).apply()
+            prefs.edit {
+                putInt("app_color", currentColor)
+            }
 
             savedColor = currentColor
             sessionColor = currentColor
             resetStage = 0
-
             updateResetButton()
 
             (context as? LibraryActivity)?.refreshFolderListColors()
@@ -123,8 +113,6 @@ class ColorPickerDialog(context: Context, private val rootView: View?) : Dialog(
             val intent = Intent("com.stratonotes.THEME_COLOR_CHANGED")
             intent.putExtra("color", currentColor)
             LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
-
-
         }
 
         btnReset.setOnClickListener {
@@ -133,7 +121,7 @@ class ColorPickerDialog(context: Context, private val rootView: View?) : Dialog(
                     applyColor(sessionColor)
                     rootView?.setBackgroundColor(sessionColor)
                     resetStage = 1
-                    Toast.makeText(context, "Reset to saved color", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.reset_to_saved, Toast.LENGTH_SHORT).show()
                 }
                 1 -> {
                     applyColor(defaultColor)
@@ -141,23 +129,20 @@ class ColorPickerDialog(context: Context, private val rootView: View?) : Dialog(
                     currentHue = defaultHSV[0]
                     currentBrightness = defaultHSV[2]
                     resetStage = 2
-                    Toast.makeText(context, "Reset to default color", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.reset_to_default, Toast.LENGTH_SHORT).show()
                 }
-                else -> {} // do nothing
+                else -> {}
             }
             updateResetButton()
         }
-
 
         btnCancel.setOnClickListener { dismiss() }
 
         updateResetButton()
 
         setOnShowListener {
-
             Log.d("ColorTest", "rootView assigned onShow = $rootView")
         }
-
     }
 
     private fun applyColor(color: Int) {
@@ -177,9 +162,9 @@ class ColorPickerDialog(context: Context, private val rootView: View?) : Dialog(
     private fun updateResetButton() {
         btnReset.isEnabled = true
         btnReset.text = when (resetStage) {
-            0 -> "Reset"
-            1 -> "Reset to Default"
-            else -> "Reset"
+            0 -> context.getString(R.string.reset)
+            1 -> context.getString(R.string.reset_to_default)
+            else -> context.getString(R.string.reset)
         }
     }
 
@@ -189,7 +174,7 @@ class ColorPickerDialog(context: Context, private val rootView: View?) : Dialog(
         rootView?.setBackgroundColor(restoredColor)
     }
 
-
+    @Suppress("unused")
     fun setHue(value: Float) {
         currentHue = value.coerceIn(0f, 360f)
         wheel.setHue(currentHue)

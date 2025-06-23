@@ -4,13 +4,13 @@ import android.app.AlertDialog
 import android.content.Context
 import android.view.LayoutInflater
 import android.widget.*
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.punchpad2.R
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.CoroutineScope
-import kotlin.random.Random
+import kotlinx.coroutines.launch
+
 
 class GuessingGameDialog(
     private val context: Context,
@@ -20,39 +20,41 @@ class GuessingGameDialog(
     private val asked = mutableSetOf<String>()
 
     fun launch() {
-        lifecycleOwner.lifecycleScope.launchWhenStarted {
-            val notes = getAllNotes()
-            val allText = notes.joinToString(" ") { it.content }.lowercase()
+        lifecycleOwner.lifecycleScope.launch {
+            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                val notes = getAllNotes()
+                val allText = notes.joinToString(" ") { it.content }.lowercase()
 
-            val wordFreq = Regex("\\b[a-z]{3,}\\b").findAll(allText)
-                .map { it.value }
-                .groupingBy { it }
-                .eachCount()
-                .filter { it.value >= 2 }
+                val wordFreq = Regex("\\b[a-z]{3,}\\b").findAll(allText)
+                    .map { it.value }
+                    .groupingBy { it }
+                    .eachCount()
+                    .filter { it.value >= 2 }
 
-            val letterFreq = allText.filter { it in 'a'..'z' }
-                .groupingBy { it.toString() }
-                .eachCount()
-                .filter { it.value >= 2 }
+                val letterFreq = allText.filter { it in 'a'..'z' }
+                    .groupingBy { it.toString() }
+                    .eachCount()
+                    .filter { it.value >= 2 }
 
-            val digitFreq = allText.filter { it in '0'..'9' }
-                .groupingBy { it.toString() }
-                .eachCount()
-                .filter { it.value >= 2 }
+                val digitFreq = allText.filter { it in '0'..'9' }
+                    .groupingBy { it.toString() }
+                    .eachCount()
+                    .filter { it.value >= 2 }
 
-            val allOptions = (wordFreq + letterFreq + digitFreq).toMutableMap()
-            allOptions.keys.removeAll(asked)
+                val allOptions = (wordFreq + letterFreq + digitFreq).toMutableMap()
+                allOptions.keys.removeAll(asked)
 
-            if (allOptions.isEmpty()) {
-                asked.clear()
-                Toast.makeText(context, "All questions used. Resetting...", Toast.LENGTH_SHORT).show()
-                return@launchWhenStarted
+                if (allOptions.isEmpty()) {
+                    asked.clear()
+                    Toast.makeText(context, R.string.toast_all_questions_used, Toast.LENGTH_SHORT).show()
+                    return@repeatOnLifecycle
+                }
+
+                val (target, count) = allOptions.entries.random()
+                asked.add(target)
+
+                showDialog(target, count)
             }
-
-            val (target, count) = allOptions.entries.random()
-            asked.add(target)
-
-            showDialog(target, count)
         }
     }
 
@@ -62,14 +64,14 @@ class GuessingGameDialog(
         val input = view.findViewById<EditText>(R.id.answerInput)
         val result = view.findViewById<TextView>(R.id.resultText)
 
-        prompt.text = "How many times does \"$target\" appear in your notes?"
+        prompt.text = context.getString(R.string.guessing_game_prompt, target)
 
         AlertDialog.Builder(context)
-            .setTitle("Guessing Game")
+            .setTitle(R.string.guessing_game_title)
             .setView(view)
-            .setPositiveButton("Submit", null)
-            .setNegativeButton("Close", null)
-            .setNeutralButton("Play Again", null)
+            .setPositiveButton(R.string.guessing_game_submit, null)
+            .setNegativeButton(R.string.guessing_game_close, null)
+            .setNeutralButton(R.string.guessing_game_play_again, null)
             .create()
             .apply {
                 setOnShowListener {
@@ -79,12 +81,16 @@ class GuessingGameDialog(
 
                     submit.setOnClickListener {
                         val guess = input.text.toString().toIntOrNull()
-                        if (guess == null) {
-                            result.text = "Enter a number!"
-                        } else if (guess == answer) {
-                            result.text = "✅ Correct!"
-                        } else {
-                            result.text = "❌ Nope. The correct answer was $answer."
+                        when (guess) {
+                            null -> {
+                                result.text = context.getString(R.string.guessing_game_enter_number)
+                            }
+                            answer -> {
+                                result.text = context.getString(R.string.guessing_game_correct)
+                            }
+                            else -> {
+                                result.text = context.getString(R.string.guessing_game_incorrect, answer)
+                            }
                         }
                     }
 

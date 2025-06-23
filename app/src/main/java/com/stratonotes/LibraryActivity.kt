@@ -1,9 +1,9 @@
 package com.stratonotes
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -18,7 +18,6 @@ import com.example.punchpad2.FolderAdapter
 import com.example.punchpad2.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import android.content.res.Resources
 import android.content.Intent
 import android.app.AlertDialog
@@ -26,18 +25,19 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
 import android.view.ViewGroup
-import android.graphics.Color
-import androidx.core.graphics.drawable.DrawableCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.material.card.MaterialCardView
+import androidx.core.graphics.toColorInt
+import androidx.core.view.isVisible
+import androidx.activity.OnBackPressedCallback
 
 class LibraryActivity : ComponentActivity() {
 
 
     private lateinit var folderAdapter: FolderAdapter
-    private var holeOverlay: View? = null
 
-    private var deleteMode = false
+
+
     private var favoritesOnly = false
     private var sortNewest = true
 
@@ -53,12 +53,13 @@ class LibraryActivity : ComponentActivity() {
     }
 
 
+    @SuppressLint("CutPasteId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_library)
 
         val prefs = getSharedPreferences("theme_prefs", MODE_PRIVATE)
-        val appColor = prefs.getInt("app_color", Color.parseColor("#5D53A3"))
+        val appColor = prefs.getInt("app_color", "#5D53A3".toColorInt())
 
         val root = findViewById<View>(R.id.rootContainer)
         root.setBackgroundColor(appColor)
@@ -188,7 +189,10 @@ class LibraryActivity : ComponentActivity() {
         val menuButton = findViewById<ImageButton>(R.id.menuButton)
 
         val inflater = LayoutInflater.from(this)
-        val menuOverlay = inflater.inflate(R.layout.menu_overlay, null) as FrameLayout
+        val rootViewGroup = findViewById<ViewGroup>(R.id.rootContainer)
+        val menuOverlay = inflater.inflate(R.layout.menu_overlay, rootViewGroup, false) as FrameLayout
+
+
         addContentView(menuOverlay, FrameLayout.LayoutParams(
             FrameLayout.LayoutParams.MATCH_PARENT,
             FrameLayout.LayoutParams.MATCH_PARENT
@@ -219,8 +223,8 @@ class LibraryActivity : ComponentActivity() {
 
 
         iconColorPicker.setOnClickListener {
-            val root = findViewById<View>(R.id.rootContainer)
             val dialog = ColorPickerDialog(this, root)
+
 
             dialog.setCanceledOnTouchOutside(false)
             dialog.show()
@@ -267,6 +271,22 @@ class LibraryActivity : ComponentActivity() {
             menuOverlay.visibility = View.GONE
         }
 
+        onBackPressedDispatcher.addCallback(this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (overlayContainer.isVisible) {
+                        closeOverlay()
+                    } else if (folderAdapter.getSelectedNotes().isNotEmpty()) {
+                        folderAdapter.exitSelectionMode()
+                        findViewById<LinearLayout>(R.id.selectionBar).visibility = View.GONE
+                        findViewById<LinearLayout>(R.id.bottomBar).visibility = View.VISIBLE
+                    } else {
+                        finish()
+                    }
+                }
+            }
+        )
+
 
 
     }
@@ -283,7 +303,7 @@ class LibraryActivity : ComponentActivity() {
         val backgroundColor = UserColorManager.getNoteColor(this)
         noteCard.setCardBackgroundColor(backgroundColor)
 
-        val userColor = UserColorManager.getOverlayColor(this)
+
         val metrics = Resources.getSystem().displayMetrics
         val width = (metrics.widthPixels * 0.9).toInt()
         overlayView.layoutParams = FrameLayout.LayoutParams(width, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER)
@@ -374,27 +394,13 @@ class LibraryActivity : ComponentActivity() {
 
 
 
-    override fun onBackPressed() {
-        if (overlayContainer.visibility == View.VISIBLE) {
-            closeOverlay()
-            return
-        }
 
-        if (folderAdapter.getSelectedNotes().isNotEmpty()) {
-            folderAdapter.exitSelectionMode()
-            findViewById<LinearLayout>(R.id.selectionBar).visibility = View.GONE
-            findViewById<LinearLayout>(R.id.bottomBar).visibility = View.VISIBLE
-            return
-        }
-
-        super.onBackPressed()
-    }
 
     private fun applyThemeColor(color: Int) {
         val root = findViewById<View>(R.id.rootContainer)
         root.setBackgroundColor(color)
 
-        if (overlayContainer.visibility == View.VISIBLE) {
+        if (overlayContainer.isVisible) {
             val overlayView = overlayContainer.getChildAt(0)
             val noteCard = overlayView?.findViewById<MaterialCardView>(R.id.noteCard)
             noteCard?.setCardBackgroundColor(UserColorManager.getNoteColor(this))
@@ -408,7 +414,7 @@ class LibraryActivity : ComponentActivity() {
     override fun onPause() {
         super.onPause()
 
-        if (overlayContainer.visibility == View.VISIBLE) {
+        if (overlayContainer.isVisible) {
             currentOverlayNote?.let { note ->
                 val overlayView = overlayContainer.getChildAt(0)
                 val noteText = overlayView?.findViewById<EditText>(R.id.noteText)
@@ -433,7 +439,7 @@ class LibraryActivity : ComponentActivity() {
         super.onResume()
 
         val prefs = getSharedPreferences("theme_prefs", MODE_PRIVATE)
-        val appColor = prefs.getInt("app_color", Color.parseColor("#5D53A3"))
+        val appColor = prefs.getInt("app_color", "#5D53A3".toColorInt())
         val root = findViewById<View>(R.id.rootContainer)
         root.setBackgroundColor(appColor)
 
@@ -449,6 +455,7 @@ class LibraryActivity : ComponentActivity() {
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun refreshFolderListColors() {
         folderAdapter.notifyDataSetChanged()
     }

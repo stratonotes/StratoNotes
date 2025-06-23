@@ -1,6 +1,5 @@
 package com.stratonotes
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,9 +9,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.punchpad2.R
-
+@Suppress("unused")
 class NoteAdapter(
-    private val context: Context,
     private val listener: OnNoteChangedListener
 ) : ListAdapter<NoteEntity, NoteAdapter.NoteViewHolder>(DIFF_CALLBACK) {
 
