@@ -21,7 +21,6 @@
         android:outlineProvider="background">
 
         <LinearLayout
-            android:id="@+id/noteContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
@@ -96,19 +95,27 @@
                 android:fillViewport="true"
                 android:overScrollMode="always">
 
-                <EditText
-                    android:id="@+id/noteText"
+                <LinearLayout
+                    android:id="@+id/noteContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@android:color/transparent"
-                    android:gravity="top|start"
-                    android:inputType="textMultiLine"
-                    android:lineSpacingExtra="6dp"
-                    android:minLines="10"
-                    android:padding="8dp"
-                    android:scrollbars="vertical"
-                    android:textSize="16sp" />
+                    android:orientation="vertical">
+
+                    <EditText
+                        android:id="@+id/noteText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@android:color/transparent"
+                        android:gravity="top|start"
+                        android:inputType="textMultiLine"
+                        android:lineSpacingExtra="6dp"
+                        android:minLines="10"
+                        android:padding="8dp"
+                        android:scrollbars="vertical"
+                        android:textSize="16sp" />
+                </LinearLayout>
             </androidx.core.widget.NestedScrollView>
+
 
             <LinearLayout
                 android:id="@+id/undoRedoContainer"

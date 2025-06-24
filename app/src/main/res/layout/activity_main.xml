@@ -144,19 +144,28 @@
                         android:overScrollMode="always"
                         android:scrollbars="vertical">
 
-                        <EditText
-                            android:id="@+id/note_input"
+                        <LinearLayout
+                            android:id="@+id/noteContainer"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:background="@android:color/transparent"
-                            android:gravity="top"
-                            android:inputType="textMultiLine"
-                            android:focusable="true"
-                            android:focusableInTouchMode="true"
-                            android:maxLines="2000"
-                            android:textSize="16sp"
-                            android:paddingBottom="64dp" />
+                            android:orientation="vertical">
+
+                            <EditText
+                                android:id="@+id/note_input"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@android:color/transparent"
+                                android:gravity="top"
+                                android:inputType="textMultiLine"
+                                android:focusable="true"
+                                android:focusableInTouchMode="true"
+                                android:maxLines="2000"
+                                android:textSize="16sp"
+                                android:paddingBottom="64dp" />
+
+                        </LinearLayout>
                     </ScrollView>
+
                 </FrameLayout>
 
             </com.google.android.material.card.MaterialCardView>

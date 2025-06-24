@@ -47,6 +47,7 @@ import android.os.Looper
 import androidx.core.graphics.toColorInt
 import androidx.core.content.edit
 import android.net.Uri
+import android.view.LayoutInflater
 
 
 class MainActivity : ComponentActivity() {
@@ -666,7 +667,6 @@ class MainActivity : ComponentActivity() {
     }
 
 
-
     private fun saveNote(content: String, folderName: String) {
         lifecycleScope.launch(Dispatchers.IO) {
             val now = System.currentTimeMillis()
@@ -789,7 +789,8 @@ class MainActivity : ComponentActivity() {
             }
 
             SaveMode.PRESET -> {
-                val formatted = getString(R.string.button_add_to_prefix) + " $presetFolderName " + getString(R.string.button_preset_suffix)
+                val formatted =
+                    getString(R.string.button_add_to_prefix) + " $presetFolderName " + getString(R.string.button_preset_suffix)
                 submitButton.text = formatted
                 folderSettingsButton.visibility = View.GONE
             }
@@ -865,7 +866,7 @@ class MainActivity : ComponentActivity() {
 
 
 
-        AlertDialog.Builder(context)
+                AlertDialog.Builder(context)
                     .setTitle("Create or Select Folder")
                     .setView(container)
                     .setPositiveButton("Save") { _, _ ->
@@ -874,7 +875,11 @@ class MainActivity : ComponentActivity() {
                             saveNote(content, folderName)
                             lastUsedFolder = folderName
                         } else {
-                            Toast.makeText(context, "Folder name can't be empty", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Folder name can't be empty",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                     .setNegativeButton("Cancel", null)
@@ -900,6 +905,7 @@ class MainActivity : ComponentActivity() {
                 wordView.text = wordCount.toString()
                 charView.text = charCount.toString()
             }
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         }
@@ -908,7 +914,8 @@ class MainActivity : ComponentActivity() {
 
         // Initialize immediately
         val currentText = editText.text?.toString() ?: ""
-        wordView.text = currentText.trim().split("\\s+".toRegex()).filter { it.isNotEmpty() }.size.toString()
+        wordView.text =
+            currentText.trim().split("\\s+".toRegex()).filter { it.isNotEmpty() }.size.toString()
         charView.text = currentText.length.toString()
     }
 
@@ -945,9 +952,6 @@ class MainActivity : ComponentActivity() {
     }
 
 
-
-
-
     @Suppress("RemoveExplicitTypeArguments")
     private fun initPillMenu(rootView: View) {
         val pill = rootView.findViewById<LinearLayout>(R.id.pillContainer)
@@ -955,10 +959,11 @@ class MainActivity : ComponentActivity() {
 
         val iconAddImage = rootView.findViewById<ImageButton>(R.id.iconAddImage)
         iconAddImage.setOnClickListener {
-            val intent = Intent(Intent.ACTION_PICK).apply {
+            val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
                 type = "image/*"
+                putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
             }
-            startActivityForResult(intent, 101)
+            startActivityForResult(Intent.createChooser(intent, "Select Images"), 101)
         }
 
         val icons = listOf(
@@ -973,96 +978,164 @@ class MainActivity : ComponentActivity() {
         plus.setOnClickListener {
             expanded = !expanded
 
-            // Always show container before expanding
             if (expanded) pill.visibility = View.VISIBLE
 
             val iconWidthPx = (40 * rootView.resources.displayMetrics.density).toInt()
-            val paddingPx = (24 * rootView.resources.displayMetrics.density).toInt()  // 12dp padding start + end
+            val paddingPx = (24 * rootView.resources.displayMetrics.density).toInt()
             val targetWidth = if (expanded) (iconWidthPx * (icons.size + 1) + paddingPx) else 0
 
-            val animator = ValueAnimator.ofInt(pill.width, targetWidth)
-            animator.duration = 250
-            animator.addUpdateListener { animation ->
-                val value = animation.animatedValue as Int
-                pill.layoutParams.width = value
-                pill.requestLayout()
-            }
-
-            animator.addListener(object : android.animation.AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: android.animation.Animator) {
-                    if (!expanded) pill.visibility = View.GONE
+            val animator = ValueAnimator.ofInt(pill.width, targetWidth).apply {
+                duration = 250
+                addUpdateListener { animation ->
+                    val value = animation.animatedValue as Int
+                    pill.layoutParams.width = value
+                    pill.requestLayout()
                 }
-            })
+                addListener(object : android.animation.AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: android.animation.Animator) {
+                        if (!expanded) pill.visibility = View.GONE
+                    }
+                })
+            }
 
             animator.start()
 
-            // Animate plus rotation
             val rotation = if (expanded) 45f else 0f
             ObjectAnimator.ofFloat(plus, View.ROTATION, rotation).apply {
                 duration = 200
                 start()
             }
 
-            // Toggle icon visibility
             icons.forEach { icon ->
                 icon.visibility = if (expanded) View.VISIBLE else View.GONE
             }
         }
+    }
 
 
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 101 && resultCode == RESULT_OK && data != null) {
+            val uriList = mutableListOf<Uri>()
 
+            // Handle multiple or single image selection
+            data.clipData?.let { clip ->
+                for (i in 0 until clip.itemCount) {
+                    clip.getItemAt(i).uri?.let { uriList.add(it) }
+                }
+            } ?: data.data?.let { uriList.add(it) }
 
-    // Animate plus rotation
-            val rotation = if (expanded) 45f else 0f
-            ObjectAnimator.ofFloat(plus, View.ROTATION, rotation).apply {
-                duration = 200
-                start()
+            // Determine the correct note input EditText
+            val editText = if (overlayContainer.isVisible) {
+                overlayContainer.getChildAt(0)
+                    ?.findViewById<ScrollView>(R.id.noteScroll)
+                    ?.findViewById<EditText>(R.id.noteText)
+            } else {
+                findViewById<EditText>(R.id.note_input)
             }
 
-            // Toggle icon visibility
-            icons.forEach { icon ->
-                icon.visibility = if (expanded) View.VISIBLE else View.GONE
+            if (editText != null) {
+                uriList.forEach { uri -> insertImage(uri, editText) }
+            }
+        }
+    }
+
+
+    fun Int.dpToPx(context: Context): Int {
+        return (this * context.resources.displayMetrics.density).toInt()
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun insertImage(uri: Uri, target: EditText) {
+        val inflater = LayoutInflater.from(this)
+        val imageBlock = inflater.inflate(R.layout.image_block, null) as FrameLayout
+        val imageView = imageBlock.findViewById<ImageView>(R.id.imageContent)
+        val handleLeft = imageBlock.findViewById<View>(R.id.resizeHandleLeft)
+        val handleRight = imageBlock.findViewById<View>(R.id.resizeHandleRight)
+
+        val appColor = UserColorManager.getAppColor(this)
+        val fillColor = UserColorManager.getNoteColor(this)
+        val strokeColor = UserColorManager.getCancelColorRelativeTo(appColor)
+
+        fun Int.dpToPx(): Int = (this * resources.displayMetrics.density).toInt()
+
+        listOf(handleLeft, handleRight).forEach { handle ->
+            val drawable = handle.background?.mutate() as? GradientDrawable
+            drawable?.setColor(fillColor)
+            drawable?.setStroke(2.dpToPx(), strokeColor)
+        }
+
+        imageView.setImageURI(uri)
+
+        imageBlock.setOnClickListener {
+            handleLeft.visibility = View.VISIBLE
+            handleRight.visibility = View.VISIBLE
+        }
+
+        var dX = 0f
+        var dY = 0f
+
+        imageBlock.setOnTouchListener { v, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    dX = v.x - event.rawX
+                    dY = v.y - event.rawY
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    v.animate()
+                        .x(event.rawX + dX)
+                        .y(event.rawY + dY)
+                        .setDuration(0)
+                        .start()
+                }
+                MotionEvent.ACTION_UP -> {
+                    v.parent.requestDisallowInterceptTouchEvent(false)
+                    v.performClick()
+                }
+            }
+            true
+        }
+
+        val resizeTouchListener = View.OnTouchListener { handle, event ->
+            val params = imageView.layoutParams as ViewGroup.MarginLayoutParams
+            val parentWidth = (imageBlock.parent as? ViewGroup)?.width ?: return@OnTouchListener false
+
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    dX = event.rawX
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val deltaX = event.rawX - dX
+                    dX = event.rawX
+
+                    if (handle.id == R.id.resizeHandleLeft) {
+                        params.marginStart = (params.marginStart + deltaX).toInt().coerceIn(0, parentWidth - 100)
+                    } else if (handle.id == R.id.resizeHandleRight) {
+                        params.marginEnd = (params.marginEnd - deltaX).toInt().coerceIn(0, parentWidth - 100)
+                    }
+
+                    imageView.layoutParams = params
+                    true
+                }
+
+                else -> false
             }
         }
 
+        handleLeft.setOnTouchListener(resizeTouchListener)
+        handleRight.setOnTouchListener(resizeTouchListener)
 
-override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-    super.onActivityResult(requestCode, resultCode, data)
-    if (requestCode == 101 && resultCode == RESULT_OK && data != null) {
-        val uri = data.data ?: return
-        val targetCard = if (overlayContainer.isVisible)
-            overlayContainer.getChildAt(0)?.findViewById<LinearLayout>(R.id.noteContainer)
-        else
-            findViewById<LinearLayout>(R.id.note_input_card)
+        // ✅ Fix: find the true container that holds the EditText
+        val container = findViewById<LinearLayout>(R.id.noteContainer)
 
-        val scrollView = targetCard?.findViewById<ScrollView>(R.id.noteScroll)
-        val editText = scrollView?.findViewById<EditText>(R.id.noteText)
-            ?: noteInput
-
-        insertImage(uri, editText)
-    }
-
-}private fun insertImage(uri: Uri, target: EditText) {
-        val context = this
-        val imageView = ImageView(context).apply {
-            setImageURI(uri)
-            layoutParams = ViewGroup.MarginLayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                setMargins(0, 16, 0, 16)
-            }
-            adjustViewBounds = true
-            scaleType = ImageView.ScaleType.FIT_CENTER
-
-            setOnClickListener {
-                Toast.makeText(context, "Image tapped (drag/resize placeholder)", Toast.LENGTH_SHORT).show()
-            }
+        val index = container.indexOfChild(target)
+        if (index != -1) {
+            container.addView(imageBlock, index)
         }
 
-        val parent = target.parent as ViewGroup
-        val index = parent.indexOfChild(target)
-        parent.addView(imageView, index)
     }
+
+
 }
