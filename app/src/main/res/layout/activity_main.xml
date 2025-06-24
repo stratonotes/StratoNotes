@@ -178,6 +178,7 @@
                 android:contentDescription="Undo"
                 android:src="@drawable/ic_undo" />
 
+
             <ImageButton
                 android:id="@+id/redo_button"
                 android:layout_width="36dp"

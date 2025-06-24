@@ -30,6 +30,7 @@ import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.DrawableCompat
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
+import android.app.Activity.RESULT_OK
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
@@ -42,8 +43,10 @@ import kotlinx.coroutines.flow.first
 import androidx.core.view.isVisible
 import kotlinx.coroutines.async
 import android.os.Looper
+
 import androidx.core.graphics.toColorInt
 import androidx.core.content.edit
+import android.net.Uri
 
 
 class MainActivity : ComponentActivity() {
@@ -54,7 +57,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var overlayContainer: FrameLayout
     private lateinit var adView: View
     private var currentOverlayNote: NoteEntity? = null
-
 
 
     private lateinit var searchInput: EditText
@@ -137,12 +139,21 @@ class MainActivity : ComponentActivity() {
             noteCard?.setCardBackgroundColor(noteColor)
         }
 
-        // Re-tint the plus button in pill menu
-        val plus = findViewById<ImageButton>(R.id.iconPlus)
-        plus.background?.mutate()?.let {
+        // Re-tint plus buttons on main and overlay if present
+        val plusMain = findViewById<ImageButton>(R.id.iconPlus)
+        plusMain?.background?.mutate()?.let {
             DrawableCompat.setTint(it, color)
-            plus.background = it
+            plusMain.background = it
         }
+        if (overlayContainer.isVisible) {
+            val overlayView = overlayContainer.getChildAt(0)
+            val plusOverlay = overlayView?.findViewById<ImageButton>(R.id.iconPlus)
+            plusOverlay?.background?.mutate()?.let {
+                DrawableCompat.setTint(it, color)
+                plusOverlay.background = it
+            }
+        }
+
 
         // Update buttons
         refreshSlideoutColors()
@@ -175,6 +186,7 @@ class MainActivity : ComponentActivity() {
                 val chars = text.length
                 counterText.text = "$words\n$chars"
             }
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
@@ -257,11 +269,13 @@ class MainActivity : ComponentActivity() {
                     searchDropdown.visibility = View.GONE
                     showOverlay(item.note)
                 }
+
                 is SearchResultItem.FolderItem -> {
                     startActivity(Intent(this, LibraryActivity::class.java).apply {
                         putExtra("query", item.folder.name)
                     })
                 }
+
                 else -> {
                     // no-op (required for exhaustiveness)
                 }
@@ -480,7 +494,6 @@ class MainActivity : ComponentActivity() {
     }
 
 
-
     private fun showPresetFolderDialog() {
         val input = EditText(this)
         input.hint = "New folder name"
@@ -510,11 +523,7 @@ class MainActivity : ComponentActivity() {
             pill.background = pillBg
         }
 
-        val plus = findViewById<ImageButton>(R.id.iconPlus)
-        plus?.background?.mutate()?.let {
-            DrawableCompat.setTint(it, appColor)
-            plus.background = it
-        }
+
     }
 
     private fun showOverlay(note: NoteEntity) {
@@ -552,25 +561,6 @@ class MainActivity : ComponentActivity() {
         scroll.isNestedScrollingEnabled = true
 
         val overlayColor = UserColorManager.getOverlayColor(this)
-        val menuView =
-            layoutInflater.inflate(R.layout.widget_pill_menu, overlayView as ViewGroup, false)
-
-
-        val pill = menuView.findViewById<LinearLayout>(R.id.pillContainer)
-        val pillBg = ContextCompat.getDrawable(this, R.drawable.pill_menu_bg)?.mutate()
-        if (pillBg != null) {
-            DrawableCompat.setTint(pillBg, overlayColor)
-            pill.background = pillBg
-        }
-
-        val plus = menuView.findViewById<ImageButton>(R.id.iconPlus)
-        plus.background?.mutate()?.let {
-            DrawableCompat.setTint(it, overlayColor)
-            plus.background = it
-        }
-
-        initPillMenu(menuView)
-        (overlayView).addView(menuView)
 
 
         val noteText = overlayView.findViewById<EditText>(R.id.noteText)
@@ -628,8 +618,18 @@ class MainActivity : ComponentActivity() {
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(noteText, InputMethodManager.SHOW_IMPLICIT)
 
+        // Insert pill menu inside noteContainer
+        val container = overlayView.findViewById<LinearLayout>(R.id.noteContainer)
+        val pillMenu = layoutInflater.inflate(R.layout.widget_pill_menu, container, false)
+        pillMenu.tag = "pillMenu"
+        container.addView(pillMenu)
+        initPillMenu(pillMenu)
+        refreshSlideoutColors() // also tint it
+
 
         overlayContainer.addView(overlayView)
+
+
         overlayContainer.visibility = View.VISIBLE
 
         val closeButton = overlayView.findViewById<ImageView>(R.id.closeButton)
@@ -666,13 +666,6 @@ class MainActivity : ComponentActivity() {
     }
 
 
-    private fun updateSubmitButtonBackground() {
-        if (currentMode == SaveMode.PRESET) {
-            submitButton.setBackgroundResource(R.drawable.stratonotes_button_bg)
-        } else {
-            submitButton.setBackgroundResource(R.drawable.submit_button_background)
-        }
-    }
 
     private fun saveNote(content: String, folderName: String) {
         lifecycleScope.launch(Dispatchers.IO) {
@@ -804,7 +797,7 @@ class MainActivity : ComponentActivity() {
 
 
 
-    updateSubmitButtonBackground()
+
         updateSubmitButtonFont()
 
         if (currentMode == SaveMode.PRESET) {
@@ -959,8 +952,17 @@ class MainActivity : ComponentActivity() {
     private fun initPillMenu(rootView: View) {
         val pill = rootView.findViewById<LinearLayout>(R.id.pillContainer)
         val plus = rootView.findViewById<ImageButton>(R.id.iconPlus)
+
+        val iconAddImage = rootView.findViewById<ImageButton>(R.id.iconAddImage)
+        iconAddImage.setOnClickListener {
+            val intent = Intent(Intent.ACTION_PICK).apply {
+                type = "image/*"
+            }
+            startActivityForResult(intent, 101)
+        }
+
         val icons = listOf(
-            rootView.findViewById<ImageButton>(R.id.iconAddImage),
+            iconAddImage,
             rootView.findViewById<ImageButton>(R.id.iconAddAudio),
             rootView.findViewById<ImageButton>(R.id.iconMore),
             rootView.findViewById<ImageButton>(R.id.iconDelete)
@@ -1010,6 +1012,7 @@ class MainActivity : ComponentActivity() {
 
 
 
+
     // Animate plus rotation
             val rotation = if (expanded) 45f else 0f
             ObjectAnimator.ofFloat(plus, View.ROTATION, rotation).apply {
@@ -1022,9 +1025,44 @@ class MainActivity : ComponentActivity() {
                 icon.visibility = if (expanded) View.VISIBLE else View.GONE
             }
         }
+
+
+override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    super.onActivityResult(requestCode, resultCode, data)
+    if (requestCode == 101 && resultCode == RESULT_OK && data != null) {
+        val uri = data.data ?: return
+        val targetCard = if (overlayContainer.isVisible)
+            overlayContainer.getChildAt(0)?.findViewById<LinearLayout>(R.id.noteContainer)
+        else
+            findViewById<LinearLayout>(R.id.note_input_card)
+
+        val scrollView = targetCard?.findViewById<ScrollView>(R.id.noteScroll)
+        val editText = scrollView?.findViewById<EditText>(R.id.noteText)
+            ?: noteInput
+
+        insertImage(uri, editText)
     }
 
+}private fun insertImage(uri: Uri, target: EditText) {
+        val context = this
+        val imageView = ImageView(context).apply {
+            setImageURI(uri)
+            layoutParams = ViewGroup.MarginLayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(0, 16, 0, 16)
+            }
+            adjustViewBounds = true
+            scaleType = ImageView.ScaleType.FIT_CENTER
 
+            setOnClickListener {
+                Toast.makeText(context, "Image tapped (drag/resize placeholder)", Toast.LENGTH_SHORT).show()
+            }
+        }
 
-
-
+        val parent = target.parent as ViewGroup
+        val index = parent.indexOfChild(target)
+        parent.addView(imageView, index)
+    }
+}

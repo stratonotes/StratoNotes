@@ -1,5 +1,7 @@
 package com.stratonotes
 
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
@@ -24,6 +26,7 @@ import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
+import android.net.Uri
 import android.view.ViewGroup
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.material.card.MaterialCardView
@@ -303,16 +306,12 @@ class LibraryActivity : ComponentActivity() {
         val backgroundColor = UserColorManager.getNoteColor(this)
         noteCard.setCardBackgroundColor(backgroundColor)
 
-
         val metrics = Resources.getSystem().displayMetrics
         val width = (metrics.widthPixels * 0.9).toInt()
         overlayView.layoutParams = FrameLayout.LayoutParams(width, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER)
 
-
         val noteText = overlayView.findViewById<EditText>(R.id.noteText)
         val starIcon = overlayView.findViewById<ImageView>(R.id.starIcon)
-
-
 
         noteText.setText(note.content)
         noteText.requestFocus()
@@ -334,7 +333,6 @@ class LibraryActivity : ComponentActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-        // Star icon logic
         starIcon.setImageResource(if (note.isFavorite) R.drawable.ic_star_filled else R.drawable.ic_star_outline)
         starIcon.setOnClickListener {
             val updatedContent = noteText.text.toString()
@@ -359,15 +357,22 @@ class LibraryActivity : ComponentActivity() {
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(noteText, InputMethodManager.SHOW_IMPLICIT)
 
-
+        // Inject pill menu
+        val container = overlayView.findViewById<LinearLayout>(R.id.noteContainer)
+        val pillMenu = layoutInflater.inflate(R.layout.widget_pill_menu, container, false)
+        pillMenu.tag = "pillMenu"
+        container.addView(pillMenu)
+        initPillMenu(pillMenu)
+        refreshFolderListColors()
 
         overlayContainer.addView(overlayView)
         overlayContainer.visibility = View.VISIBLE
 
+
         val closeButton = overlayView.findViewById<ImageView>(R.id.closeButton)
         closeButton.setOnClickListener { closeOverlay() }
-
     }
+
 
     private fun closeOverlay() {
         currentOverlayNote?.let { note ->
@@ -478,7 +483,106 @@ class LibraryActivity : ComponentActivity() {
         }
         return result
     }
+    @Suppress("RemoveExplicitTypeArguments")
+    private fun initPillMenu(rootView: View) {
+        val pill = rootView.findViewById<LinearLayout>(R.id.pillContainer)
+        val plus = rootView.findViewById<ImageButton>(R.id.iconPlus)
 
+        val iconAddImage = rootView.findViewById<ImageButton>(R.id.iconAddImage)
+        iconAddImage.setOnClickListener {
+            val intent = Intent(Intent.ACTION_PICK).apply {
+                type = "image/*"
+            }
+            startActivityForResult(intent, 101)
+        }
+
+        val icons = listOf(
+            iconAddImage,
+            rootView.findViewById<ImageButton>(R.id.iconAddAudio),
+            rootView.findViewById<ImageButton>(R.id.iconMore),
+            rootView.findViewById<ImageButton>(R.id.iconDelete)
+        )
+
+        var expanded = false
+
+        plus.setOnClickListener {
+            expanded = !expanded
+
+            if (expanded) pill.visibility = View.VISIBLE
+
+            val iconWidthPx = (40 * rootView.resources.displayMetrics.density).toInt()
+            val paddingPx = (24 * rootView.resources.displayMetrics.density).toInt()
+            val targetWidth = if (expanded) (iconWidthPx * (icons.size + 1) + paddingPx) else 0
+
+            val animator = ValueAnimator.ofInt(pill.width, targetWidth)
+            animator.duration = 250
+            animator.addUpdateListener { animation ->
+                val value = animation.animatedValue as Int
+                pill.layoutParams.width = value
+                pill.requestLayout()
+            }
+
+            animator.addListener(object : android.animation.AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: android.animation.Animator) {
+                    if (!expanded) pill.visibility = View.GONE
+                }
+            })
+
+            animator.start()
+
+            val rotation = if (expanded) 45f else 0f
+            ObjectAnimator.ofFloat(plus, View.ROTATION, rotation).apply {
+                duration = 200
+                start()
+            }
+
+            icons.forEach { icon ->
+                icon.visibility = if (expanded) View.VISIBLE else View.GONE
+            }
+        }
+    }
+
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 101 && resultCode == RESULT_OK && data != null) {
+            val uri = data.data ?: return
+            val targetCard = if (overlayContainer.isVisible)
+                overlayContainer.getChildAt(0)?.findViewById<LinearLayout>(R.id.noteContainer)
+            else
+                null
+
+            val scrollView = targetCard?.findViewById<ScrollView>(R.id.noteScroll)
+            val editText = scrollView?.findViewById<EditText>(R.id.noteText)
+            if (editText != null) {
+                insertImage(uri, editText)
+            }
+        }
+    }
+
+    private fun insertImage(uri: Uri, target: EditText) {
+        val context = this
+        val imageView = ImageView(context).apply {
+            setImageURI(uri)
+            layoutParams = ViewGroup.MarginLayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(0, 16, 0, 16)
+            }
+            adjustViewBounds = true
+            scaleType = ImageView.ScaleType.FIT_CENTER
+
+            setOnClickListener {
+                Toast.makeText(context, "Image tapped (drag/resize placeholder)", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        val parent = target.parent as ViewGroup
+        val index = parent.indexOfChild(target)
+        parent.addView(imageView, index)
+    }
 
 
 }

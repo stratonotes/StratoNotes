@@ -61,28 +61,6 @@
                         android:fontFamily="sans-serif" />
                 </LinearLayout>
 
-                <androidx.core.widget.NestedScrollView
-                    android:id="@+id/noteScroll"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginTop="32dp"
-                    android:fillViewport="true"
-                    android:overScrollMode="always">
-
-                    <EditText
-                        android:id="@+id/noteText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@android:color/transparent"
-                        android:gravity="top|start"
-                        android:inputType="textMultiLine"
-                        android:lineSpacingExtra="6dp"
-                        android:minLines="10"
-                        android:padding="8dp"
-                        android:scrollbars="vertical"
-                        android:textSize="16sp" />
-                </androidx.core.widget.NestedScrollView>
-
                 <ImageView
                     android:id="@+id/starIcon"
                     android:layout_width="24dp"
@@ -107,8 +85,30 @@
                     android:focusableInTouchMode="false"
                     android:src="@drawable/ic_close"
                     android:clickable="true"/>
-
             </FrameLayout>
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/noteScroll"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginTop="8dp"
+                android:fillViewport="true"
+                android:overScrollMode="always">
+
+                <EditText
+                    android:id="@+id/noteText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:gravity="top|start"
+                    android:inputType="textMultiLine"
+                    android:lineSpacingExtra="6dp"
+                    android:minLines="10"
+                    android:padding="8dp"
+                    android:scrollbars="vertical"
+                    android:textSize="16sp" />
+            </androidx.core.widget.NestedScrollView>
 
             <LinearLayout
                 android:id="@+id/undoRedoContainer"
