@@ -116,7 +116,6 @@
                 </LinearLayout>
             </androidx.core.widget.NestedScrollView>
 
-
             <LinearLayout
                 android:id="@+id/undoRedoContainer"
                 android:layout_width="wrap_content"
@@ -143,6 +142,11 @@
                     android:src="@drawable/ic_redo"
                     android:background="@android:color/transparent" />
             </LinearLayout>
+
+            <!-- ✅ Added widget pill menu to resolve R.id.widgetPillMenu -->
+            <include
+                android:id="@+id/widgetPillMenu"
+                layout="@layout/widget_pill_menu" />
 
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>

@@ -151,7 +151,13 @@ class LibraryActivity : ComponentActivity() {
             if (selectedNotes.isEmpty()) {
                 Toast.makeText(this, "No notes selected.", Toast.LENGTH_SHORT).show()
             } else {
-                selectedNotes.forEach { note -> noteViewModel.delete(note) }
+                selectedNotes.forEach { note ->
+                    note.isTrashed = true
+                    note.lastEdited = System.currentTimeMillis()
+                    noteViewModel.update(note)
+                }
+                folderAdapter.removeNotes(selectedNotes)
+
                 folderAdapter.exitSelectionMode()
                 selectionBar.visibility = View.GONE
                 bottomBar.visibility = View.VISIBLE
@@ -468,21 +474,21 @@ class LibraryActivity : ComponentActivity() {
         val result = mutableListOf<FolderWithNotes>()
         for (folder in original) {
             val filteredNotes = folder.notes.filter { note ->
-                var match = true
-                if (query.isNotBlank() && !note.content.contains(query, ignoreCase = true)) {
-                    match = false
-                }
-                if (favoritesOnly && !note.isFavorite) {
-                    match = false
-                }
-                match
-            }.sortedWith(if (sortNewest) compareByDescending { it.createdAt } else compareBy { it.createdAt })
+                if (note.isTrashed) return@filter false
+                if (favoritesOnly && !note.isFavorite) return@filter false
+                if (query.isNotBlank() && !note.content.contains(query, ignoreCase = true)) return@filter false
+                true
+            }.sortedWith(
+                if (sortNewest) compareByDescending { it.createdAt }
+                else compareBy { it.createdAt }
+            )
             if (filteredNotes.isNotEmpty()) {
                 result.add(FolderWithNotes(folder.folder, filteredNotes))
             }
         }
         return result
     }
+
     @Suppress("RemoveExplicitTypeArguments")
     private fun initPillMenu(rootView: View) {
         val pill = rootView.findViewById<LinearLayout>(R.id.pillContainer)

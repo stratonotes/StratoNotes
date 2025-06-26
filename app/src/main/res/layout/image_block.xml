@@ -1,35 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/imageBlock"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="16dp"
-    android:layout_marginBottom="16dp">
+    android:layout_marginBottom="16dp"
+    android:clipChildren="false"
+    android:clipToPadding="false">
 
     <ImageView
         android:id="@+id/imageContent"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:adjustViewBounds="true"
-        android:scaleType="fitCenter"
-        android:background="@android:color/transparent" />
+        android:scaleType="fitStart"
+        android:background="@android:color/transparent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Corner handles -->
+    <View
+        android:id="@+id/handleTopLeft"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:background="@drawable/resize_handle"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/imageContent"
+        app:layout_constraintStart_toStartOf="@id/imageContent" />
 
     <View
-        android:id="@+id/resizeHandleLeft"
-        android:layout_width="16dp"
-        android:layout_height="16dp"
-        android:layout_gravity="bottom|start"
-        android:layout_margin="4dp"
+        android:id="@+id/handleTopRight"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
         android:background="@drawable/resize_handle"
-        android:visibility="gone" />
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/imageContent"
+        app:layout_constraintEnd_toEndOf="@id/imageContent" />
 
     <View
-        android:id="@+id/resizeHandleRight"
-        android:layout_width="16dp"
-        android:layout_height="16dp"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="4dp"
+        android:id="@+id/handleBottomLeft"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
         android:background="@drawable/resize_handle"
-        android:visibility="gone" />
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/imageContent"
+        app:layout_constraintStart_toStartOf="@id/imageContent" />
 
-</FrameLayout>
+    <View
+        android:id="@+id/handleBottomRight"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:background="@drawable/resize_handle"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/imageContent"
+        app:layout_constraintEnd_toEndOf="@id/imageContent" />
+
+    <!-- Side handles -->
+    <View
+        android:id="@+id/handleTop"
+        android:layout_width="24dp"
+        android:layout_height="12dp"
+        android:background="@drawable/resize_handle"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/imageContent"
+        app:layout_constraintStart_toStartOf="@id/imageContent"
+        app:layout_constraintEnd_toEndOf="@id/imageContent" />
+
+    <View
+        android:id="@+id/handleBottom"
+        android:layout_width="24dp"
+        android:layout_height="12dp"
+        android:background="@drawable/resize_handle"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/imageContent"
+        app:layout_constraintStart_toStartOf="@id/imageContent"
+        app:layout_constraintEnd_toEndOf="@id/imageContent" />
+
+    <View
+        android:id="@+id/handleLeft"
+        android:layout_width="12dp"
+        android:layout_height="24dp"
+        android:background="@drawable/resize_handle"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@id/imageContent"
+        app:layout_constraintTop_toTopOf="@id/imageContent"
+        app:layout_constraintBottom_toBottomOf="@id/imageContent" />
+
+    <View
+        android:id="@+id/handleRight"
+        android:layout_width="12dp"
+        android:layout_height="24dp"
+        android:background="@drawable/resize_handle"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@id/imageContent"
+        app:layout_constraintTop_toTopOf="@id/imageContent"
+        app:layout_constraintBottom_toBottomOf="@id/imageContent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

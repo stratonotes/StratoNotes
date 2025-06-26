@@ -1,56 +1,198 @@
 package com.stratonotes
 
+import android.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.TextView
+import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
 import com.example.punchpad2.R
 import java.util.concurrent.TimeUnit
 
 class TrashAdapter(
     private val listener: TrashActionListener
-) : RecyclerView.Adapter<TrashAdapter.TrashViewHolder>() {
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private var notes: List<NoteEntity> = emptyList()
+    private val folders = mutableListOf<FolderWithNotes>()
+    private val looseNotes = mutableListOf<NoteEntity>()
+
+    private var selectionMode = false
+    val selectedNotes = mutableSetOf<NoteEntity>()
 
     interface TrashActionListener {
         fun onRestore(note: NoteEntity)
         fun onDelete(note: NoteEntity)
+        fun onStartSelection()
+        fun onSelectionChanged()
     }
 
-    fun submitList(list: List<NoteEntity>) {
-        notes = list
+    fun setData(newFolders: List<FolderWithNotes>, newLooseNotes: List<NoteEntity>) {
+        folders.clear()
+        looseNotes.clear()
+        selectedNotes.clear()
+
+        folders.addAll(
+            newFolders.mapNotNull { fw ->
+                val trashedNotes = fw.notes.filter { it.isTrashed }
+                if (trashedNotes.isNotEmpty()) {
+                    FolderWithNotes(fw.folder, trashedNotes)
+                } else null
+            }
+        )
+
+        looseNotes.addAll(newLooseNotes.sortedByDescending { it.lastEdited })
+
+        selectionMode = false
         notifyDataSetChanged()
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrashViewHolder {
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.item_trash_note, parent, false)
-        return TrashViewHolder(v)
+    fun exitSelectionMode() {
+        selectionMode = false
+        selectedNotes.clear()
+        notifyDataSetChanged()
     }
 
-    override fun onBindViewHolder(holder: TrashViewHolder, position: Int) {
-        holder.bind(notes[position])
+    override fun getItemCount(): Int {
+        var count = looseNotes.size
+        folders.forEach { count += 1 + it.notes.size }
+        return count
     }
 
-    override fun getItemCount(): Int = notes.size
+    override fun getItemViewType(position: Int): Int {
+        var index = 0
+        for (folder in folders) {
+            if (index == position) return TYPE_FOLDER
+            index++
+            for (note in folder.notes) {
+                if (index == position) return TYPE_NOTE_IN_FOLDER
+                index++
+            }
+        }
+        return TYPE_LOOSE_NOTE
+    }
 
-    inner class TrashViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val noteText: TextView = itemView.findViewById(R.id.noteText)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            TYPE_FOLDER -> {
+                val v = LayoutInflater.from(parent.context).inflate(R.layout.item_folder, parent, false)
+                FolderViewHolder(v)
+            }
+            TYPE_NOTE_IN_FOLDER, TYPE_LOOSE_NOTE -> {
+                val v = LayoutInflater.from(parent.context).inflate(R.layout.item_note_library, parent, false)
+                NoteViewHolder(v)
+            }
+            else -> throw IllegalArgumentException("Invalid view type")
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        var index = 0
+        for (folder in folders) {
+            if (index == position) {
+                (holder as FolderViewHolder).bind(folder.folder.name)
+                return
+            }
+            index++
+            for (note in folder.notes) {
+                if (index == position) {
+                    (holder as NoteViewHolder).bind(note)
+                    return
+                }
+                index++
+            }
+        }
+        // At this point, position is within looseNotes range
+        val looseIndex = position - index
+        if (looseIndex in looseNotes.indices) {
+            (holder as NoteViewHolder).bind(looseNotes[looseIndex])
+        }
+    }
+
+    inner class FolderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val folderName: TextView = itemView.findViewById(R.id.folderName)
+        fun bind(name: String) {
+            folderName.text = name
+        }
+    }
+
+    inner class NoteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val noteText: EditText = itemView.findViewById(R.id.noteText)
+        private val trashFooter: ViewGroup = itemView.findViewById(R.id.trashFooter)
         private val daysLeft: TextView = itemView.findViewById(R.id.daysLeft)
-        private val restoreButton: ImageButton = itemView.findViewById(R.id.restoreButton)
-        private val deleteButton: ImageButton = itemView.findViewById(R.id.deleteButton)
+        private val restoreBtn: ImageButton = itemView.findViewById(R.id.restoreBtn)
+        private val deleteBtn: ImageButton = itemView.findViewById(R.id.deleteBtn)
+        private val checkbox: CheckBox = itemView.findViewById(R.id.noteCheckbox)
+        private val deletedBadge: TextView = itemView.findViewById(R.id.deletedBadge)
 
         fun bind(note: NoteEntity) {
-            noteText.text = note.content
+            noteText.setText(note.content)
+            noteText.isEnabled = false
 
-            val daysRemaining = 30 - TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - note.lastEdited)
+            val daysRemaining = 30 - TimeUnit.MILLISECONDS.toDays(
+                System.currentTimeMillis() - note.lastEdited
+            )
+            daysLeft.text = "$daysRemaining days left"
 
-            daysLeft.text = "$daysRemaining days left until permanent deletion"
+            trashFooter.visibility = View.VISIBLE
+            deletedBadge.visibility = View.VISIBLE
 
-            restoreButton.setOnClickListener { listener.onRestore(note) }
-            deleteButton.setOnClickListener { listener.onDelete(note) }
+            checkbox.visibility = if (selectionMode) View.VISIBLE else View.GONE
+            checkbox.isChecked = selectedNotes.contains(note)
+
+            restoreBtn.setOnClickListener { listener.onRestore(note) }
+
+            deleteBtn.setOnClickListener {
+                AlertDialog.Builder(itemView.context)
+                    .setTitle("Delete Note Permanently?")
+                    .setMessage("This cannot be undone. Are you sure?")
+                    .setPositiveButton("Delete") { _, _ ->
+                        listener.onDelete(note)
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
+
+            itemView.setOnClickListener {
+                if (selectionMode) {
+                    toggleSelection(note)
+                } else {
+                    OverlayManager.showPreviewOverlay(
+                        context = itemView.context,
+                        note = note,
+                        editable = false
+                    )
+                }
+            }
+
+            itemView.setOnLongClickListener {
+                if (!selectionMode) {
+                    selectionMode = true
+                    selectedNotes.add(note)
+                    listener.onStartSelection()
+                } else {
+                    toggleSelection(note)
+                }
+                true
+            }
         }
+
+        private fun toggleSelection(note: NoteEntity) {
+            if (selectedNotes.contains(note)) {
+                selectedNotes.remove(note)
+            } else {
+                selectedNotes.add(note)
+            }
+            if (selectedNotes.isEmpty()) {
+                selectionMode = false
+            }
+            listener.onSelectionChanged()
+            notifyDataSetChanged()
+        }
+    }
+
+    companion object {
+        private const val TYPE_FOLDER = 0
+        private const val TYPE_NOTE_IN_FOLDER = 1
+        private const val TYPE_LOOSE_NOTE = 2
     }
 }

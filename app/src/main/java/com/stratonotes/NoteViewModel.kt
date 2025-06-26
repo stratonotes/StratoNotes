@@ -1,11 +1,10 @@
 package com.stratonotes
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import android.util.Log
-
 
 class NoteViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -15,9 +14,6 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
     val foldersWithNotes: LiveData<List<FolderWithNotes>>
 
     init {
-        val noteDao = AppDatabase.getDatabase(application).noteDao()
-
-
         allNotes = noteRepository.allNotes
         trashedNotes = noteRepository.trashedNotes
         foldersWithNotes = noteRepository.foldersWithNotes
@@ -40,7 +36,6 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-
 
     fun delete(note: NoteEntity) {
         viewModelScope.launch {
@@ -85,8 +80,28 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
             noteRepository.permanentlyDeleteAllTrashedNotes()
         }
     }
+
     suspend fun getAllNotesNow(): List<NoteEntity> {
         return noteRepository.getAllNotesNow()
     }
 
+    fun getTrashedContent(): LiveData<Pair<List<FolderWithNotes>, List<NoteEntity>>> {
+        return MediatorLiveData<Pair<List<FolderWithNotes>, List<NoteEntity>>>().apply {
+            var folders: List<FolderWithNotes>? = null
+            var notes: List<NoteEntity>? = null
+
+            val fSource = noteRepository.getTrashedFoldersWithNotesLive()
+            val nSource = noteRepository.trashedNotes
+
+            addSource(fSource) {
+                folders = it
+                if (notes != null) value = Pair(folders ?: emptyList(), notes ?: emptyList())
+            }
+
+            addSource(nSource) {
+                notes = it.filter { note -> note.folderId == 0L }
+                if (folders != null) value = Pair(folders ?: emptyList(), notes ?: emptyList())
+            }
+        }
+    }
 }

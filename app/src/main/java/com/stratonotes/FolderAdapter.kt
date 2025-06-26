@@ -110,7 +110,8 @@ class FolderAdapter(
             val folderColor = UserColorManager.getFolderColor(context)
 
             notesToShow.forEach { note ->
-                val noteView = LayoutInflater.from(context).inflate(noteLayoutResId, notesContainer, false)
+                val noteView =
+                    LayoutInflater.from(context).inflate(noteLayoutResId, notesContainer, false)
                 val noteText = noteView.findViewById<TextView>(R.id.noteText)
                 val starIcon = noteView.findViewById<ImageView>(R.id.starIcon)
                 val checkbox = noteView.findViewById<CheckBox?>(R.id.noteCheckbox)
@@ -195,7 +196,8 @@ class FolderAdapter(
                     setPadding(16, 16, 16, 16)
                     setTextColor(context.getColor(R.color.white))
                     setOnClickListener {
-                        folderLoadedCounts[folderId] = folderLoadedCounts.getOrDefault(folderId, 50) + 50
+                        folderLoadedCounts[folderId] =
+                            folderLoadedCounts.getOrDefault(folderId, 50) + 50
                         notifyItemChanged(adapterPosition)
                     }
                 }
@@ -233,4 +235,18 @@ class FolderAdapter(
             }
         }
     }
-}
+        fun removeNotes(notesToRemove: List<NoteEntity>) {
+            val idsToRemove = notesToRemove.map { it.id }.toSet()
+            val updatedFolders = folders.mapNotNull { folder ->
+                val remainingNotes = folder.notes.filterNot { idsToRemove.contains(it.id) }
+                if (remainingNotes.isNotEmpty()) {
+                    FolderWithNotes(folder.folder, remainingNotes)
+                } else null
+            }
+            folders.clear()
+            folders.addAll(updatedFolders)
+            notifyDataSetChanged()
+        }
+
+    }
+

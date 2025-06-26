@@ -26,7 +26,7 @@ data class NoteEntity(
     val createdAt: Long = System.currentTimeMillis(),
 
     @ColumnInfo(name = "lastEdited")
-    val lastEdited: Long = System.currentTimeMillis(),
+    var lastEdited: Long = System.currentTimeMillis(),
 
     @ColumnInfo(name = "isFavorite")
     var isFavorite: Boolean = false,
@@ -38,7 +38,7 @@ data class NoteEntity(
     val isLarge: Boolean = false,
 
     @ColumnInfo(name = "isTrashed")
-    val isTrashed: Boolean = false
+    var isTrashed: Boolean = false
 
 ) {
     @Ignore

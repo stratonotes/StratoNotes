@@ -48,6 +48,7 @@ import androidx.core.graphics.toColorInt
 import androidx.core.content.edit
 import android.net.Uri
 import android.view.LayoutInflater
+import androidx.constraintlayout.widget.ConstraintLayout
 
 
 class MainActivity : ComponentActivity() {
@@ -1013,7 +1014,6 @@ class MainActivity : ComponentActivity() {
     }
 
 
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 101 && resultCode == RESULT_OK && data != null) {
@@ -1049,74 +1049,68 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("ClickableViewAccessibility")
     private fun insertImage(uri: Uri, target: EditText) {
         val inflater = LayoutInflater.from(this)
-        val imageBlock = inflater.inflate(R.layout.image_block, null) as FrameLayout
+        val imageBlock = inflater.inflate(R.layout.image_block, null) as ConstraintLayout
         val imageView = imageBlock.findViewById<ImageView>(R.id.imageContent)
-        val handleLeft = imageBlock.findViewById<View>(R.id.resizeHandleLeft)
-        val handleRight = imageBlock.findViewById<View>(R.id.resizeHandleRight)
+
+        val handleIds = listOf(
+            R.id.handleTopLeft, R.id.handleTopRight,
+            R.id.handleBottomLeft, R.id.handleBottomRight,
+            R.id.handleTop, R.id.handleBottom,
+            R.id.handleLeft, R.id.handleRight
+        )
+        val handles = handleIds.map { imageBlock.findViewById<View>(it) }
 
         val appColor = UserColorManager.getAppColor(this)
         val fillColor = UserColorManager.getNoteColor(this)
         val strokeColor = UserColorManager.getCancelColorRelativeTo(appColor)
 
-        fun Int.dpToPx(): Int = (this * resources.displayMetrics.density).toInt()
-
-        listOf(handleLeft, handleRight).forEach { handle ->
+        handles.forEach { handle ->
             val drawable = handle.background?.mutate() as? GradientDrawable
             drawable?.setColor(fillColor)
-            drawable?.setStroke(2.dpToPx(), strokeColor)
+            drawable?.setStroke(2.dpToPx(this), strokeColor)
         }
 
         imageView.setImageURI(uri)
 
-        imageBlock.setOnClickListener {
-            handleLeft.visibility = View.VISIBLE
-            handleRight.visibility = View.VISIBLE
-        }
+        // Make handles always visible for now
+        handles.forEach { it.visibility = View.VISIBLE }
 
-        var dX = 0f
-        var dY = 0f
-
+        // Vertical drag only
+        var dragStartY = 0f
+        var originalY = 0f
         imageBlock.setOnTouchListener { v, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    dX = v.x - event.rawX
-                    dY = v.y - event.rawY
+                    dragStartY = event.rawY
+                    originalY = v.y
+                    v.parent.requestDisallowInterceptTouchEvent(true)
                 }
+
                 MotionEvent.ACTION_MOVE -> {
-                    v.animate()
-                        .x(event.rawX + dX)
-                        .y(event.rawY + dY)
-                        .setDuration(0)
-                        .start()
+                    val offsetY = event.rawY - dragStartY
+                    v.y = originalY + offsetY
                 }
-                MotionEvent.ACTION_UP -> {
+
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     v.parent.requestDisallowInterceptTouchEvent(false)
-                    v.performClick()
                 }
             }
             true
         }
 
-        val resizeTouchListener = View.OnTouchListener { handle, event ->
-            val params = imageView.layoutParams as ViewGroup.MarginLayoutParams
-            val parentWidth = (imageBlock.parent as? ViewGroup)?.width ?: return@OnTouchListener false
+        // Resize logic
+        var activeHandle: View? = null
+        var resizing = false
+        var resizeStartX = 0f
+        var resizeStartY = 0f
 
-            when (event.action) {
+        val globalResizeTracker = View.OnTouchListener { handle, event ->
+            when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
-                    dX = event.rawX
-                    true
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    val deltaX = event.rawX - dX
-                    dX = event.rawX
-
-                    if (handle.id == R.id.resizeHandleLeft) {
-                        params.marginStart = (params.marginStart + deltaX).toInt().coerceIn(0, parentWidth - 100)
-                    } else if (handle.id == R.id.resizeHandleRight) {
-                        params.marginEnd = (params.marginEnd - deltaX).toInt().coerceIn(0, parentWidth - 100)
-                    }
-
-                    imageView.layoutParams = params
+                    activeHandle = handle
+                    resizing = true
+                    resizeStartX = event.rawX
+                    resizeStartY = event.rawY
                     true
                 }
 
@@ -1124,18 +1118,79 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        handleLeft.setOnTouchListener(resizeTouchListener)
-        handleRight.setOnTouchListener(resizeTouchListener)
+        handles.forEach { it.setOnTouchListener(globalResizeTracker) }
 
-        // ✅ Fix: find the true container that holds the EditText
-        val container = findViewById<LinearLayout>(R.id.noteContainer)
+        findViewById<ViewGroup>(R.id.rootContainer).setOnTouchListener { _, event ->
+            if (!resizing || activeHandle == null) return@setOnTouchListener false
 
-        val index = container.indexOfChild(target)
-        if (index != -1) {
-            container.addView(imageBlock, index)
+            when (event.actionMasked) {
+                MotionEvent.ACTION_MOVE -> {
+                    val deltaX = event.rawX - resizeStartX
+                    val deltaY = event.rawY - resizeStartY
+                    resizeStartX = event.rawX
+                    resizeStartY = event.rawY
+
+                    val params = imageView.layoutParams
+
+                    // Width
+                    if (activeHandle?.id in listOf(
+                            R.id.handleLeft, R.id.handleRight,
+                            R.id.handleTopLeft, R.id.handleTopRight,
+                            R.id.handleBottomLeft, R.id.handleBottomRight
+                        )
+                    ) {
+                        val newWidth = when (activeHandle?.id) {
+                            R.id.handleLeft, R.id.handleTopLeft, R.id.handleBottomLeft ->
+                                (imageView.width - deltaX).toInt()
+
+                            R.id.handleRight, R.id.handleTopRight, R.id.handleBottomRight ->
+                                (imageView.width + deltaX).toInt()
+
+                            else -> imageView.width
+                        }.coerceAtLeast(100)
+
+                        params.width = newWidth
+                    }
+
+                    // Height
+                    if (activeHandle?.id in listOf(
+                            R.id.handleTop, R.id.handleBottom,
+                            R.id.handleTopLeft, R.id.handleTopRight,
+                            R.id.handleBottomLeft, R.id.handleBottomRight
+                        )
+                    ) {
+                        val newHeight = when (activeHandle?.id) {
+                            R.id.handleTop, R.id.handleTopLeft, R.id.handleTopRight ->
+                                (imageView.height - deltaY).toInt()
+
+                            R.id.handleBottom, R.id.handleBottomLeft, R.id.handleBottomRight ->
+                                (imageView.height + deltaY).toInt()
+
+                            else -> imageView.height
+                        }.coerceAtLeast(100)
+
+                        params.height = newHeight
+                    }
+
+                    imageView.layoutParams = params
+                    imageView.requestLayout()
+                    true
+                }
+
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    resizing = false
+                    activeHandle = null
+                    true
+                }
+
+                else -> false
+            }
         }
 
+        // Insert inline at cursor position
+        findViewById<LinearLayout>(R.id.noteContainer).apply {
+            val index = indexOfChild(target)
+            if (index != -1) addView(imageBlock, index)
+        }
     }
-
-
 }
