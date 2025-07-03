@@ -1,16 +1,26 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/noteWrapper"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="12dp"
-    android:layout_marginBottom="8dp">
+    android:layout_marginBottom="8dp"
+    android:background="#DD000000"
+    android:descendantFocusability="blocksDescendants"
+    android:clickable="true"
+    android:focusable="true">
 
     <TextView
         android:id="@+id/noteText"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:maxLines="5"
-        android:ellipsize="end" />
+        android:ellipsize="end"
+        android:background="@android:color/transparent"
+        android:textColor="@android:color/white"
+        android:clickable="false"
+        android:focusable="false" />
+
 
     <TextView
         android:id="@+id/daysLeft"
@@ -20,24 +30,59 @@
         android:textSize="12sp"
         android:paddingTop="4dp" />
 
-    <ImageButton
-        android:id="@+id/restoreButton"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+    <LinearLayout
+        android:id="@+id/trashFooter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_alignTop="@id/noteText"
-        android:src="@drawable/ic_restore"
-        android:background="@android:color/transparent"
-        android:contentDescription="Restore" />
+        android:layout_marginTop="4dp"
+        android:orientation="horizontal"
+        android:visibility="gone">
 
-    <ImageButton
-        android:id="@+id/deleteButton"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_toStartOf="@id/restoreButton"
-        android:layout_alignTop="@id/noteText"
-        android:src="@drawable/ic_delete"
-        android:background="@android:color/transparent"
-        android:contentDescription="Delete" />
+        <!-- Restore button (now on the left) -->
+        <ImageButton
+            android:id="@+id/restoreBtn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_restore"
+            android:scaleType="centerInside"
+            android:background="@android:color/transparent"
+            android:contentDescription="Restore" />
 
+        <!-- Delete button (now on the right) -->
+        <ImageButton
+            android:id="@+id/deleteBtn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_delete"
+            android:scaleType="centerInside"
+            android:background="@android:color/transparent"
+            android:contentDescription="Delete" />
+    </LinearLayout>
+
+    <CheckBox
+        android:id="@+id/noteCheckbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/deletedBadge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Deleted"
+        android:textSize="10sp"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/badge_rounded_gray"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginStart="6dp"
+        android:visibility="gone" />
 </RelativeLayout>

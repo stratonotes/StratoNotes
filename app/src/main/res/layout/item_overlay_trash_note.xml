@@ -1,0 +1,125 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardWrapper"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:background="#D9000000"
+    android:clickable="true"
+    android:focusable="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/noteCard"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:clipToOutline="true"
+            app:cardBackgroundColor="?android:attr/colorBackground"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="4dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.8"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:strokeColor="@android:color/transparent"
+            app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Close button -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/closeButton"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="top|end"
+                    android:contentDescription="Close"
+                    android:src="@drawable/ic_close"
+                    android:clickable="true"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false" />
+            </FrameLayout>
+
+            <!-- Scrollable note content -->
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/noteScroll"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginTop="8dp"
+                android:fillViewport="true"
+                android:overScrollMode="always">
+
+                <LinearLayout
+                    android:id="@+id/noteContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/noteText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@android:color/transparent"
+                        android:gravity="top|start"
+                        android:lineSpacingExtra="6dp"
+                        android:padding="8dp"
+                        android:scrollbars="vertical"
+                        android:textSize="16sp"
+                        android:textColor="#AAAAAA" />
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+
+            <!-- Footer buttons -->
+            <LinearLayout
+                android:id="@+id/trashControls"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="end"
+                android:layout_marginTop="12dp">
+
+                <ImageView
+                    android:id="@+id/permanentlyDeleteIcon"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="16dp"
+                    android:src="@drawable/ic_delete"
+                    android:contentDescription="Delete forever"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <ImageView
+                    android:id="@+id/restoreIcon"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_restore"
+                    android:contentDescription="Restore note"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+
+            <!-- Required hidden pill menu -->
+            <LinearLayout
+                android:id="@+id/widgetPillMenu"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:orientation="horizontal"
+                android:visibility="gone" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</androidx.constraintlayout.widget.ConstraintLayout>
+    </FrameLayout>

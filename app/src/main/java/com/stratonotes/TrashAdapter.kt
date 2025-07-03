@@ -78,7 +78,7 @@ class TrashAdapter(
                 FolderViewHolder(v)
             }
             TYPE_NOTE_IN_FOLDER, TYPE_LOOSE_NOTE -> {
-                val v = LayoutInflater.from(parent.context).inflate(R.layout.item_note_library, parent, false)
+                val v = LayoutInflater.from(parent.context).inflate(R.layout.item_trash_note, parent, false)
                 NoteViewHolder(v)
             }
             else -> throw IllegalArgumentException("Invalid view type")
@@ -101,7 +101,6 @@ class TrashAdapter(
                 index++
             }
         }
-        // At this point, position is within looseNotes range
         val looseIndex = position - index
         if (looseIndex in looseNotes.indices) {
             (holder as NoteViewHolder).bind(looseNotes[looseIndex])
@@ -116,7 +115,7 @@ class TrashAdapter(
     }
 
     inner class NoteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val noteText: EditText = itemView.findViewById(R.id.noteText)
+        private val noteText: TextView = itemView.findViewById(R.id.noteText)
         private val trashFooter: ViewGroup = itemView.findViewById(R.id.trashFooter)
         private val daysLeft: TextView = itemView.findViewById(R.id.daysLeft)
         private val restoreBtn: ImageButton = itemView.findViewById(R.id.restoreBtn)
@@ -125,8 +124,7 @@ class TrashAdapter(
         private val deletedBadge: TextView = itemView.findViewById(R.id.deletedBadge)
 
         fun bind(note: NoteEntity) {
-            noteText.setText(note.content)
-            noteText.isEnabled = false
+            noteText.text = note.content
 
             val daysRemaining = 30 - TimeUnit.MILLISECONDS.toDays(
                 System.currentTimeMillis() - note.lastEdited
@@ -156,11 +154,14 @@ class TrashAdapter(
                 if (selectionMode) {
                     toggleSelection(note)
                 } else {
-                    OverlayManager.showPreviewOverlay(
-                        context = itemView.context,
-                        note = note,
-                        editable = false
-                    )
+                    val activity = itemView.context as? TrashActivity
+                    activity?.let {
+                        OverlayManager.showPreviewOverlay(
+                            context = it,
+                            note = note,
+                            editable = false
+                        )
+                    }
                 }
             }
 
@@ -182,9 +183,11 @@ class TrashAdapter(
             } else {
                 selectedNotes.add(note)
             }
+
             if (selectedNotes.isEmpty()) {
                 selectionMode = false
             }
+
             listener.onSelectionChanged()
             notifyDataSetChanged()
         }
@@ -194,5 +197,17 @@ class TrashAdapter(
         private const val TYPE_FOLDER = 0
         private const val TYPE_NOTE_IN_FOLDER = 1
         private const val TYPE_LOOSE_NOTE = 2
+    }
+
+    fun removeNote(note: NoteEntity) {
+        looseNotes.remove(note)
+
+        val updatedFolders = folders.map { folder ->
+            folder.copy(notes = folder.notes.filterNot { it.id == note.id })
+        }
+        folders.clear()
+        folders.addAll(updatedFolders)
+
+        notifyDataSetChanged()
     }
 }

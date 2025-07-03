@@ -13,6 +13,7 @@
     <string name="desc_move_up">Move up</string>
     <string name="desc_move_down">Move down</string>
     <string name="desc_delete">Delete</string>
+    <string name="desc_favorites">Favorite Star</string>
 
     <!-- App Navigation -->
     <string name="go_to_library">Go to Library</string>

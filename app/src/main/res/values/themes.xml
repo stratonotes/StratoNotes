@@ -3,11 +3,12 @@
 
     <!-- Base App Theme -->
     <style name="Theme.PunchPad2" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- All colors are runtime-controlled -->
+        <!-- Let ActionMode float above content -->
+        <item name="android:windowActionModeOverlay">true</item>
         <item name="android:windowFullscreen">false</item>
     </style>
 
-    <!-- Splash Theme (Now fully controlled by activity_splash.xml) -->
+    <!-- Splash Theme (layout-based control only) -->
     <style name="Theme.PunchPad2.Splash" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:windowBackground">@android:color/black</item>
         <item name="android:windowNoTitle">true</item>

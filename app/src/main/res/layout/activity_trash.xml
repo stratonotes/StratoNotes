@@ -1,44 +1,105 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="12dp">
+    android:fitsSystemWindows="true">
 
-    <Button
-        android:id="@+id/emptyTrashButton"
-        android:layout_width="wrap_content"
+    <!-- Custom selection bar overlay (initially hidden) -->
+    <LinearLayout
+        android:id="@+id/selectionBar"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Empty Trash"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="8dp"/>
+        android:orientation="horizontal"
+        android:background="?attr/colorPrimary"
+        android:visibility="gone"
+        android:elevation="6dp"
+        android:padding="12dp"
+        android:gravity="center_vertical">
 
-    <ImageButton
-        android:id="@+id/backButton"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_margin="4dp"
-        android:src="@drawable/ic_back"
-        android:background="@android:color/transparent"
-        android:contentDescription="Back" />
+        <ImageButton
+            android:id="@+id/exitSelectionBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_close"
+            android:contentDescription="Exit Selection Mode" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/trashRecycler"
+        <TextView
+            android:id="@+id/selectionCount"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:text="0 selected"
+            android:gravity="center" />
+
+        <ImageButton
+            android:id="@+id/restoreSelectedBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_restore"
+            android:contentDescription="Restore Selected" />
+
+        <ImageButton
+            android:id="@+id/deleteSelectedBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_delete"
+            android:contentDescription="Delete Selected" />
+    </LinearLayout>
+
+    <!-- Main UI layer using CoordinatorLayout -->
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/backButton"
-        android:layout_marginTop="8dp"/>
+        android:padding="12dp"
+        android:fitsSystemWindows="true">
+
+        <!-- Empty Trash Button -->
+        <Button
+            android:id="@+id/emptyTrashButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Empty Trash"
+            android:layout_gravity="top|end"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="8dp"
+            android:translationZ="8dp" />
+
+        <!-- Back Button -->
+        <ImageButton
+            android:id="@+id/backButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="top|start"
+            android:layout_margin="4dp"
+            android:layout_marginTop="8dp"
+            android:src="@drawable/ic_back"
+            android:background="@android:color/transparent"
+            android:contentDescription="Back"
+            android:translationZ="8dp" />
+
+        <!-- RecyclerView for trashed notes -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/trashRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="64dp"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp" />
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <!-- Overlay container for note previews -->
     <FrameLayout
         android:id="@+id/overlayContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:clickable="false"/>
-
-
-</RelativeLayout>
+        android:clickable="false"
+        android:focusable="false"
+        android:clipChildren="false"
+        android:clipToPadding="false" />
+</FrameLayout>

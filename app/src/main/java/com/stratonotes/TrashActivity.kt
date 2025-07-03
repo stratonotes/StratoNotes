@@ -1,14 +1,15 @@
 package com.stratonotes
 
 import android.os.Bundle
-import android.view.*
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -24,7 +25,11 @@ class TrashActivity : AppCompatActivity(), TrashAdapter.TrashActionListener {
     private lateinit var emptyTrashButton: Button
     private lateinit var backButton: ImageButton
 
-    private var actionMode: ActionMode? = null
+    private lateinit var selectionBar: ViewGroup
+    private lateinit var selectionCount: TextView
+    private lateinit var deleteSelectedBtn: ImageButton
+    private lateinit var restoreSelectedBtn: ImageButton
+    private lateinit var exitSelectionBtn: ImageButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +38,12 @@ class TrashActivity : AppCompatActivity(), TrashAdapter.TrashActionListener {
         trashRecycler = findViewById(R.id.trashRecycler)
         emptyTrashButton = findViewById(R.id.emptyTrashButton)
         backButton = findViewById(R.id.backButton)
+
+        selectionBar = findViewById(R.id.selectionBar)
+        selectionCount = findViewById(R.id.selectionCount)
+        deleteSelectedBtn = findViewById(R.id.deleteSelectedBtn)
+        restoreSelectedBtn = findViewById(R.id.restoreSelectedBtn)
+        exitSelectionBtn = findViewById(R.id.exitSelectionBtn)
 
         trashRecycler.layoutManager = LinearLayoutManager(this)
         trashAdapter = TrashAdapter(this)
@@ -56,7 +67,6 @@ class TrashActivity : AppCompatActivity(), TrashAdapter.TrashActionListener {
 
         noteViewModel.getTrashedContent().observe(this) { (trashedFolders, trashedNotes) ->
             val now = System.currentTimeMillis()
-
             val expiredNotes = trashedNotes.filter {
                 TimeUnit.MILLISECONDS.toDays(now - it.lastEdited) >= 30
             }
@@ -68,10 +78,39 @@ class TrashActivity : AppCompatActivity(), TrashAdapter.TrashActionListener {
 
             trashAdapter.setData(trashedFolders, validNotes)
         }
+
+        deleteSelectedBtn.setOnClickListener {
+            val selected = trashAdapter.selectedNotes.toList()
+            AlertDialog.Builder(this)
+                .setTitle("Delete Permanently")
+                .setMessage("Permanently delete ${selected.size} note(s)?")
+                .setPositiveButton("Delete") { _, _ ->
+                    selected.forEach { noteViewModel.permanentlyDelete(it) }
+                    trashAdapter.exitSelectionMode()
+                    hideSelectionBar()
+                    Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+
+        restoreSelectedBtn.setOnClickListener {
+            val selected = trashAdapter.selectedNotes.toList()
+            selected.forEach { noteViewModel.restore(it) }
+            trashAdapter.exitSelectionMode()
+            hideSelectionBar()
+            Toast.makeText(this, "Restored", Toast.LENGTH_SHORT).show()
+        }
+
+        exitSelectionBtn.setOnClickListener {
+            trashAdapter.exitSelectionMode()
+            hideSelectionBar()
+        }
     }
 
     override fun onRestore(note: NoteEntity) {
         noteViewModel.restore(note)
+        trashAdapter.removeNote(note)
         Toast.makeText(this, "Note restored", Toast.LENGTH_SHORT).show()
     }
 
@@ -80,69 +119,38 @@ class TrashActivity : AppCompatActivity(), TrashAdapter.TrashActionListener {
         Toast.makeText(this, "Note permanently deleted", Toast.LENGTH_SHORT).show()
     }
 
+    fun restoreNote(note: NoteEntity) = onRestore(note)
+
+    fun permanentlyDeleteNote(note: NoteEntity) = onDelete(note)
+
     override fun onStartSelection() {
-        if (actionMode == null) {
-            actionMode = startActionMode(actionModeCallback)
-        }
-        updateActionTitle()
+        selectionBar.visibility = View.VISIBLE
+        updateSelectionCount()
     }
 
     override fun onSelectionChanged() {
         if (trashAdapter.selectedNotes.isEmpty()) {
-            actionMode?.finish()
-        } else {
-            updateActionTitle()
-        }
-    }
-
-    private fun updateActionTitle() {
-        actionMode?.title = "${trashAdapter.selectedNotes.size} selected"
-    }
-
-    private val actionModeCallback = object : ActionMode.Callback {
-        override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
-            mode?.menuInflater?.inflate(R.menu.menu_overlay_action, menu)
-            return true
-        }
-
-        override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?) = false
-
-        override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
-            val selected = trashAdapter.selectedNotes.toList()
-
-            when (item?.itemId) {
-                R.id.action_restore -> {
-                    for (note in selected) {
-                        noteViewModel.restore(note)
-                    }
-                    Toast.makeText(this@TrashActivity, "Restored ${selected.size} note(s)", Toast.LENGTH_SHORT).show()
-                    mode?.finish()
-                    return true
-                }
-
-                R.id.action_delete -> {
-                    AlertDialog.Builder(this@TrashActivity)
-                        .setTitle("Delete Permanently")
-                        .setMessage("This will permanently delete ${selected.size} note(s). Proceed?")
-                        .setPositiveButton("Yes") { _, _ ->
-                            for (note in selected) {
-                                noteViewModel.permanentlyDelete(note)
-                            }
-                            Toast.makeText(this@TrashActivity, "Deleted", Toast.LENGTH_SHORT).show()
-                            mode?.finish()
-                        }
-                        .setNegativeButton("Cancel", null)
-                        .show()
-                    return true
-                }
-            }
-
-            return false
-        }
-
-        override fun onDestroyActionMode(mode: ActionMode?) {
             trashAdapter.exitSelectionMode()
-            actionMode = null
+            hideSelectionBar()
+        } else {
+            updateSelectionCount()
+        }
+    }
+
+    private fun updateSelectionCount() {
+        selectionCount.text = "${trashAdapter.selectedNotes.size} selected"
+    }
+
+    private fun hideSelectionBar() {
+        selectionBar.visibility = View.GONE
+    }
+
+    override fun onBackPressed() {
+        val overlayContainer = findViewById<ViewGroup>(R.id.overlayContainer)
+        if (overlayContainer != null && overlayContainer.childCount > 0) {
+            overlayContainer.removeAllViews()
+        } else {
+            super.onBackPressed()
         }
     }
 }

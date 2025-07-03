@@ -59,11 +59,13 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
 
     fun restore(note: NoteEntity) {
         val restored = note.copy(
+            isTrashed = false,
             isHiddenFromMain = false,
             lastEdited = System.currentTimeMillis()
         )
         update(restored)
     }
+
 
     fun permanentlyDelete(note: NoteEntity) {
         delete(note)
