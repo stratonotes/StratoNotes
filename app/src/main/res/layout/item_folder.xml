@@ -11,37 +11,50 @@
     android:clipChildren="false"
     android:clipToPadding="false">
 
-
-    <!-- Folder Header Block -->
+    <!-- Folder Header Block (tappable area) -->
     <RelativeLayout
         android:id="@+id/folderHeader"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/folder_header_background"
         android:clickable="true"
-        android:elevation="2dp"
         android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:padding="4dp">
+        android:elevation="2dp"
+        android:padding="12dp"
+        android:minHeight="48dp">
 
+        <!-- Folder Name -->
         <TextView
             android:id="@+id/folderName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/folderCheckbox"
             android:text="Folder Title"
             android:textColor="#FFFFFF"
             android:textSize="18sp" />
 
+        <!-- Expand Button (moved to right) -->
         <ImageButton
             android:id="@+id/expandButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="false"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:background="@android:color/transparent"
             android:contentDescription="Expand Folder"
             android:src="@drawable/ic_arrow_drop_down" />
+
+        <!-- Checkbox (now to the left of expand button) -->
+        <CheckBox
+            android:id="@+id/folderCheckbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/expandButton"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="8dp"
+            android:visibility="gone" />
     </RelativeLayout>
 
     <!-- Note Content Block -->
@@ -54,8 +67,7 @@
         android:background="@android:color/transparent"
         android:paddingTop="8dp"
         android:paddingStart="4dp"
+        android:paddingEnd="4dp"
         android:clipChildren="false"
-        android:clipToPadding="false"
-
-        android:paddingEnd="4dp" />
+        android:clipToPadding="false" />
 </LinearLayout>

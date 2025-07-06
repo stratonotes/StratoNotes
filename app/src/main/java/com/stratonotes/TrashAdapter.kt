@@ -30,19 +30,18 @@ class TrashAdapter(
         folders.clear()
         looseNotes.clear()
         selectedNotes.clear()
+        selectionMode = false
 
         folders.addAll(
             newFolders.mapNotNull { fw ->
                 val trashedNotes = fw.notes.filter { it.isTrashed }
                 if (trashedNotes.isNotEmpty()) {
-                    FolderWithNotes(fw.folder, trashedNotes)
+                    FolderWithNotes(fw.folder, trashedNotes).apply { isExpanded = false }
                 } else null
             }
         )
 
         looseNotes.addAll(newLooseNotes.sortedByDescending { it.lastEdited })
-
-        selectionMode = false
         notifyDataSetChanged()
     }
 
@@ -54,7 +53,10 @@ class TrashAdapter(
 
     override fun getItemCount(): Int {
         var count = looseNotes.size
-        folders.forEach { count += 1 + it.notes.size }
+        folders.forEach { folder ->
+            count += 1
+            if (folder.isExpanded) count += folder.notes.size
+        }
         return count
     }
 
@@ -63,45 +65,46 @@ class TrashAdapter(
         for (folder in folders) {
             if (index == position) return TYPE_FOLDER
             index++
-            for (note in folder.notes) {
-                if (index == position) return TYPE_NOTE_IN_FOLDER
-                index++
+            if (folder.isExpanded) {
+                for (note in folder.notes) {
+                    if (index == position) return TYPE_NOTE_IN_FOLDER
+                    index++
+                }
             }
         }
         return TYPE_LOOSE_NOTE
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
-            TYPE_FOLDER -> {
-                val v = LayoutInflater.from(parent.context).inflate(R.layout.item_folder, parent, false)
-                FolderViewHolder(v)
-            }
-            TYPE_NOTE_IN_FOLDER, TYPE_LOOSE_NOTE -> {
-                val v = LayoutInflater.from(parent.context).inflate(R.layout.item_trash_note, parent, false)
-                NoteViewHolder(v)
-            }
+            TYPE_FOLDER -> FolderViewHolder(inflater.inflate(R.layout.item_folder, parent, false))
+            TYPE_NOTE_IN_FOLDER, TYPE_LOOSE_NOTE ->
+                NoteViewHolder(inflater.inflate(R.layout.item_trash_note, parent, false))
             else -> throw IllegalArgumentException("Invalid view type")
         }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         var index = 0
-        for (folder in folders) {
+        for ((folderIndex, folder) in folders.withIndex()) {
             if (index == position) {
-                (holder as FolderViewHolder).bind(folder.folder.name)
+                (holder as FolderViewHolder).bind(folder, folderIndex)
                 return
             }
             index++
-            for (note in folder.notes) {
-                if (index == position) {
-                    (holder as NoteViewHolder).bind(note)
-                    return
+            if (folder.isExpanded) {
+                for (note in folder.notes) {
+                    if (index == position) {
+                        (holder as NoteViewHolder).bind(note)
+                        return
+                    }
+                    index++
                 }
-                index++
             }
         }
-        val looseIndex = position - index
+
+        val looseIndex = position - folders.sumOf { 1 + if (it.isExpanded) it.notes.size else 0 }
         if (looseIndex in looseNotes.indices) {
             (holder as NoteViewHolder).bind(looseNotes[looseIndex])
         }
@@ -109,8 +112,57 @@ class TrashAdapter(
 
     inner class FolderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val folderName: TextView = itemView.findViewById(R.id.folderName)
-        fun bind(name: String) {
-            folderName.text = name
+        private val folderCheckbox: CheckBox = itemView.findViewById(R.id.folderCheckbox)
+        private val expandButton: ImageButton = itemView.findViewById(R.id.expandButton)
+
+        fun bind(folder: FolderWithNotes, index: Int) {
+            folderName.text = folder.folder.name
+
+            folderCheckbox.visibility = if (selectionMode) View.VISIBLE else View.GONE
+            folderCheckbox.isChecked =
+                folder.notes.isNotEmpty() && folder.notes.all { selectedNotes.contains(it) }
+
+            folderCheckbox.setOnClickListener {
+                toggleFolderSelection(folder)
+                folder.notes.forEach { notifyNoteChanged(it) }
+                notifyItemChanged(getPositionForFolder(index))
+                listener.onSelectionChanged()
+            }
+
+            expandButton.setOnClickListener {
+                folder.isExpanded = !folder.isExpanded
+                notifyDataSetChanged()
+            }
+
+            itemView.setOnClickListener {
+                if (selectionMode) {
+                    toggleFolderSelection(folder)
+                    folder.notes.forEach { notifyNoteChanged(it) }
+                    notifyItemChanged(getPositionForFolder(index))
+                    listener.onSelectionChanged()
+                }
+            }
+
+            itemView.setOnLongClickListener {
+                if (!selectionMode) {
+                    selectionMode = true
+                    selectedNotes.addAll(folder.notes)
+                    folder.notes.forEach { notifyNoteChanged(it) }
+                    notifyItemChanged(getPositionForFolder(index))
+                    listener.onStartSelection()
+                    listener.onSelectionChanged()
+                }
+                true
+            }
+        }
+
+        private fun toggleFolderSelection(folder: FolderWithNotes) {
+            val allSelected = folder.notes.all { selectedNotes.contains(it) }
+            if (allSelected) {
+                selectedNotes.removeAll(folder.notes)
+            } else {
+                selectedNotes.addAll(folder.notes)
+            }
         }
     }
 
@@ -126,9 +178,8 @@ class TrashAdapter(
         fun bind(note: NoteEntity) {
             noteText.text = note.content
 
-            val daysRemaining = 30 - TimeUnit.MILLISECONDS.toDays(
-                System.currentTimeMillis() - note.lastEdited
-            )
+            val daysRemaining =
+                30 - TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - note.lastEdited)
             daysLeft.text = "$daysRemaining days left"
 
             trashFooter.visibility = View.VISIBLE
@@ -143,9 +194,7 @@ class TrashAdapter(
                 AlertDialog.Builder(itemView.context)
                     .setTitle("Delete Note Permanently?")
                     .setMessage("This cannot be undone. Are you sure?")
-                    .setPositiveButton("Delete") { _, _ ->
-                        listener.onDelete(note)
-                    }
+                    .setPositiveButton("Delete") { _, _ -> listener.onDelete(note) }
                     .setNegativeButton("Cancel", null)
                     .show()
             }
@@ -169,7 +218,10 @@ class TrashAdapter(
                 if (!selectionMode) {
                     selectionMode = true
                     selectedNotes.add(note)
+                    notifyItemChanged(bindingAdapterPosition)
+                    notifyFolderHeaderChangedIfNecessary(note)
                     listener.onStartSelection()
+                    listener.onSelectionChanged()
                 } else {
                     toggleSelection(note)
                 }
@@ -178,36 +230,78 @@ class TrashAdapter(
         }
 
         private fun toggleSelection(note: NoteEntity) {
-            if (selectedNotes.contains(note)) {
-                selectedNotes.remove(note)
+            if (selectedNotes.any { it.id == note.id }) {
+                selectedNotes.removeIf { it.id == note.id }
             } else {
                 selectedNotes.add(note)
             }
 
-            if (selectedNotes.isEmpty()) {
-                selectionMode = false
+            val pos = bindingAdapterPosition
+            if (pos != RecyclerView.NO_POSITION) {
+                notifyItemChanged(pos)
             }
 
+            notifyFolderHeaderChangedIfNecessary(note)
             listener.onSelectionChanged()
-            notifyDataSetChanged()
         }
+
+        private fun notifyFolderHeaderChangedIfNecessary(note: NoteEntity) {
+            for ((folderIndex, folder) in folders.withIndex()) {
+                if (folder.notes.any { it.id == note.id }) {
+                    val folderPos = getPositionForFolder(folderIndex)
+                    if (folderPos >= 0) notifyItemChanged(folderPos)
+                    break
+                }
+            }
+        }
+    }
+
+    private fun getPositionForFolder(index: Int): Int {
+        var position = 0
+        for (i in 0 until index) {
+            position += 1 + if (folders[i].isExpanded) folders[i].notes.size else 0
+        }
+        return position
+    }
+
+    private fun getPositionForNote(note: NoteEntity): Int {
+        var index = 0
+        for (folder in folders) {
+            index++
+            if (folder.isExpanded) {
+                for (n in folder.notes) {
+                    if (n.id == note.id) return index
+                    index++
+                }
+            }
+        }
+
+        val looseIndex = looseNotes.indexOfFirst { it.id == note.id }
+        if (looseIndex != -1) {
+            return folders.sumOf { 1 + if (it.isExpanded) it.notes.size else 0 } + looseIndex
+        }
+
+        return -1
+    }
+
+    private fun notifyNoteChanged(note: NoteEntity) {
+        val pos = getPositionForNote(note)
+        if (pos >= 0) notifyItemChanged(pos)
+    }
+
+    fun removeNote(note: NoteEntity) {
+        looseNotes.remove(note)
+        val updatedFolders = folders.map { folder ->
+            folder.copy(notes = folder.notes.filterNot { it.id == note.id })
+        }
+        folders.clear()
+        folders.addAll(updatedFolders)
+        notifyDataSetChanged()
     }
 
     companion object {
         private const val TYPE_FOLDER = 0
         private const val TYPE_NOTE_IN_FOLDER = 1
         private const val TYPE_LOOSE_NOTE = 2
-    }
-
-    fun removeNote(note: NoteEntity) {
-        looseNotes.remove(note)
-
-        val updatedFolders = folders.map { folder ->
-            folder.copy(notes = folder.notes.filterNot { it.id == note.id })
-        }
-        folders.clear()
-        folders.addAll(updatedFolders)
-
-        notifyDataSetChanged()
     }
 }

@@ -79,6 +79,14 @@ class TrashActivity : AppCompatActivity(), TrashAdapter.TrashActionListener {
             trashAdapter.setData(trashedFolders, validNotes)
         }
 
+        restoreSelectedBtn.setOnClickListener {
+            val selected = trashAdapter.selectedNotes.toList()
+            selected.forEach { noteViewModel.restore(it) }
+            trashAdapter.exitSelectionMode()
+            hideSelectionBar()
+            Toast.makeText(this, "Restored", Toast.LENGTH_SHORT).show()
+        }
+
         deleteSelectedBtn.setOnClickListener {
             val selected = trashAdapter.selectedNotes.toList()
             AlertDialog.Builder(this)
@@ -92,14 +100,6 @@ class TrashActivity : AppCompatActivity(), TrashAdapter.TrashActionListener {
                 }
                 .setNegativeButton("Cancel", null)
                 .show()
-        }
-
-        restoreSelectedBtn.setOnClickListener {
-            val selected = trashAdapter.selectedNotes.toList()
-            selected.forEach { noteViewModel.restore(it) }
-            trashAdapter.exitSelectionMode()
-            hideSelectionBar()
-            Toast.makeText(this, "Restored", Toast.LENGTH_SHORT).show()
         }
 
         exitSelectionBtn.setOnClickListener {
@@ -116,12 +116,9 @@ class TrashActivity : AppCompatActivity(), TrashAdapter.TrashActionListener {
 
     override fun onDelete(note: NoteEntity) {
         noteViewModel.permanentlyDelete(note)
+        trashAdapter.removeNote(note)
         Toast.makeText(this, "Note permanently deleted", Toast.LENGTH_SHORT).show()
     }
-
-    fun restoreNote(note: NoteEntity) = onRestore(note)
-
-    fun permanentlyDeleteNote(note: NoteEntity) = onDelete(note)
 
     override fun onStartSelection() {
         selectionBar.visibility = View.VISIBLE
@@ -129,12 +126,8 @@ class TrashActivity : AppCompatActivity(), TrashAdapter.TrashActionListener {
     }
 
     override fun onSelectionChanged() {
-        if (trashAdapter.selectedNotes.isEmpty()) {
-            trashAdapter.exitSelectionMode()
-            hideSelectionBar()
-        } else {
-            updateSelectionCount()
-        }
+        updateSelectionCount()
+        trashAdapter.notifyDataSetChanged() // ✅ Fix: force redraw to update folder checkboxes
     }
 
     private fun updateSelectionCount() {
@@ -146,6 +139,12 @@ class TrashActivity : AppCompatActivity(), TrashAdapter.TrashActionListener {
     }
 
     override fun onBackPressed() {
+        if (selectionBar.visibility == View.VISIBLE) {
+            trashAdapter.exitSelectionMode()
+            hideSelectionBar()
+            return
+        }
+
         val overlayContainer = findViewById<ViewGroup>(R.id.overlayContainer)
         if (overlayContainer != null && overlayContainer.childCount > 0) {
             overlayContainer.removeAllViews()

@@ -9,6 +9,7 @@ data class MediaItem(
     val type: String, // "image" or "audio"
     val uri: String   // URI string pointing to the media file
 )
+
 @Entity(tableName = "notes")
 data class NoteEntity(
 
@@ -43,4 +44,10 @@ data class NoteEntity(
 ) {
     @Ignore
     var mediaItems: MutableList<MediaItem> = mutableListOf() // UI-only field
+
+    override fun equals(other: Any?): Boolean {
+        return other is NoteEntity && other.id == this.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
 }
