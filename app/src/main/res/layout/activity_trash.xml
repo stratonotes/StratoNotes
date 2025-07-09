@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/white"
     android:fitsSystemWindows="true">
 
     <!-- Custom selection bar overlay (initially hidden) -->
@@ -20,15 +22,13 @@
         android:paddingEnd="16dp"
         android:gravity="center_vertical"
         android:clickable="true"
-        android:focusable="true"
-        >
+        android:focusable="true">
 
         <ImageButton
             android:id="@+id/exitSelectionBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="12dp"
-            android:background="@android:color/transparent"
             android:src="@drawable/ic_close"
             android:contentDescription="Exit Selection Mode" />
 
@@ -37,7 +37,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textColor="@android:color/white"
+            android:textColor="?android:textColorPrimary"
             android:textSize="18sp"
             android:text="0 selected"
             android:gravity="center" />
@@ -72,6 +72,7 @@
             android:id="@+id/emptyTrashButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/trash_empty_button_background"
             android:text="Empty Trash"
             android:layout_gravity="top|end"
             android:layout_marginEnd="8dp"

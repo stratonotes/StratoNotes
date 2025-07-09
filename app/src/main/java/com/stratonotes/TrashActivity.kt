@@ -1,5 +1,6 @@
 package com.stratonotes
 
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -35,8 +36,21 @@ class TrashActivity : AppCompatActivity(), TrashAdapter.TrashActionListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_trash)
 
+        val bgColor = UserColorManager.getTrashBackgroundColor(this)
+        val textColor = UserColorManager.getAutoTextColor(bgColor)
+
+        findViewById<View>(R.id.rootContainer).setBackgroundColor(bgColor)
+
         trashRecycler = findViewById(R.id.trashRecycler)
         emptyTrashButton = findViewById(R.id.emptyTrashButton)
+
+        val cancelColor = UserColorManager.getCancelColorRelativeTo(UserColorManager.getAppColor(this))
+
+        emptyTrashButton.backgroundTintList = ColorStateList.valueOf(cancelColor)
+
+
+        emptyTrashButton.setTextColor(UserColorManager.getAutoTextColor(cancelColor))
+
         backButton = findViewById(R.id.backButton)
 
         selectionBar = findViewById(R.id.selectionBar)
@@ -44,6 +58,14 @@ class TrashActivity : AppCompatActivity(), TrashAdapter.TrashActionListener {
         deleteSelectedBtn = findViewById(R.id.deleteSelectedBtn)
         restoreSelectedBtn = findViewById(R.id.restoreSelectedBtn)
         exitSelectionBtn = findViewById(R.id.exitSelectionBtn)
+
+        // Apply color to icons and text
+        selectionCount.setTextColor(textColor)
+        restoreSelectedBtn.setColorFilter(textColor)
+        deleteSelectedBtn.setColorFilter(textColor)
+        exitSelectionBtn.setColorFilter(textColor)
+        backButton.setColorFilter(textColor)
+
 
         trashRecycler.layoutManager = LinearLayoutManager(this)
         trashAdapter = TrashAdapter(this)
@@ -127,7 +149,7 @@ class TrashActivity : AppCompatActivity(), TrashAdapter.TrashActionListener {
 
     override fun onSelectionChanged() {
         updateSelectionCount()
-        trashAdapter.notifyDataSetChanged() // ✅ Fix: force redraw to update folder checkboxes
+        trashAdapter.notifyDataSetChanged()
     }
 
     private fun updateSelectionCount() {

@@ -60,7 +60,6 @@ object UserColorManager {
         val base = getAppColor(context)
         val hsv = FloatArray(3)
         Color.colorToHSV(base, hsv)
-        // Slightly dim and desaturate for folder bars
         hsv[1] = (hsv[1] * 0.92f).coerceIn(0f, 1f)
         hsv[2] = (hsv[2] * 0.88f).coerceIn(0f, 1f)
         return Color.HSVToColor(hsv)
@@ -70,9 +69,47 @@ object UserColorManager {
         val base = getAppColor(context)
         val hsv = FloatArray(3)
         Color.colorToHSV(base, hsv)
-        // Slightly desaturate and brighten notes
         hsv[1] = (hsv[1] * 0.78f).coerceIn(0f, 1f)
         hsv[2] = (hsv[2] * 1.08f).coerceAtMost(1f)
         return Color.HSVToColor(hsv)
     }
+
+    fun getTrashBackgroundColor(context: Context): Int {
+        val base = getAppColor(context)
+        return shiftHueAndDarken(base, hueShift = 5f, darken = true)
+    }
+
+    fun getTrashCancelColor(context: Context): Int {
+        val base = getAppColor(context)
+        return shiftHueAndDarken(base, hueShift = -5f, darken = true)
+    }
+
+    fun getTrashNoteColor(context: Context): Int {
+        val base = getAppColor(context)
+        val hsv = FloatArray(3)
+        Color.colorToHSV(base, hsv)
+        hsv[0] = (hsv[0] + 5f) % 360f
+        hsv[1] = (hsv[1] * 0.72f).coerceIn(0f, 1f)
+        hsv[2] = (hsv[2] * 0.65f).coerceIn(0f, 1f)
+        return Color.HSVToColor(hsv)
+    }
+
+    private fun shiftHueAndDarken(color: Int, hueShift: Float, darken: Boolean): Int {
+        val hsv = FloatArray(3)
+        Color.colorToHSV(color, hsv)
+        hsv[0] = (hsv[0] + hueShift + 360f) % 360f
+        if (darken) hsv[2] *= 0.7f
+        return Color.HSVToColor(hsv)
+    }
+
+    fun getTrashFolderColor(context: Context): Int {
+        val base = getAppColor(context)
+        val hsv = FloatArray(3)
+        Color.colorToHSV(base, hsv)
+        hsv[0] = (hsv[0] + 5f) % 360f // Shift hue slightly toward blue
+        hsv[1] = (hsv[1] * 0.72f).coerceIn(0f, 1f) // Reduce saturation a bit
+        hsv[2] = (hsv[2] * 0.78f).coerceIn(0f, 1f) // Darken a little more than note
+        return Color.HSVToColor(hsv)
+    }
+
 }

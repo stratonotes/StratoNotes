@@ -116,10 +116,7 @@
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/note_input_card"
                 android:layout_width="match_parent"
-
-                android:layout_height="0dp"
-                android:layout_weight="1"
-
+                android:layout_height="match_parent"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentBottom="true"
@@ -131,42 +128,7 @@
                 app:strokeColor="@android:color/transparent"
                 app:strokeWidth="0dp">
 
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="12dp">
-
-                    <ScrollView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:fillViewport="true"
-                        android:nestedScrollingEnabled="true"
-                        android:overScrollMode="always"
-                        android:scrollbars="vertical">
-
-                        <LinearLayout
-                            android:id="@+id/noteContainer"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical">
-
-                            <EditText
-                                android:id="@+id/note_input"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:background="@android:color/transparent"
-                                android:gravity="top"
-                                android:inputType="textMultiLine"
-                                android:focusable="true"
-                                android:focusableInTouchMode="true"
-                                android:maxLines="2000"
-                                android:textSize="16sp"
-                                android:paddingBottom="64dp" />
-
-                        </LinearLayout>
-                    </ScrollView>
-
-                </FrameLayout>
+                <include layout="@layout/editor_note" />
 
             </com.google.android.material.card.MaterialCardView>
 
@@ -174,32 +136,12 @@
 
 
 
-            <ImageButton
-                android:id="@+id/undo_button"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentBottom="true"
-                android:layout_marginStart="8dp"
-                android:layout_marginBottom="8dp"
-                android:alpha="0.4"
-                android:elevation="8dp"
-                android:contentDescription="Undo"
-                android:src="@drawable/ic_undo" />
 
 
-            <ImageButton
-                android:id="@+id/redo_button"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_alignBottom="@id/undo_button"
-                android:layout_marginStart="8dp"
-                android:layout_toEndOf="@id/undo_button"
-                android:alpha="0.4"
-                android:elevation="8dp"
-                android:background="@android:color/transparent"
-                android:contentDescription="Redo"
-                android:src="@drawable/ic_redo" />
+
+
+
+
         </RelativeLayout>
 
         <ScrollView

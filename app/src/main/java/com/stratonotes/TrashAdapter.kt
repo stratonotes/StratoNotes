@@ -118,6 +118,13 @@ class TrashAdapter(
         fun bind(folder: FolderWithNotes, index: Int) {
             folderName.text = folder.folder.name
 
+            val context = itemView.context
+            val bgColor = UserColorManager.getTrashFolderColor(context)
+            val textColor = UserColorManager.getAutoTextColor(bgColor)
+
+            itemView.setBackgroundColor(bgColor)
+            folderName.setTextColor(textColor)
+
             folderCheckbox.visibility = if (selectionMode) View.VISIBLE else View.GONE
             folderCheckbox.isChecked =
                 folder.notes.isNotEmpty() && folder.notes.all { selectedNotes.contains(it) }
@@ -188,10 +195,18 @@ class TrashAdapter(
             checkbox.visibility = if (selectionMode) View.VISIBLE else View.GONE
             checkbox.isChecked = selectedNotes.contains(note)
 
+            val context = itemView.context
+            val bgColor = UserColorManager.getTrashNoteColor(context)
+            val textColor = UserColorManager.getAutoTextColor(bgColor)
+
+            itemView.setBackgroundColor(bgColor)
+            noteText.setTextColor(textColor)
+            daysLeft.setTextColor(textColor)
+
             restoreBtn.setOnClickListener { listener.onRestore(note) }
 
             deleteBtn.setOnClickListener {
-                AlertDialog.Builder(itemView.context)
+                AlertDialog.Builder(context)
                     .setTitle("Delete Note Permanently?")
                     .setMessage("This cannot be undone. Are you sure?")
                     .setPositiveButton("Delete") { _, _ -> listener.onDelete(note) }
@@ -203,7 +218,7 @@ class TrashAdapter(
                 if (selectionMode) {
                     toggleSelection(note)
                 } else {
-                    val activity = itemView.context as? TrashActivity
+                    val activity = context as? TrashActivity
                     activity?.let {
                         OverlayManager.showPreviewOverlay(
                             context = it,

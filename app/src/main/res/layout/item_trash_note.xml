@@ -4,10 +4,10 @@
     android:layout_height="wrap_content"
     android:padding="12dp"
     android:layout_marginBottom="8dp"
-    android:background="#DD000000"
     android:descendantFocusability="blocksDescendants"
     android:clickable="true"
-    android:focusable="true">
+    android:focusable="true"
+    android:background="@android:color/transparent">
 
     <TextView
         android:id="@+id/noteText"
@@ -17,7 +17,7 @@
         android:maxLines="5"
         android:ellipsize="end"
         android:background="@android:color/transparent"
-        android:textColor="@android:color/white"
+        android:textColor="@android:color/primary_text_dark"
         android:clickable="false"
         android:focusable="false" />
 
@@ -27,7 +27,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/noteText"
         android:textSize="12sp"
-        android:paddingTop="4dp" />
+        android:paddingTop="4dp"
+        android:textColor="@android:color/primary_text_dark" />
 
     <LinearLayout
         android:id="@+id/trashFooter"
@@ -59,7 +60,6 @@
             android:contentDescription="Delete" />
     </LinearLayout>
 
-    <!-- Enlarged tappable checkbox -->
     <FrameLayout
         android:layout_width="48dp"
         android:layout_height="48dp"
@@ -80,7 +80,7 @@
         android:layout_height="wrap_content"
         android:text="Deleted"
         android:textSize="10sp"
-        android:textColor="#FFFFFF"
+        android:textColor="@android:color/primary_text_dark"
         android:background="@drawable/badge_rounded_gray"
         android:paddingLeft="8dp"
         android:paddingRight="8dp"

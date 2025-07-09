@@ -172,9 +172,17 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("CutPasteId", "ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_main)
-        noteInput = findViewById(R.id.note_input)
-        val root = findViewById<CoordinatorLayout>(R.id.rootContainer) // or your outermost layout
+        val root = findViewById<CoordinatorLayout>(R.id.rootContainer)
+
+
+        val noteCard = findViewById<MaterialCardView>(R.id.note_input_card)
+        val editor = layoutInflater.inflate(R.layout.editor_note, noteCard, false)
+        noteCard.addView(editor)
+
+        noteInput = editor.findViewById(R.id.note_input)
+
 
         val overlay = layoutInflater.inflate(R.layout.wordchar_counter_overlay, root, false)
         root.addView(overlay)
@@ -233,9 +241,12 @@ class MainActivity : ComponentActivity() {
         clearDraftButton = findViewById(R.id.clear_draft_button)
         undoManager = UndoManager(noteInput)
 
-        undoButton = findViewById(R.id.undo_button)
-        redoButton = findViewById(R.id.redo_button)
+        undoButton = editor.findViewById(R.id.undo_button)
+        redoButton = editor.findViewById(R.id.redo_button)
+
         folderSettingsButton = findViewById(R.id.folder_settings_button_1)
+
+
 
         val textboxWrapper = findViewById<View>(R.id.textboxWrapper)
 
@@ -243,7 +254,6 @@ class MainActivity : ComponentActivity() {
             DrawableCompat.setTint(it, noteColor)
             textboxWrapper.background = it
         }
-        val noteCard = findViewById<MaterialCardView>(R.id.note_input_card)
 
         noteCard.setCardBackgroundColor(noteColor)
 
@@ -264,6 +274,7 @@ class MainActivity : ComponentActivity() {
             false
         }
 
+        val overlayView = layoutInflater.inflate(R.layout.overlay_note, overlayContainer, false)
 
         searchAdapter = SearchResultAdapter(this) { item ->
             when (item) {
@@ -536,7 +547,8 @@ class MainActivity : ComponentActivity() {
         val inflater = layoutInflater
 
 
-        val overlayView = inflater.inflate(R.layout.item_note, overlayContainer, false)
+        val overlayView = inflater.inflate(R.layout.overlay_note, overlayContainer, false)
+
 
         val metrics = resources.displayMetrics
         val width = (metrics.widthPixels * 0.9).toInt()
@@ -553,23 +565,22 @@ class MainActivity : ComponentActivity() {
 
 
         val noteCard = overlayView.findViewById<MaterialCardView>(R.id.noteCard)
-
+        val editor = overlayView.findViewById<View>(R.id.editor_note_root)
 
         val userColor = UserColorManager.getNoteColor(this)
 
         noteCard.setCardBackgroundColor(userColor)
 
-        val scroll = overlayView.findViewById<NestedScrollView>(R.id.noteScroll)
+        val scroll = editor.findViewById<NestedScrollView>(R.id.noteScroll)
         scroll.isNestedScrollingEnabled = true
 
         val overlayColor = UserColorManager.getOverlayColor(this)
 
-
-        val noteText = overlayView.findViewById<EditText>(R.id.noteText)
         val starIcon = overlayView.findViewById<ImageView>(R.id.starIcon)
+        val undoButton = editor.findViewById<ImageButton>(R.id.undo_button)
+        val redoButton = editor.findViewById<ImageButton>(R.id.redo_button)
+        val noteText = editor.findViewById<EditText>(R.id.note_input)
 
-        val undoButton = overlayView.findViewById<ImageButton>(R.id.undo_button)
-        val redoButton = overlayView.findViewById<ImageButton>(R.id.redo_button)
 
         val overlayUndoManager = UndoManager(noteText)
 
@@ -584,9 +595,10 @@ class MainActivity : ComponentActivity() {
         noteText.setText(note.content)
         noteText.requestFocus()
 
-        val wordCounter = overlayView.findViewById<TextView>(R.id.wordCount)
-        val charCounter = overlayView.findViewById<TextView>(R.id.charCount)
-        bindTextCounter(noteText, wordCounter, charCounter)
+        val wordCounter = editor.findViewById<TextView>(R.id.wordCount)
+        val charCounter = editor.findViewById<TextView>(R.id.charCount)
+        bindTextCounter(noteInput, wordCounter, charCounter)
+
 
         // Set initial star icon state
         starIcon.setImageResource(if (note.isFavorite) R.drawable.ic_star_filled else R.drawable.ic_star_outline)

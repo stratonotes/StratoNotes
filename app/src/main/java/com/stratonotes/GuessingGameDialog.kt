@@ -1,5 +1,6 @@
 package com.stratonotes
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.view.LayoutInflater
@@ -10,7 +11,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.punchpad2.R
 import kotlinx.coroutines.launch
-
 
 class GuessingGameDialog(
     private val context: Context,
@@ -106,4 +106,23 @@ class GuessingGameDialog(
                 show()
             }
     }
+
+    companion object {
+        fun show(activity: Activity) {
+            val getNotes: suspend () -> List<NoteEntity> =
+                suspend {
+                    (activity as? LibraryActivity)?.noteViewModel?.getAllNotesNow() ?: emptyList()
+                }
+
+            val dialog = GuessingGameDialog(
+                context = activity,
+                lifecycleOwner = activity as LifecycleOwner,
+                getAllNotes = getNotes
+            )
+            dialog.launch()
+        }
+    }
+
+
+
 }

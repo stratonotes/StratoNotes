@@ -44,7 +44,8 @@ class LibraryActivity : ComponentActivity() {
     private var favoritesOnly = false
     private var sortNewest = true
 
-    private val noteViewModel: NoteViewModel by viewModels()
+    val noteViewModel: NoteViewModel by viewModels()
+
     private lateinit var overlayContainer: FrameLayout
     private var currentOverlayNote: NoteEntity? = null
 
@@ -61,8 +62,10 @@ class LibraryActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_library)
 
-        val prefs = getSharedPreferences("theme_prefs", MODE_PRIVATE)
-        val appColor = prefs.getInt("app_color", "#5D53A3".toColorInt())
+        val themePrefs = getSharedPreferences("theme_prefs", MODE_PRIVATE)
+
+        val appColor = themePrefs.getInt("app_color", "#5D53A3".toColorInt())
+
 
         val root = findViewById<View>(R.id.rootContainer)
         root.setBackgroundColor(appColor)
@@ -73,6 +76,9 @@ class LibraryActivity : ComponentActivity() {
 
         val folderRecycler = findViewById<RecyclerView>(R.id.folderRecycler)
         folderRecycler.layoutManager = LinearLayoutManager(this)
+
+        val prefs = getSharedPreferences("stratonotes_prefs", MODE_PRIVATE)
+
 
         val folderId = intent.getLongExtra("folder_id", -1L)
         if (folderId != -1L) {
@@ -307,7 +313,7 @@ class LibraryActivity : ComponentActivity() {
         overlayContainer.removeAllViews()
 
         val inflater = layoutInflater
-        val overlayView = inflater.inflate(R.layout.item_note, overlayContainer, false)
+        val overlayView = inflater.inflate(R.layout.overlay_note, overlayContainer, false)
         val noteCard = overlayView.findViewById<MaterialCardView>(R.id.noteCard)
         val backgroundColor = UserColorManager.getNoteColor(this)
         noteCard.setCardBackgroundColor(backgroundColor)
@@ -316,11 +322,22 @@ class LibraryActivity : ComponentActivity() {
         val width = (metrics.widthPixels * 0.9).toInt()
         overlayView.layoutParams = FrameLayout.LayoutParams(width, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER)
 
-        val noteText = overlayView.findViewById<EditText>(R.id.noteText)
+        val noteText = overlayView.findViewById<EditText>(R.id.note_input)
         val starIcon = overlayView.findViewById<ImageView>(R.id.starIcon)
 
         noteText.setText(note.content)
         noteText.requestFocus()
+
+        val undoButton = overlayView.findViewById<ImageButton>(R.id.undo_button)
+        val redoButton = overlayView.findViewById<ImageButton>(R.id.redo_button)
+        val undoManager = UndoManager(noteText)
+
+        undoButton.setOnClickListener {
+            undoManager.undo()
+        }
+        redoButton.setOnClickListener {
+            undoManager.redo()
+        }
 
         noteText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
@@ -363,12 +380,6 @@ class LibraryActivity : ComponentActivity() {
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(noteText, InputMethodManager.SHOW_IMPLICIT)
 
-        // Inject pill menu
-        val container = overlayView.findViewById<LinearLayout>(R.id.noteContainer)
-        val pillMenu = layoutInflater.inflate(R.layout.widget_pill_menu, container, false)
-        pillMenu.tag = "pillMenu"
-        container.addView(pillMenu)
-        initPillMenu(pillMenu)
         refreshFolderListColors()
 
         overlayContainer.addView(overlayView)
@@ -445,19 +456,30 @@ class LibraryActivity : ComponentActivity() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(themeReceiver)
     }
 
+    companion object {
+        private var gameShownThisSession = false
+    }
+
+
 
     override fun onResume() {
         super.onResume()
 
-        val prefs = getSharedPreferences("theme_prefs", MODE_PRIVATE)
-        val appColor = prefs.getInt("app_color", "#5D53A3".toColorInt())
-        val root = findViewById<View>(R.id.rootContainer)
-        root.setBackgroundColor(appColor)
-
+        // Register theme change listener
         LocalBroadcastManager.getInstance(this).registerReceiver(
             themeReceiver, IntentFilter("com.stratonotes.THEME_COLOR_CHANGED")
         )
+
+        // Apply current theme color
+        val themePrefs = getSharedPreferences("theme_prefs", MODE_PRIVATE)
+        val appColor = themePrefs.getInt("app_color", "#5D53A3".toColorInt())
+        findViewById<View>(R.id.rootContainer).setBackgroundColor(appColor)
+
+
     }
+
+
+
 
 
     private fun reloadFiltered(query: String) {
